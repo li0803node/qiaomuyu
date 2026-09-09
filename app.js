@@ -166,6 +166,51 @@ function playWoodHitSound(critRate = 1) {
     }
 }
 
+/**
+ * 物理声学算法合成清脆空灵禅意水滴声 (UI点击专用)
+ */
+function playTapSound() {
+    if (!state.sfxEnabled) return;
+    initAudio();
+    if (!audioCtx) return;
+
+    const now = audioCtx.currentTime;
+
+    // 1. 水滴气泡上滑基频振荡 (950Hz -> 2150Hz)
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(950, now);
+    osc.frequency.exponentialRampToValueAtTime(2150, now + 0.014);
+    osc.frequency.exponentialRampToValueAtTime(2000, now + 0.075);
+
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.linearRampToValueAtTime(0.35, now + 0.002);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.075);
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.078);
+
+    // 2. 水滴晶莹高次泛音
+    const harmOsc = audioCtx.createOscillator();
+    const harmGain = audioCtx.createGain();
+    harmOsc.type = 'sine';
+    harmOsc.frequency.setValueAtTime(2000, now);
+    harmOsc.frequency.exponentialRampToValueAtTime(4400, now + 0.014);
+
+    harmGain.gain.setValueAtTime(0.001, now);
+    harmGain.gain.linearRampToValueAtTime(0.08, now + 0.002);
+    harmGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
+
+    harmOsc.connect(harmGain);
+    harmGain.connect(audioCtx.destination);
+    harmOsc.start(now);
+    harmOsc.stop(now + 0.048);
+}
+
 // 6 首极致纯净静心禅音曲目定义 (含真实僧众诵经梵唱)
 const BGM_TRACK_CONFIGS = [
     { id: 1, name: '《大悲梵呗》', desc: '梵音诵经 · 僧众梵唱 · 极具静心' },
