@@ -2,12 +2,22 @@
   "compilerOptions": {
     "module": "commonjs",
     "lib": ["es2015", "es2017", "dom"],
-    "target": "es5",
+    "target": "es6",
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
     "experimentalDecorators": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": false
   },
-  "exclude": ["node_modules", "cloudfunctions"]
+  "include": [
+    "*.js",
+    "openDataContext/**/*.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "cloudfunctions"
+  ]
 }
