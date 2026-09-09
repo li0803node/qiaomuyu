@@ -231,11 +231,12 @@ class WxSoundManager {
         ];
         this.chimeSrc = 'assets/audio/chime.wav';
         this.winSrc = 'assets/audio/win.wav';
+        this.tapSrc = 'assets/audio/tap.wav';
         this.bgmAudio = null;
         this.currentBgmIdx = -1;
 
         if (typeof wx !== 'undefined' && wx.createInnerAudioContext) {
-            // 首屏快速启动：首批仅创建 3 个打击音效上下文，降低代码注入与首帧阻塞
+            // 首屏快速启动：首批创建打击音效上下文
             for (let i = 0; i < 3; i++) {
                 const audio = wx.createInnerAudioContext();
                 audio.obeyMuteSwitch = false;
@@ -250,13 +251,24 @@ class WxSoundManager {
             this.winAudio.obeyMuteSwitch = false;
             this.winAudio.src = this.winSrc;
 
+            // 专属轻灵 UI 点击/交互音效池 (轻脆灵动，与木鱼重击严格区分)
+            this.tapPool = [];
+            for (let i = 0; i < 3; i++) {
+                const tapAudio = wx.createInnerAudioContext();
+                tapAudio.obeyMuteSwitch = false;
+                tapAudio.src = this.tapSrc;
+                tapAudio.volume = 0.85;
+                this.tapPool.push(tapAudio);
+            }
+            this.tapPoolIdx = 0;
+
             // BGM 循环播放器
             this.bgmAudio = wx.createInnerAudioContext();
             this.bgmAudio.obeyMuteSwitch = false;
             this.bgmAudio.loop = true;
             this.bgmAudio.volume = 0.45;
 
-            // 启动 1.2 秒后异步补齐剩余 6 个打击音效池节点，彻底避免首屏卡顿
+            // 启动 1.2 秒后异步补齐剩余 6 个打击音效池节点
             setTimeout(() => {
                 try {
                     while (this.ctxPool.length < this.poolSize) {
@@ -277,6 +289,17 @@ class WxSoundManager {
             this.poolIdx = (this.poolIdx + 1) % this.poolSize;
             audio.stop();
             audio.src = this.soundSources[Math.floor(Math.random() * this.soundSources.length)];
+            audio.seek(0);
+            audio.play();
+        } catch (e) {}
+    }
+
+    playTap() {
+        if (!state.sfxEnabled || !this.tapPool || !this.tapPool.length) return;
+        try {
+            const audio = this.tapPool[this.tapPoolIdx];
+            this.tapPoolIdx = (this.tapPoolIdx + 1) % this.tapPool.length;
+            audio.stop();
             audio.seek(0);
             audio.play();
         } catch (e) {}
@@ -3055,6 +3078,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
 
             // 1. 每日一签
             if (tx >= btn1X && tx <= btn1X + actW) {
+                try { soundManager.playTap(); } catch(e) {}
                 state.currentModal = 'fortune_slip';
                 if (!state.hasShakenFortuneToday) {
                     state.fortuneState = 'idle';
@@ -3064,11 +3088,13 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
             }
             // 2. 切换法殿
             if (tx >= btn2X && tx <= btn2X + actW) {
+                try { soundManager.playTap(); } catch(e) {}
                 state.currentModal = 'temple_picker';
                 return;
             }
             // 3. 修行日历
             if (tx >= btn3X && tx <= btn3X + actW) {
+                try { soundManager.playTap(); } catch(e) {}
                 state.currentModal = 'calendar';
                 return;
             }
@@ -3076,6 +3102,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
 
         // 1. 点击右上角 BGM 按钮
         if (tx >= bgmRect.x - 6 && tx <= bgmRect.x + bgmRect.w + 6 && ty >= bgmRect.y - 6 && ty <= bgmRect.y + bgmRect.h + 6) {
+            try { soundManager.playTap(); } catch(e) {}
             if (state.currentModal === 'quick_ambient') {
                 state.currentModal = null;
             } else if (!state.currentModal) {
@@ -3099,6 +3126,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
 
             // 返回按钮
             if (tx < 65 && ty < ghHeaderH + 10) {
+                try { soundManager.playTap(); } catch(e) {}
                 state.currentModal = 'minigames';
                 return;
             }
@@ -3107,7 +3135,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
             const btnRuleX = 12;
             const btnRuleW = Math.round(50 * uiScale);
             if (tx >= btnRuleX - 4 && tx <= btnRuleX + btnRuleW + 4 && ty >= plaqueY - 5 && ty <= plaqueY + plaqueH + 5) {
-                try { soundManager.playWoodHit(); } catch(e) {}
+                try { soundManager.playTap(); } catch(e) {}
                 state.currentModal = 'rules';
                 return;
             }
@@ -3116,7 +3144,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
             const btnRankW = Math.round(58 * uiScale);
             const btnRankX = W - 12 - btnRankW;
             if (tx >= btnRankX - 4 && tx <= btnRankX + btnRankW + 4 && ty >= plaqueY - 5 && ty <= plaqueY + plaqueH + 5) {
-                try { soundManager.playWoodHit(); } catch(e) {}
+                try { soundManager.playTap(); } catch(e) {}
                 state.rankReturnModal = 'gemhunt';
                 state.currentModal = 'rank';
                 reportScoreToFriendCloud();
@@ -3126,6 +3154,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
 
             // 战力减少 −
             if (ty >= consoleY && ty <= consoleY + 54 && tx >= 12 && tx < 12 + 40) {
+                try { soundManager.playTap(); } catch(e) {}
                 if (state.gemHunt.currentBetIdx > 0) {
                     state.gemHunt.currentBetIdx--;
                 }
@@ -3134,12 +3163,14 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
 
             // 点击战力中间数值：开启战力快捷选择面板
             if (ty >= consoleY && ty <= consoleY + 54 && tx >= 12 + 40 && tx < 12 + 134 - 40) {
+                try { soundManager.playTap(); } catch(e) {}
                 state.currentModal = 'betpicker';
                 return;
             }
 
             // 战力增加 +
             if (ty >= consoleY && ty <= consoleY + 54 && tx >= 12 + 134 - 40 && tx < 12 + 134 + 15) {
+                try { soundManager.playTap(); } catch(e) {}
                 if (state.gemHunt.currentBetIdx < BET_TIERS.length - 1) {
                     const nextIdx = state.gemHunt.currentBetIdx + 1;
                     if (isTierUnlocked(nextIdx)) {
@@ -3154,6 +3185,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
 
             // 开始祈福按钮
             if (ty >= consoleY && ty <= consoleY + 54 && tx >= W - 150) {
+                try { soundManager.playTap(); } catch(e) {}
                 if (!state.gemHunt.isSpinning) spinGemHunt();
                 return;
             }
@@ -3176,11 +3208,13 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
 
             if (state.currentModal === 'ad_insufficient') {
                 if (tx > cardX + cardW - 45 && ty > cardY && ty < cardY + 45) {
+                    try { soundManager.playTap(); } catch(e) {}
                     state.currentModal = 'gemhunt';
                     return;
                 }
                 const adBtnY = cardY + 158;
                 if (ty >= adBtnY && ty <= adBtnY + 44 && tx >= cardX + 20 && tx <= cardX + cardW - 20) {
+                    try { soundManager.playTap(); } catch(e) {}
                     if (state.dailyAlmsCount >= 5) {
                         showToast('今日化缘福报已达 5 次上限，请明日再来！');
                         return;
@@ -3209,6 +3243,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                 }
                 const closeBtnY = cardY + 212;
                 if (ty >= closeBtnY && ty <= closeBtnY + 42 && tx >= cardX + 20 && tx <= cardX + cardW - 20) {
+                    try { soundManager.playTap(); } catch(e) {}
                     state.currentModal = 'gemhunt';
                     return;
                 }
@@ -3221,11 +3256,13 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
 
             if (state.currentModal === 'ad_crit') {
                 if (tx > cardX + cardW - 45 && ty > cardY && ty < cardY + 45) {
+                    try { soundManager.playTap(); } catch(e) {}
                     state.currentModal = null;
                     return;
                 }
                 const adBtnY = cardY + 158;
                 if (ty >= adBtnY && ty <= adBtnY + 44 && tx >= cardX + 20 && tx <= cardX + cardW - 20) {
+                    try { soundManager.playTap(); } catch(e) {}
                     if (state.dailyCritCount >= 5) {
                         showToast('今日暴击广告已领完 (5/5次)，明日0点刷新！');
                         return;
@@ -3252,6 +3289,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                 }
                 const closeBtnY = cardY + 212;
                 if (ty >= closeBtnY && ty <= closeBtnY + 42 && tx >= cardX + 20 && tx <= cardX + cardW - 20) {
+                    try { soundManager.playTap(); } catch(e) {}
                     state.currentModal = null;
                     return;
                 }
@@ -3264,11 +3302,13 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
 
             if (state.currentModal === 'ad_auto') {
                 if (tx > cardX + cardW - 45 && ty > cardY && ty < cardY + 45) {
+                    try { soundManager.playTap(); } catch(e) {}
                     state.currentModal = null;
                     return;
                 }
                 const adBtnY = cardY + 158;
                 if (ty >= adBtnY && ty <= adBtnY + 44 && tx >= cardX + 20 && tx <= cardX + cardW - 20) {
+                    try { soundManager.playTap(); } catch(e) {}
                     if (state.dailyAutoCount >= 5) {
                         showToast('今日自动敲击广告已领完 (5/5次)，明日0点刷新！');
                         return;
@@ -3289,6 +3329,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                 }
                 const closeBtnY = cardY + 212;
                 if (ty >= closeBtnY && ty <= closeBtnY + 42 && tx >= cardX + 20 && tx <= cardX + cardW - 20) {
+                    try { soundManager.playTap(); } catch(e) {}
                     state.currentModal = null;
                     return;
                 }
@@ -3301,11 +3342,13 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
 
             if (state.currentModal === 'ad_tier_unlock') {
                 if (tx > cardX + cardW - 45 && ty > cardY && ty < cardY + 45) {
+                    try { soundManager.playTap(); } catch(e) {}
                     state.currentModal = 'gemhunt';
                     return;
                 }
                 const adBtnY = cardY + 158;
                 if (ty >= adBtnY && ty <= adBtnY + 44 && tx >= cardX + 20 && tx <= cardX + cardW - 20) {
+                    try { soundManager.playTap(); } catch(e) {}
                     const unlockIdx = state.targetUnlockTierIdx;
                     adManager.showRewardedVideo(() => {
                         state.unlockedTiers[unlockIdx] = Date.now() + 24 * 3600 * 1000;
@@ -3320,6 +3363,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                 }
                 const closeBtnY = cardY + 212;
                 if (ty >= closeBtnY && ty <= closeBtnY + 42 && tx >= cardX + 20 && tx <= cardX + cardW - 20) {
+                    try { soundManager.playTap(); } catch(e) {}
                     state.currentModal = 'gemhunt';
                     return;
                 }
@@ -3332,6 +3376,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
 
             if (state.currentModal === 'betpicker') {
                 if (tx > cardX + cardW - 45 && ty > cardY && ty < cardY + 45) {
+                    try { soundManager.playTap(); } catch(e) {}
                     state.currentModal = 'gemhunt';
                     return;
                 }
@@ -3347,6 +3392,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                     const r = Math.floor((ty - gridY) / (rowH + 6));
                     const clickedIdx = r * 3 + c;
                     if (clickedIdx >= 0 && clickedIdx < BET_TIERS.length) {
+                        try { soundManager.playTap(); } catch(e) {}
                         if (isTierUnlocked(clickedIdx)) {
                             state.gemHunt.currentBetIdx = clickedIdx;
                             state.currentModal = 'gemhunt';
@@ -3372,6 +3418,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
 
             if (state.currentModal === 'rules') {
                 if (tx > cardX + cardW - 45 && ty > cardY && ty < cardY + 45) {
+                    try { soundManager.playTap(); } catch(e) {}
                     state.currentModal = 'gemhunt';
                     return;
                 }
@@ -3379,6 +3426,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                 if (ty >= cardY + 38 && ty <= cardY + 68) {
                     const tw = (cardW - 24) / 4;
                     const tabIdx = Math.floor((tx - (cardX + 12)) / tw);
+                    try { soundManager.playTap(); } catch(e) {}
                     if (tabIdx === 0) state.rulesTab = 'icons';
                     else if (tabIdx === 1) { state.rulesTab = 'lines'; state.rulesPage = 0; }
                     else if (tabIdx === 2) state.rulesTab = 'tiers';
@@ -3388,6 +3436,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                 // 连线规则翻页点击 (底部圆点与上一页/下一页)
                 if (state.rulesTab === 'lines') {
                     if (ty >= cardY + cardH - 38 && ty <= cardY + cardH + 10) {
+                        try { soundManager.playTap(); } catch(e) {}
                         if (tx < W / 2 - 20) {
                             state.rulesPage = Math.max(0, (state.rulesPage || 0) - 1);
                             return;
@@ -3409,10 +3458,12 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
 
             if (state.currentModal === 'minigames') {
                 if (tx > cardX + cardW - 45 && ty > cardY && ty < cardY + 45) {
+                    try { soundManager.playTap(); } catch(e) {}
                     state.currentModal = null;
                     return;
                 }
                 if (ty > cardY + 45 && ty < cardY + 165 && tx > cardX + 10 && tx < cardX + cardW - 10) {
+                    try { soundManager.playTap(); } catch(e) {}
                     state.currentModal = 'gemhunt';
                     return;
                 }
@@ -3421,6 +3472,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
             if (state.currentModal === 'rank') {
                 // 关闭按钮 ×
                 if (tx > cardX + cardW - 45 && ty > cardY && ty < cardY + 45) {
+                    try { soundManager.playTap(); } catch(e) {}
                     state.currentModal = state.rankReturnModal || null;
                     state.rankReturnModal = null;
                     return;
@@ -3429,12 +3481,14 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                 const rankTabW2 = (cardW - 32) / 2;
                 if (ty >= cardY + 38 && ty <= cardY + 72) {
                     if (tx >= cardX + 16 && tx < cardX + 16 + rankTabW2) {
+                        try { soundManager.playTap(); } catch(e) {}
                         state.rankTab = 'friends';
                         reportScoreToFriendCloud();
                         requestFriendRankData();
                         return;
                     }
                     if (tx >= cardX + 16 + rankTabW2 && tx <= cardX + cardW - 16) {
+                        try { soundManager.playTap(); } catch(e) {}
                         state.rankTab = 'world';
                         return;
                     }
@@ -3444,6 +3498,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                     const inviteBtnY = cardY + cardH - Math.round(38 * uiScale);
                     const inviteBtnH = Math.round(28 * uiScale);
                     if (ty >= inviteBtnY && ty <= inviteBtnY + inviteBtnH && tx >= cardX + 16 && tx <= cardX + cardW - 16) {
+                        try { soundManager.playTap(); } catch(e) {}
                         if (typeof wx !== 'undefined' && wx.shareAppMessage) {
                             wx.shareAppMessage({
                                 title: `我在《静心敲木鱼》积攒了 ${state.totalHit || 0} 功德，快来好友榜比一比！`,
@@ -3464,6 +3519,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
 
             if (state.currentModal === 'temple_picker') {
                 if (tx > cardX + cardW - 45 && ty > cardY && ty < cardY + 45) {
+                    try { soundManager.playTap(); } catch(e) {}
                     state.currentModal = null;
                     return;
                 }
@@ -3481,6 +3537,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                     const tx_box = cardX + 12 + c * (tW + tGapX);
                     const ty_box = tStartY + r * (tH + tGapY);
                     if (tx >= tx_box && tx <= tx_box + tW && ty >= ty_box && ty <= ty_box + tH) {
+                        try { soundManager.playTap(); } catch(e) {}
                         state.currentTempleId = TEMPLE_MODES[i].id;
                         if (typeof wx !== 'undefined' && wx.setStorageSync) {
                             try { wx.setStorageSync('qmy_temple_id', state.currentTempleId); } catch(e) {}
@@ -3499,6 +3556,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
 
             if (state.currentModal === 'fortune_slip') {
                 if (tx > cardX + cardW - 45 && ty > cardY && ty < cardY + 45) {
+                    try { soundManager.playTap(); } catch(e) {}
                     stopFortuneShakeListener();
                     state.currentModal = null;
                     return;
@@ -3509,7 +3567,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                 const galleryBtnX = cardX + 12;
                 const galleryBtnY = cardY + 14;
                 if (tx >= galleryBtnX - 4 && tx <= galleryBtnX + galleryBtnW + 4 && ty >= galleryBtnY - 4 && ty <= galleryBtnY + galleryBtnH + 6) {
-                    try { soundManager.playWoodHit(); } catch(e) {}
+                    try { soundManager.playTap(); } catch(e) {}
                     state.fortuneReturnModal = 'fortune_slip';
                     state.currentModal = 'fortune_gallery';
                     state.viewingGallerySlip = null;
@@ -3544,7 +3602,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
 
                     // 1. 分享灵签按钮 (热区扩展 ±6px)
                     if (tx >= btn1X - 6 && tx <= btn1X + btnW + 4 && ty >= btnY - 8 && ty <= btnY + btnH + 12) {
-                        try { soundManager.playWoodHit(); } catch(e) {}
+                        try { soundManager.playTap(); } catch(e) {}
                         if (typeof wx !== 'undefined' && wx.vibrateShort) {
                             try { wx.vibrateShort({ type: 'light', fail: () => {} }); } catch(e) {}
                         }
@@ -3554,7 +3612,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
 
                     // 2. 保存壁纸海报按钮 (热区扩展 ±6px)
                     if (tx >= btn2X - 4 && tx <= btn2X + btnW + 6 && ty >= btnY - 8 && ty <= btnY + btnH + 12) {
-                        try { soundManager.playWoodHit(); } catch(e) {}
+                        try { soundManager.playTap(); } catch(e) {}
                         if (typeof wx !== 'undefined' && wx.vibrateShort) {
                             try { wx.vibrateShort({ type: 'light', fail: () => {} }); } catch(e) {}
                         }
@@ -3585,7 +3643,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                     const isCloseTap = (tx > cardX + cardW - 45 && ty > cardY && ty < cardY + 45);
                     const isReturnBtnTap = (tx >= returnBtnX && tx <= returnBtnX + returnBtnW && ty >= btnY - 6 && ty <= btnY + btnH + 10);
                     if (isCloseTap || isReturnBtnTap) {
-                        try { soundManager.playWoodHit(); } catch(e) {}
+                        try { soundManager.playTap(); } catch(e) {}
                         state.viewingGallerySlip = null;
                         return;
                     }
@@ -3599,6 +3657,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                 // 主图鉴视图
                 // 1. 点击右上角 × 关闭
                 if (tx > cardX + cardW - 45 && ty > cardY && ty < cardY + 45) {
+                    try { soundManager.playTap(); } catch(e) {}
                     state.currentModal = state.fortuneReturnModal || null;
                     return;
                 }
@@ -3614,7 +3673,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                         const txMin = cardX + Math.round(12 * uiScale) + i * tabW;
                         const txMax = txMin + tabW;
                         if (tx >= txMin && tx <= txMax) {
-                            try { soundManager.playWoodHit(); } catch(e) {}
+                            try { soundManager.playTap(); } catch(e) {}
                             state.galleryTab = gTabs[i];
                             state.galleryPage = 0;
                             return;
@@ -3651,7 +3710,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                             }
                             state.viewingGallerySlip = slip;
                         } else {
-                            try { soundManager.playWoodHit(); } catch(e) {}
+                            try { soundManager.playTap(); } catch(e) {}
                             if (typeof wx !== 'undefined' && wx.vibrateShort) {
                                 try { wx.vibrateShort({ type: 'medium', fail: () => {} }); } catch(e) {}
                             }
@@ -3670,7 +3729,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                 const prevX = cardX + Math.round(16 * uiScale);
                 if (tx >= prevX - 6 && tx <= prevX + pageBtnW + 6 && ty >= footY - 6 && ty <= footY + pageBtnH + 8) {
                     if (curPage > 0) {
-                        try { soundManager.playWoodHit(); } catch(e) {}
+                        try { soundManager.playTap(); } catch(e) {}
                         state.galleryPage = curPage - 1;
                     }
                     return;
@@ -3680,7 +3739,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                 const nextX = cardX + cardW - Math.round(16 * uiScale) - pageBtnW;
                 if (tx >= nextX - 6 && tx <= nextX + pageBtnW + 6 && ty >= footY - 6 && ty <= footY + pageBtnH + 8) {
                     if (curPage < totalPages - 1) {
-                        try { soundManager.playWoodHit(); } catch(e) {}
+                        try { soundManager.playTap(); } catch(e) {}
                         state.galleryPage = curPage + 1;
                     }
                     return;
@@ -3696,6 +3755,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
 
             if (state.currentModal === 'calendar') {
                 if (tx > cardX + cardW - 45 && ty > cardY && ty < cardY + 45) {
+                    try { soundManager.playTap(); } catch(e) {}
                     state.currentModal = null;
                     return;
                 }
@@ -3704,6 +3764,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                 const overviewH = Math.round(68 * uiScale);
                 if (!state.hasShakenFortuneToday && !state.todayFortuneSlip) {
                     if (ty >= overviewY && ty <= overviewY + overviewH * 0.6 && tx >= cardX + 10 && tx <= cardX + cardW - 10) {
+                        try { soundManager.playTap(); } catch(e) {}
                         state.currentModal = 'fortune_slip';
                         state.fortuneState = 'idle';
                         startFortuneShakeListener();
@@ -3730,7 +3791,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                     const cy = gridStartY + 18 + row * cellH;
                     if (tx >= cx && tx <= cx + cellW && ty >= cy && ty <= cy + cellH) {
                         state.selectedCalendarDay = d;
-                        soundManager.playWoodHit();
+                        try { soundManager.playTap(); } catch(e) {}
                         return;
                     }
                 }
@@ -3745,6 +3806,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
             if (state.currentModal === 'quick_ambient') {
                 // 点击右上角 × 关闭
                 if (tx > cardX + cardW - 45 && ty > cardY && ty < cardY + 45) {
+                    try { soundManager.playTap(); } catch(e) {}
                     state.currentModal = null;
                     return;
                 }
@@ -3754,6 +3816,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                 const muteBtnX = cardX + cardW - 38 - muteBtnW;
                 const muteBtnY = cardY + 16;
                 if (tx >= muteBtnX && tx <= muteBtnX + muteBtnW && ty >= muteBtnY && ty <= muteBtnY + muteBtnH) {
+                    try { soundManager.playTap(); } catch(e) {}
                     state.bgmEnabled = !state.bgmEnabled;
                     soundManager.updateBgmState();
                     showToast(state.bgmEnabled ? '声音已开启' : '已静音');
@@ -3775,6 +3838,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                     const itX = gridStartX + c * (itW + gapX);
                     const itY = gridStartY + r * (itH + gapY);
                     if (tx >= itX && tx <= itX + itW && ty >= itY && ty <= itY + itH) {
+                        try { soundManager.playTap(); } catch(e) {}
                         state.selectedTrackIdx = i;
                         state.bgmEnabled = true;
                         soundManager.playBgm(i);
@@ -3792,17 +3856,20 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
 
             if (state.currentModal === 'settings') {
                 if (tx > cardX + cardW - 45 && ty > cardY && ty < cardY + 45) {
+                    try { soundManager.playTap(); } catch(e) {}
                     state.currentModal = null;
                     return;
                 }
                 const toggle1Y = cardY + 38;
                 if (ty >= toggle1Y && ty <= toggle1Y + 34 && tx >= cardX + 12 && tx <= cardX + cardW - 12) {
+                    try { soundManager.playTap(); } catch(e) {}
                     state.sfxEnabled = !state.sfxEnabled;
                     showToast(state.sfxEnabled ? '敲击音效已开启' : '敲击音效已静音');
                     return;
                 }
                 const toggle2Y = cardY + 74;
                 if (ty >= toggle2Y && ty <= toggle2Y + 34 && tx >= cardX + 12 && tx <= cardX + cardW - 12) {
+                    try { soundManager.playTap(); } catch(e) {}
                     state.bgmEnabled = !state.bgmEnabled;
                     soundManager.updateBgmState();
                     showToast(state.bgmEnabled ? '静心自然声景已开启' : '声景已关闭');
@@ -3822,6 +3889,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                     if (c >= 0 && c < cols && r >= 0 && r < rows) {
                         const clickedIdx = r * cols + c;
                         if (clickedIdx >= 0 && clickedIdx < BGM_TRACKS.length) {
+                            try { soundManager.playTap(); } catch(e) {}
                             state.selectedTrackIdx = clickedIdx;
                             state.bgmEnabled = true;
                             soundManager.playBgm(clickedIdx);
@@ -3835,6 +3903,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                 const compBtnW = (cardW - 32) / 2;
                 const compBtnH = 26;
                 if (ty >= compY && ty <= compY + compBtnH) {
+                    try { soundManager.playTap(); } catch(e) {}
                     if (tx >= cardX + 12 && tx <= cardX + 12 + compBtnW) {
                         state.currentModal = 'age_advisory';
                         return;
@@ -3855,11 +3924,13 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
 
             if (state.currentModal === 'age_advisory' || state.currentModal === 'privacy_policy') {
                 if (tx > cardX + cardW - 45 && ty > cardY && ty < cardY + 45) {
+                    try { soundManager.playTap(); } catch(e) {}
                     state.currentModal = 'settings';
                     return;
                 }
                 const okBtnY = cardY + cardH - 52;
                 if (ty >= okBtnY && ty <= okBtnY + 36 && tx >= cardX + 30 && tx <= cardX + cardW - 30) {
+                    try { soundManager.playTap(); } catch(e) {}
                     state.currentModal = 'settings';
                     return;
                 }
@@ -3874,6 +3945,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                 state.touchStartY = ty;
                 state.startScrollY = state.titleScrollY;
                 if (tx > cardX + cardW - 45 && ty > cardY && ty < cardY + 45) {
+                    try { soundManager.playTap(); } catch(e) {}
                     state.currentModal = null;
                     return;
                 }
@@ -3891,6 +3963,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
         const profileW2 = Math.min(Math.round(168 * uiScale), bgmRect2.x - layout2.side - 8);
         if (tx >= layout2.side && tx <= layout2.side + profileW2 &&
             ty >= layout2.topY && ty <= layout2.topY + layout2.profileH) {
+            try { soundManager.playTap(); } catch(e) {}
             if (!state.currentModal) state.currentModal = 'titles';
             return;
         }
@@ -3898,10 +3971,12 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
         // 4. 底部 4 大导航栏点击
         if (ty >= btns.navBar.y - 8 && ty <= btns.navBar.y + btns.navBar.h + 12) {
             if (tx >= btns.minigames.x && tx < btns.rank.x) {
+                try { soundManager.playTap(); } catch(e) {}
                 state.currentModal = 'minigames';
                 return;
             }
             if (tx >= btns.rank.x && tx < btns.titles.x) {
+                try { soundManager.playTap(); } catch(e) {}
                 state.currentModal = 'rank';
                 state.rankTab = 'friends';
                 reportScoreToFriendCloud();
@@ -3909,11 +3984,13 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                 return;
             }
             if (tx >= btns.titles.x && tx < btns.settings.x) {
+                try { soundManager.playTap(); } catch(e) {}
                 state.currentModal = 'titles';
                 state.titleScrollY = 0;
                 return;
             }
             if (tx >= btns.settings.x && tx <= btns.navBar.x + btns.navBar.w + 8) {
+                try { soundManager.playTap(); } catch(e) {}
                 state.currentModal = 'settings';
                 return;
             }
@@ -3922,6 +3999,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
         // 5. 底部 2 个广告按钮
         if (ty >= btns.critAd.y - 6 && ty <= btns.critAd.y + btns.critAd.h + 8) {
             if (tx >= btns.critAd.x - 4 && tx <= btns.critAd.x + btns.critAd.w + 4) {
+                try { soundManager.playTap(); } catch(e) {}
                 if (state.dailyCritCount >= 5) {
                     showToast('今日暴击广告已领完 (5/5次)，明日0点刷新！');
                     return;
@@ -3935,6 +4013,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
             }
 
             if (tx >= btns.autoAd.x - 4 && tx <= btns.autoAd.x + btns.autoAd.w + 4) {
+                try { soundManager.playTap(); } catch(e) {}
                 if (state.dailyAutoCount >= 5) {
                     showToast('今日自动敲击广告已领完 (5/5次)，明日0点刷新！');
                     return;
