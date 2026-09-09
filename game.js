@@ -6857,28 +6857,61 @@ function render() {
             } else if (state.currentModal === 'age_advisory') {
                 // CADPA 8+ 适龄提示说明弹窗 (完全符合国家新闻出版署与微信小游戏官方规范)
                 ctx.font = `bold ${Math.round(15 * uiScale)}px sans-serif`;
+                const titleText = 'CADPA 适龄提示 (8+)';
+                const titleTextW = ctx.measureText(titleText).width;
+                const titleShieldS = Math.round(7 * uiScale);
+                const titleGap = Math.round(6 * uiScale);
+                const totalTitleW = titleShieldS * 1.5 + titleGap + titleTextW;
+                const titleStartX = (W - totalTitleW) / 2;
+                const titleCenterY = cardY + 24;
+
+                drawVectorShield(ctx, titleStartX + titleShieldS * 0.75, titleCenterY, titleShieldS, '#52C41A');
                 ctx.fillStyle = '#FFE072';
-                ctx.textAlign = 'center';
-                drawVectorShield(ctx, W / 2 - Math.round(84 * uiScale), cardY + 22, Math.round(7 * uiScale), '#52C41A');
-                ctx.fillText('CADPA 适龄提示 (8+)', W / 2 + Math.round(8 * uiScale), cardY + 26);
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(titleText, titleStartX + titleShieldS * 1.5 + titleGap, titleCenterY);
+                ctx.textBaseline = 'alphabetic';
 
                 ctx.fillStyle = '#F5C44B';
                 ctx.font = `bold ${Math.round(18 * uiScale)}px sans-serif`;
+                ctx.textAlign = 'center';
                 ctx.fillText('×', cardX + cardW - 22, cardY + 26);
 
-                // 绿色盾牌 CADPA 8+ 标识
-                const shieldY = cardY + 44;
+                // 绿色盾牌 CADPA 8+ 标识胶囊 (动态精准居中，盾牌与文字绝不重叠)
+                const shieldY = cardY + Math.round(44 * uiScale);
+                const badgeH = Math.round(28 * uiScale);
+                const s = Math.round(6 * uiScale);
+                const gap = Math.round(7 * uiScale);
+
+                ctx.font = `bold ${Math.round(12.5 * uiScale)}px sans-serif`;
+                const badgeText = 'CADPA 8+';
+                const textW = ctx.measureText(badgeText).width;
+                const innerW = s * 1.5 + gap + textW;
+                const padX = Math.round(14 * uiScale);
+                const badgeW = innerW + padX * 2;
+                const badgeX = (W - badgeW) / 2;
+
+                // 绘制圆角绿底胶囊
                 ctx.fillStyle = '#237804';
-                drawRoundRect(ctx, W / 2 - 36, shieldY, 72, 28, 6);
+                drawRoundRect(ctx, badgeX, shieldY, badgeW, badgeH, Math.round(6 * uiScale));
                 ctx.fill();
                 ctx.strokeStyle = '#52C41A';
                 ctx.lineWidth = 1.5;
                 ctx.stroke();
-                drawVectorShield(ctx, W / 2 - 20, shieldY + 14, 6.5, '#FFFFFF');
+
+                // 居中绘制 [白色盾牌 + CADPA 8+ 文字]
+                const contentStartX = badgeX + (badgeW - innerW) / 2;
+                const iconCenterX = contentStartX + s * 0.75;
+                const centerY = shieldY + badgeH / 2;
+
+                drawVectorShield(ctx, iconCenterX, centerY, s, '#FFFFFF');
+
                 ctx.fillStyle = '#FFFFFF';
-                ctx.font = `bold ${Math.round(12 * uiScale)}px sans-serif`;
-                ctx.textAlign = 'center';
-                ctx.fillText('CADPA 8+', W / 2 + 7, shieldY + 18);
+                ctx.font = `bold ${Math.round(12.5 * uiScale)}px sans-serif`;
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(badgeText, iconCenterX + s * 0.75 + gap, centerY);
+                ctx.textBaseline = 'alphabetic';
 
                 // 说明文本卡片
                 const textCardY = cardY + 80;
@@ -6944,13 +6977,24 @@ function render() {
             } else if (state.currentModal === 'privacy_policy') {
                 // 用户隐私指引与健康游戏忠告弹窗
                 ctx.font = `bold ${Math.round(15 * uiScale)}px sans-serif`;
+                const privTitleText = '隐私指引 & 健康游戏忠告';
+                const privTitleW = ctx.measureText(privTitleText).width;
+                const privScrollS = Math.round(7 * uiScale);
+                const privGap = Math.round(6 * uiScale);
+                const totalPrivW = privScrollS * 1.5 + privGap + privTitleW;
+                const privStartX = (W - totalPrivW) / 2;
+                const privCenterY = cardY + 24;
+
+                drawVectorScroll(ctx, privStartX + privScrollS * 0.75, privCenterY, privScrollS);
                 ctx.fillStyle = '#FFE072';
-                ctx.textAlign = 'center';
-                drawVectorScroll(ctx, W / 2 - Math.round(92 * uiScale), cardY + 22, Math.round(7 * uiScale));
-                ctx.fillText('隐私指引 & 健康游戏忠告', W / 2 + Math.round(8 * uiScale), cardY + 26);
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(privTitleText, privStartX + privScrollS * 1.5 + privGap, privCenterY);
+                ctx.textBaseline = 'alphabetic';
 
                 ctx.fillStyle = '#F5C44B';
                 ctx.font = `bold ${Math.round(18 * uiScale)}px sans-serif`;
+                ctx.textAlign = 'center';
                 ctx.fillText('×', cardX + cardW - 22, cardY + 26);
 
                 const textCardY = cardY + 44;
