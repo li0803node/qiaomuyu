@@ -3604,16 +3604,14 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                 }
 
                 // 2. 分类 Tabs 点击
-                const progY = cardY + 38;
-                const progH = Math.round(38 * uiScale);
-                const tabY = progY + progH + Math.round(8 * uiScale);
+                const tabY = cardY + Math.round(48 * uiScale);
                 const tabH = Math.round(26 * uiScale);
                 const gTabs = ['all', 'general', 'temple', 'solar'];
-                const tabW = (cardW - 20) / gTabs.length;
+                const tabW = (cardW - Math.round(24 * uiScale)) / gTabs.length;
 
                 if (ty >= tabY - 4 && ty <= tabY + tabH + 6) {
                     for (let i = 0; i < gTabs.length; i++) {
-                        const txMin = cardX + 10 + i * tabW;
+                        const txMin = cardX + Math.round(12 * uiScale) + i * tabW;
                         const txMax = txMin + tabW;
                         if (tx >= txMin && tx <= txMax) {
                             try { soundManager.playWoodHit(); } catch(e) {}
@@ -3624,26 +3622,26 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                     }
                 }
 
-                // 3. 点击 6 支签牌卡片
+                // 3. 点击 3 列 x 2 行 签牌卡片 (热区扩展)
                 const filtered = getGalleryFilteredSlips(state.galleryTab || 'all');
                 const pageSize = 6;
                 const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
                 const curPage = Math.min(totalPages - 1, Math.max(0, state.galleryPage || 0));
                 const pageItems = filtered.slice(curPage * pageSize, (curPage + 1) * pageSize);
 
-                const gridY = tabY + tabH + Math.round(8 * uiScale);
+                const gridY = tabY + tabH + Math.round(12 * uiScale);
                 const colGap = Math.round(8 * uiScale);
-                const rowGap = Math.round(6 * uiScale);
-                const colW = (cardW - 20 - colGap) / 2;
-                const rowH = Math.round(46 * uiScale);
+                const rowGap = Math.round(10 * uiScale);
+                const colW = (cardW - Math.round(24 * uiScale) - colGap * 2) / 3;
+                const rowH = Math.round(112 * uiScale);
 
                 for (let i = 0; i < pageItems.length; i++) {
-                    const col = i % 2;
-                    const row = Math.floor(i / 2);
-                    const itemX = cardX + 10 + col * (colW + colGap);
+                    const col = i % 3;
+                    const row = Math.floor(i / 3);
+                    const itemX = cardX + Math.round(12 * uiScale) + col * (colW + colGap);
                     const itemY = gridY + row * (rowH + rowGap);
 
-                    if (tx >= itemX && tx <= itemX + colW && ty >= itemY && ty <= itemY + rowH) {
+                    if (tx >= itemX - 2 && tx <= itemX + colW + 2 && ty >= itemY - 2 && ty <= itemY + rowH + 2) {
                         const slip = pageItems[i];
                         const isUnlocked = Array.isArray(state.collectedSlips) && state.collectedSlips.includes(slip.name);
                         if (isUnlocked) {
@@ -3664,12 +3662,12 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                 }
 
                 // 4. 底部翻页按钮
-                const footY = cardY + cardH - Math.round(38 * uiScale);
-                const pageBtnW = Math.round(64 * uiScale);
-                const pageBtnH = Math.round(24 * uiScale);
+                const footY = gridY + 2 * (rowH + rowGap) + Math.round(8 * uiScale);
+                const pageBtnW = Math.round(68 * uiScale);
+                const pageBtnH = Math.round(26 * uiScale);
 
                 // 上一页
-                const prevX = cardX + 16;
+                const prevX = cardX + Math.round(16 * uiScale);
                 if (tx >= prevX - 6 && tx <= prevX + pageBtnW + 6 && ty >= footY - 6 && ty <= footY + pageBtnH + 8) {
                     if (curPage > 0) {
                         try { soundManager.playWoodHit(); } catch(e) {}
@@ -3679,7 +3677,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                 }
 
                 // 下一页
-                const nextX = cardX + cardW - 16 - pageBtnW;
+                const nextX = cardX + cardW - Math.round(16 * uiScale) - pageBtnW;
                 if (tx >= nextX - 6 && tx <= nextX + pageBtnW + 6 && ty >= footY - 6 && ty <= footY + pageBtnH + 8) {
                     if (curPage < totalPages - 1) {
                         try { soundManager.playWoodHit(); } catch(e) {}
@@ -6166,7 +6164,7 @@ function render() {
 
             } else if (state.currentModal === 'fortune_gallery') {
                 // ==========================================
-                // 灵签谱 · 功德图鉴 (分类筛选、点亮进度、全签文研读)
+                // 灵签谱 · 功德图鉴 (立式 3 列古风朱砂竹木牌位展陈)
                 // ==========================================
                 const allSlips = FORTUNE_SLIPS_DATA || [];
                 const collCount = (Array.isArray(state.collectedSlips) ? state.collectedSlips.length : 0);
@@ -6317,164 +6315,218 @@ function render() {
 
                 } else {
                     // ----------------------------------------------------
-                    // B. 灵签谱主图鉴列表与进度视图
+                    // B. 灵签谱主图鉴列表：3 列立式红木竹签牌位展陈
                     // ----------------------------------------------------
-                    // 1. 顶部标题与关闭
-                    ctx.font = `bold ${Math.round(15 * uiScale)}px sans-serif`;
+                    const headerY = cardY + Math.round(14 * uiScale);
+
+                    // 1. 顶部标题栏 (左侧卷轴标题 + 右侧收集进度胶囊 + 关闭按钮)
+                    drawVectorScroll(ctx, cardX + Math.round(20 * uiScale), headerY + Math.round(8 * uiScale), Math.round(6 * uiScale));
+                    ctx.textAlign = 'left';
+                    ctx.font = `bold ${Math.round(14 * uiScale)}px sans-serif`;
                     ctx.fillStyle = '#FFE072';
-                    ctx.textAlign = 'center';
-                    drawVectorScroll(ctx, W / 2 - Math.round(80 * uiScale), cardY + 22, Math.round(6.5 * uiScale));
-                    ctx.fillText('灵签谱 · 诸法善缘', W / 2 + Math.round(8 * uiScale), cardY + 26);
+                    ctx.fillText('灵签谱 · 诸法善缘', cardX + Math.round(32 * uiScale), headerY + Math.round(12 * uiScale));
 
-                    ctx.fillStyle = '#F5C44B';
-                    ctx.font = `bold ${Math.round(18 * uiScale)}px sans-serif`;
-                    ctx.fillText('×', cardX + cardW - 22, cardY + 26);
-
-                    // 2. 收集进度条卡片
-                    const progY = cardY + 38;
-                    const progH = Math.round(38 * uiScale);
-                    ctx.fillStyle = 'rgba(42, 30, 20, 0.95)';
-                    drawRoundRect(ctx, cardX + 10, progY, cardW - 20, progH, 8);
+                    // 收集进度小胶囊 (嵌入顶栏右侧，美观清爽)
+                    const badgeW = Math.round(92 * uiScale);
+                    const badgeH = Math.round(20 * uiScale);
+                    const badgeX = cardX + cardW - badgeW - Math.round(36 * uiScale);
+                    const badgeY = headerY + Math.round(1 * uiScale);
+                    ctx.fillStyle = 'rgba(42, 26, 18, 0.9)';
+                    drawRoundRect(ctx, badgeX, badgeY, badgeW, badgeH, 10);
                     ctx.fill();
-                    ctx.strokeStyle = 'rgba(245, 196, 75, 0.35)';
+                    ctx.strokeStyle = '#D4AF37';
                     ctx.lineWidth = 1;
                     ctx.stroke();
 
-                    ctx.textAlign = 'left';
-                    drawVectorLotus(ctx, cardX + 22, progY + Math.round(18 * uiScale), Math.round(5.5 * uiScale));
-                    ctx.font = `bold ${Math.round(10.5 * uiScale)}px sans-serif`;
-                    ctx.fillStyle = '#FFE072';
-                    ctx.fillText(`已收录 ${collCount} / ${totalSlips} 支灵签`, cardX + 32, progY + Math.round(15 * uiScale));
-
-                    ctx.textAlign = 'right';
-                    ctx.font = `bold ${Math.round(10 * uiScale)}px sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.font = `bold ${Math.round(9 * uiScale)}px sans-serif`;
                     ctx.fillStyle = '#95DE64';
-                    ctx.fillText(`收集度 ${progressPct}%`, cardX + cardW - 20, progY + Math.round(15 * uiScale));
+                    ctx.fillText(`已收录 ${collCount}/${totalSlips} (${progressPct}%)`, badgeX + badgeW / 2, badgeY + Math.round(14 * uiScale));
 
-                    // 进度条槽
-                    const barX = cardX + 20;
-                    const barW = cardW - 40;
-                    const barH = Math.round(6 * uiScale);
-                    const barY = progY + Math.round(24 * uiScale);
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-                    drawRoundRect(ctx, barX, barY, barW, barH, barH / 2);
-                    ctx.fill();
-                    if (progressPct > 0) {
-                        const fillW = Math.max(barH, barW * (progressPct / 100));
-                        const pGrad = ctx.createLinearGradient(barX, barY, barX + fillW, barY);
-                        pGrad.addColorStop(0, '#FFE072');
-                        pGrad.addColorStop(1, '#95DE64');
-                        ctx.fillStyle = pGrad;
-                        drawRoundRect(ctx, barX, barY, fillW, barH, barH / 2);
-                        ctx.fill();
-                    }
+                    // 右上角关闭 ×
+                    ctx.fillStyle = '#F5C44B';
+                    ctx.font = `bold ${Math.round(18 * uiScale)}px sans-serif`;
+                    ctx.fillText('×', cardX + cardW - 20, headerY + Math.round(14 * uiScale));
 
-                    // 3. 分类切换 Tabs
-                    const tabY = progY + progH + Math.round(8 * uiScale);
+                    // 顶部分割微光线
+                    const divLineY = cardY + Math.round(40 * uiScale);
+                    ctx.strokeStyle = 'rgba(245, 196, 75, 0.25)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(cardX + 14, divLineY);
+                    ctx.lineTo(cardX + cardW - 14, divLineY);
+                    ctx.stroke();
+
+                    // 2. 分类切换 Tabs (4 个雅致圆角胶囊)
+                    const tabY = cardY + Math.round(48 * uiScale);
                     const tabH = Math.round(26 * uiScale);
                     const gTabs = [
-                        { key: 'all',     label: `全部 (${allSlips.length})` },
-                        { key: 'general', label: '通用 (20)' },
-                        { key: 'temple',  label: '法殿 (15)' },
-                        { key: 'solar',   label: '节气 (24)' }
+                        { key: 'all',     label: `全部 59` },
+                        { key: 'general', label: '通用 20' },
+                        { key: 'temple',  label: '法殿 15' },
+                        { key: 'solar',   label: '节气 24' }
                     ];
-                    const tabW = (cardW - 20) / gTabs.length;
+                    const tabW = (cardW - Math.round(24 * uiScale)) / gTabs.length;
                     gTabs.forEach((t, idx) => {
-                        const tx = cardX + 10 + idx * tabW;
+                        const tx = cardX + Math.round(12 * uiScale) + idx * tabW;
                         const isCur = (state.galleryTab || 'all') === t.key;
-                        ctx.fillStyle = isCur ? '#5B4028' : 'rgba(0,0,0,0.3)';
+                        
+                        if (isCur) {
+                            const tGrad = ctx.createLinearGradient(tx + 2, tabY, tx + 2, tabY + tabH);
+                            tGrad.addColorStop(0, '#8C5824');
+                            tGrad.addColorStop(1, '#5A3412');
+                            ctx.fillStyle = tGrad;
+                        } else {
+                            ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+                        }
                         drawRoundRect(ctx, tx + 2, tabY, tabW - 4, tabH, 5);
                         ctx.fill();
-                        ctx.strokeStyle = isCur ? '#F5C44B' : 'rgba(255,255,255,0.1)';
+                        ctx.strokeStyle = isCur ? '#FFD700' : 'rgba(255, 255, 255, 0.1)';
                         ctx.lineWidth = 1;
                         ctx.stroke();
 
-                        ctx.fillStyle = isCur ? '#FFE072' : '#B8A99B';
-                        ctx.font = `bold ${Math.round(9.5 * uiScale)}px sans-serif`;
+                        ctx.fillStyle = isCur ? '#FFF8E7' : '#A8988B';
+                        ctx.font = `bold ${Math.round(10 * uiScale)}px sans-serif`;
                         ctx.textAlign = 'center';
                         ctx.fillText(t.label, tx + tabW / 2, tabY + Math.round(17 * uiScale));
                     });
 
-                    // 4. 签文网格 (2 列 x 3 行 = 6 支 / 页)
+                    // 3. 3 列立式红木竹签牌位网格 (每页 6 支: 3 列 x 2 行)
                     const filtered = getGalleryFilteredSlips(state.galleryTab || 'all');
                     const pageSize = 6;
                     const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
                     const curPage = Math.min(totalPages - 1, Math.max(0, state.galleryPage || 0));
                     const pageItems = filtered.slice(curPage * pageSize, (curPage + 1) * pageSize);
 
-                    const gridY = tabY + tabH + Math.round(8 * uiScale);
+                    const gridY = tabY + tabH + Math.round(12 * uiScale);
                     const colGap = Math.round(8 * uiScale);
-                    const rowGap = Math.round(6 * uiScale);
-                    const colW = (cardW - 20 - colGap) / 2;
-                    const rowH = Math.round(46 * uiScale);
+                    const rowGap = Math.round(10 * uiScale);
+                    const colW = (cardW - Math.round(24 * uiScale) - colGap * 2) / 3;
+                    const rowH = Math.round(112 * uiScale);
 
                     pageItems.forEach((slip, idx) => {
-                        const col = idx % 2;
-                        const row = Math.floor(idx / 2);
-                        const itemX = cardX + 10 + col * (colW + colGap);
+                        const col = idx % 3;
+                        const row = Math.floor(idx / 3);
+                        const itemX = cardX + Math.round(12 * uiScale) + col * (colW + colGap);
                         const itemY = gridY + row * (rowH + rowGap);
 
                         const isUnlocked = Array.isArray(state.collectedSlips) && state.collectedSlips.includes(slip.name);
 
+                        // 解析牌位两行文字
+                        const cleanName = String(slip.name || '').replace(/《|》/g, '');
+                        const nameParts = cleanName.split('·').map(s => s.trim());
+                        const tagText = nameParts.length >= 2 ? nameParts[0] : '灵签';
+                        const titleText = nameParts.length >= 2 ? nameParts[1] : cleanName;
+
                         if (isUnlocked) {
-                            // 已解锁签文卡片
-                            const cGrad = ctx.createLinearGradient(itemX, itemY, itemX, itemY + rowH);
-                            cGrad.addColorStop(0, 'rgba(68, 26, 20, 0.85)');
-                            cGrad.addColorStop(1, 'rgba(42, 16, 12, 0.85)');
-                            ctx.fillStyle = cGrad;
-                            drawRoundRect(ctx, itemX, itemY, colW, rowH, 6);
+                            // ------------------------------------
+                            // 已点亮牌位 (红木金纹 + 朱砂印 + 楷体金字)
+                            // ------------------------------------
+                            const pGrad = ctx.createLinearGradient(itemX, itemY, itemX, itemY + rowH);
+                            pGrad.addColorStop(0, '#421A14');
+                            pGrad.addColorStop(0.5, '#2F110B');
+                            pGrad.addColorStop(1, '#1F0A06');
+                            ctx.fillStyle = pGrad;
+                            drawRoundRect(ctx, itemX, itemY, colW, rowH, 8);
                             ctx.fill();
-                            ctx.strokeStyle = '#F5C44B';
-                            ctx.lineWidth = 1;
+                            ctx.strokeStyle = '#D4AF37';
+                            ctx.lineWidth = 1.2;
                             ctx.stroke();
 
-                            // 图标与签题
-                            drawVectorScroll(ctx, itemX + Math.round(12 * uiScale), itemY + Math.round(15 * uiScale), Math.round(4.5 * uiScale));
-                            ctx.textAlign = 'left';
-                            ctx.font = `bold ${Math.round(10 * uiScale)}px sans-serif`;
-                            ctx.fillStyle = '#FFE072';
-                            const cleanName = String(slip.name || '').replace(/《|》/g, '');
-                            ctx.fillText(cleanName, itemX + Math.round(20 * uiScale), itemY + Math.round(16 * uiScale));
+                            // 内层极细金边
+                            ctx.strokeStyle = 'rgba(255, 215, 0, 0.3)';
+                            ctx.lineWidth = 0.8;
+                            drawRoundRect(ctx, itemX + 3, itemY + 3, colW - 6, rowH - 6, 6);
+                            ctx.stroke();
 
-                            // 状态与品阶
-                            ctx.fillStyle = '#95DE64';
-                            ctx.font = `${Math.round(8.5 * uiScale)}px sans-serif`;
-                            ctx.fillText('● 已点亮', itemX + Math.round(10 * uiScale), itemY + Math.round(34 * uiScale));
-
-                            ctx.textAlign = 'right';
-                            ctx.fillStyle = '#FFA39E';
-                            ctx.font = `bold ${Math.round(8.5 * uiScale)}px sans-serif`;
-                            ctx.fillText(slip.tier || '【吉】', itemX + colW - Math.round(8 * uiScale), itemY + Math.round(34 * uiScale));
-                        } else {
-                            // 未解锁签文卡片
-                            ctx.fillStyle = 'rgba(25, 18, 14, 0.7)';
-                            drawRoundRect(ctx, itemX, itemY, colW, rowH, 6);
+                            // 顶部红绸木签头
+                            ctx.fillStyle = '#A93226';
+                            drawRoundRect(ctx, itemX + 3, itemY + 3, colW - 6, Math.round(12 * uiScale), 4);
                             ctx.fill();
-                            ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+
+                            // 朱砂微型印章 (【上上大吉】/【上吉】/【安吉】)
+                            const sW = Math.round(58 * uiScale);
+                            const sH = Math.round(16 * uiScale);
+                            const sX = itemX + (colW - sW) / 2;
+                            const sY = itemY + Math.round(18 * uiScale);
+                            ctx.fillStyle = 'rgba(192, 57, 43, 0.95)';
+                            drawRoundRect(ctx, sX, sY, sW, sH, 3);
+                            ctx.fill();
+                            ctx.strokeStyle = '#FFD700';
                             ctx.lineWidth = 0.8;
                             ctx.stroke();
 
-                            // 锁头图标
-                            drawVectorLock(ctx, itemX + Math.round(14 * uiScale), itemY + Math.round(23 * uiScale), Math.round(6 * uiScale), '#8C7B6E');
+                            ctx.textAlign = 'center';
+                            ctx.font = `bold ${Math.round(8 * uiScale)}px sans-serif`;
+                            ctx.fillStyle = '#FFF8E7';
+                            ctx.fillText(slip.tier || '【吉】', sX + sW / 2, sY + Math.round(11.5 * uiScale));
 
-                            ctx.textAlign = 'left';
+                            // 牌位主标题 (两行层次分明)
                             ctx.font = `bold ${Math.round(9.5 * uiScale)}px sans-serif`;
-                            ctx.fillStyle = '#8C7B6E';
-                            ctx.fillText('待缘启封 · 灵签', itemX + Math.round(26 * uiScale), itemY + Math.round(18 * uiScale));
+                            ctx.fillStyle = '#E5C07B';
+                            ctx.fillText(tagText, itemX + colW / 2, itemY + Math.round(51 * uiScale));
 
-                            ctx.font = `${Math.round(8 * uiScale)}px sans-serif`;
-                            ctx.fillStyle = '#6B5E54';
-                            ctx.fillText('每日诚心抽签点亮', itemX + Math.round(26 * uiScale), itemY + Math.round(34 * uiScale));
+                            ctx.font = `bold ${Math.round(12 * uiScale)}px Kaiti, STKaiti, serif, sans-serif`;
+                            ctx.fillStyle = '#FFF2B2';
+                            ctx.fillText(titleText, itemX + colW / 2, itemY + Math.round(71 * uiScale));
+
+                            // 底部操作角标 (点击研读)
+                            const bW = Math.round(56 * uiScale);
+                            const bH = Math.round(15 * uiScale);
+                            const bX = itemX + (colW - bW) / 2;
+                            const bY = itemY + rowH - bH - Math.round(6 * uiScale);
+                            ctx.fillStyle = 'rgba(46, 117, 89, 0.55)';
+                            drawRoundRect(ctx, bX, bY, bW, bH, 3);
+                            ctx.fill();
+                            ctx.strokeStyle = '#95DE64';
+                            ctx.lineWidth = 0.6;
+                            ctx.stroke();
+
+                            ctx.font = `bold ${Math.round(7.5 * uiScale)}px sans-serif`;
+                            ctx.fillStyle = '#95DE64';
+                            ctx.fillText('● 点击研读', bX + bW / 2, bY + Math.round(11 * uiScale));
+
+                        } else {
+                            // ------------------------------------
+                            // 未解锁牌位 (古铜锁头 + 暗雅木质)
+                            // ------------------------------------
+                            ctx.fillStyle = 'rgba(22, 15, 11, 0.85)';
+                            drawRoundRect(ctx, itemX, itemY, colW, rowH, 8);
+                            ctx.fill();
+                            ctx.strokeStyle = 'rgba(200, 180, 160, 0.15)';
+                            ctx.lineWidth = 0.8;
+                            ctx.stroke();
+
+                            // 顶部暗色签头
+                            ctx.fillStyle = 'rgba(40, 28, 20, 0.8)';
+                            drawRoundRect(ctx, itemX + 3, itemY + 3, colW - 6, Math.round(10 * uiScale), 4);
+                            ctx.fill();
+
+                            // 锁头图标
+                            drawVectorLock(ctx, itemX + colW / 2, itemY + Math.round(30 * uiScale), Math.round(7.5 * uiScale), '#7A6B5E');
+
+                            ctx.textAlign = 'center';
+                            ctx.font = `bold ${Math.round(9 * uiScale)}px sans-serif`;
+                            ctx.fillStyle = '#6B5E52';
+                            ctx.fillText(tagText, itemX + colW / 2, itemY + Math.round(56 * uiScale));
+
+                            ctx.font = `bold ${Math.round(11 * uiScale)}px Kaiti, STKaiti, serif, sans-serif`;
+                            ctx.fillStyle = '#52463C';
+                            ctx.fillText('待缘启封', itemX + colW / 2, itemY + Math.round(74 * uiScale));
+
+                            ctx.font = `${Math.round(7.5 * uiScale)}px sans-serif`;
+                            ctx.fillStyle = '#42372E';
+                            ctx.fillText('诚心抽签点亮', itemX + colW / 2, itemY + rowH - Math.round(10 * uiScale));
                         }
                     });
 
-                    // 5. 底部翻页栏与操作
-                    const footY = cardY + cardH - Math.round(38 * uiScale);
-                    const pageBtnW = Math.round(64 * uiScale);
-                    const pageBtnH = Math.round(24 * uiScale);
+                    // 4. 底部翻页栏与操作
+                    const footY = gridY + 2 * (rowH + rowGap) + Math.round(8 * uiScale);
+                    const pageBtnW = Math.round(68 * uiScale);
+                    const pageBtnH = Math.round(26 * uiScale);
 
                     // 上一页
-                    const prevX = cardX + 16;
+                    const prevX = cardX + Math.round(16 * uiScale);
                     const canPrev = curPage > 0;
                     ctx.fillStyle = canPrev ? '#5B4028' : 'rgba(0,0,0,0.2)';
                     drawRoundRect(ctx, prevX, footY, pageBtnW, pageBtnH, 4);
@@ -6483,17 +6535,17 @@ function render() {
                     ctx.lineWidth = 1;
                     ctx.stroke();
                     ctx.fillStyle = canPrev ? '#FFE072' : '#6B5E54';
-                    ctx.font = `bold ${Math.round(9.5 * uiScale)}px sans-serif`;
-                    ctx.textAlign = 'center';
-                    ctx.fillText('‹ 上一页', prevX + pageBtnW / 2, footY + Math.round(16 * uiScale));
-
-                    // 页码指示
                     ctx.font = `bold ${Math.round(10 * uiScale)}px sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText('‹ 上一卷', prevX + pageBtnW / 2, footY + Math.round(17 * uiScale));
+
+                    // 页码指示 (楷体卷轴感)
+                    ctx.font = `bold ${Math.round(11.5 * uiScale)}px Kaiti, serif, sans-serif`;
                     ctx.fillStyle = '#FFE072';
-                    ctx.fillText(`第 ${curPage + 1} / ${totalPages} 页`, W / 2, footY + Math.round(16 * uiScale));
+                    ctx.fillText(`第 ${curPage + 1} / ${totalPages} 卷`, W / 2, footY + Math.round(17 * uiScale));
 
                     // 下一页
-                    const nextX = cardX + cardW - 16 - pageBtnW;
+                    const nextX = cardX + cardW - Math.round(16 * uiScale) - pageBtnW;
                     const canNext = curPage < totalPages - 1;
                     ctx.fillStyle = canNext ? '#5B4028' : 'rgba(0,0,0,0.2)';
                     drawRoundRect(ctx, nextX, footY, pageBtnW, pageBtnH, 4);
@@ -6502,12 +6554,12 @@ function render() {
                     ctx.lineWidth = 1;
                     ctx.stroke();
                     ctx.fillStyle = canNext ? '#FFE072' : '#6B5E54';
-                    ctx.fillText('下一页 ›', nextX + pageBtnW / 2, footY + Math.round(16 * uiScale));
+                    ctx.fillText('下一卷 ›', nextX + pageBtnW / 2, footY + Math.round(17 * uiScale));
 
                     // 底注提示
                     ctx.font = `${Math.round(8.5 * uiScale)}px sans-serif`;
-                    ctx.fillStyle = '#A8988B';
-                    ctx.fillText('✦ 每日诚心摇签，广结十方善缘 · 灵签谱随缘点亮 ✦', W / 2, cardY + cardH - 10);
+                    ctx.fillStyle = 'rgba(212, 175, 55, 0.8)';
+                    ctx.fillText('✦ 每日诚心摇签，广结十方善缘 · 诸签随缘点亮 ✦', W / 2, cardY + cardH - Math.round(10 * uiScale));
                 }
 
             } else if (state.currentModal === 'quick_ambient') {
