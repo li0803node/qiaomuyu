@@ -167,7 +167,7 @@ function playWoodHitSound(critRate = 1) {
 }
 
 /**
- * 物理声学算法合成清脆空灵禅意水滴声 (UI点击专用)
+ * 物理声学算法合成自然水滴声 (Minnaert 气泡共鸣 + 水体低频位移 + 微水花瞬态)
  */
 function playTapSound() {
     if (!state.sfxEnabled) return;
@@ -176,33 +176,48 @@ function playTapSound() {
 
     const now = audioCtx.currentTime;
 
-    // 1. 水滴气泡上滑基频振荡 (950Hz -> 2150Hz)
+    // 1. 水滴气泡共鸣扫频 (760Hz -> 1480Hz 自然温润温和水滴音高)
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
 
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(950, now);
-    osc.frequency.exponentialRampToValueAtTime(2150, now + 0.014);
-    osc.frequency.exponentialRampToValueAtTime(2000, now + 0.075);
+    osc.frequency.setValueAtTime(760, now);
+    osc.frequency.exponentialRampToValueAtTime(1480, now + 0.009);
+    osc.frequency.exponentialRampToValueAtTime(1400, now + 0.095);
 
     gain.gain.setValueAtTime(0.001, now);
-    gain.gain.linearRampToValueAtTime(0.35, now + 0.002);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.075);
+    gain.gain.linearRampToValueAtTime(0.40, now + 0.001);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.095);
 
     osc.connect(gain);
     gain.connect(audioCtx.destination);
     osc.start(now);
-    osc.stop(now + 0.078);
+    osc.stop(now + 0.098);
 
-    // 2. 水滴晶莹高次泛音
+    // 2. 水体低频微位移 (400Hz 暖润水体深度)
+    const bodyOsc = audioCtx.createOscillator();
+    const bodyGain = audioCtx.createGain();
+    bodyOsc.type = 'sine';
+    bodyOsc.frequency.setValueAtTime(400, now);
+
+    bodyGain.gain.setValueAtTime(0.001, now);
+    bodyGain.gain.linearRampToValueAtTime(0.22, now + 0.001);
+    bodyGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.025);
+
+    bodyOsc.connect(bodyGain);
+    bodyGain.connect(audioCtx.destination);
+    bodyOsc.start(now);
+    bodyOsc.stop(now + 0.028);
+
+    // 3. 水滴晶莹二次谐波 (2980Hz)
     const harmOsc = audioCtx.createOscillator();
     const harmGain = audioCtx.createGain();
     harmOsc.type = 'sine';
-    harmOsc.frequency.setValueAtTime(2000, now);
-    harmOsc.frequency.exponentialRampToValueAtTime(4400, now + 0.014);
+    harmOsc.frequency.setValueAtTime(1520, now);
+    harmOsc.frequency.exponentialRampToValueAtTime(2980, now + 0.009);
 
     harmGain.gain.setValueAtTime(0.001, now);
-    harmGain.gain.linearRampToValueAtTime(0.08, now + 0.002);
+    harmGain.gain.linearRampToValueAtTime(0.06, now + 0.001);
     harmGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
 
     harmOsc.connect(harmGain);
