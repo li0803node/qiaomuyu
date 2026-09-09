@@ -6869,12 +6869,12 @@ function render() {
                 // 绿色盾牌 CADPA 8+ 标识
                 const shieldY = cardY + 44;
                 ctx.fillStyle = '#237804';
-                drawRoundRect(ctx, W / 2 - 32, shieldY, 64, 28, 6);
+                drawRoundRect(ctx, W / 2 - 36, shieldY, 72, 28, 6);
                 ctx.fill();
                 ctx.strokeStyle = '#52C41A';
                 ctx.lineWidth = 1.5;
                 ctx.stroke();
-                drawVectorShield(ctx, W / 2 - 18, shieldY + 14, 6.5, '#FFFFFF');
+                drawVectorShield(ctx, W / 2 - 20, shieldY + 14, 6.5, '#FFFFFF');
                 ctx.fillStyle = '#FFFFFF';
                 ctx.font = `bold ${Math.round(12 * uiScale)}px sans-serif`;
                 ctx.textAlign = 'center';
@@ -6882,7 +6882,7 @@ function render() {
 
                 // 说明文本卡片
                 const textCardY = cardY + 80;
-                const textCardH = cardH - 145;
+                const textCardH = cardH - 142;
                 ctx.fillStyle = 'rgba(38, 26, 17, 0.9)';
                 drawRoundRect(ctx, cardX + 14, textCardY, cardW - 28, textCardH, 8);
                 ctx.fill();
@@ -6892,26 +6892,44 @@ function render() {
 
                 ctx.textAlign = 'left';
                 ctx.fillStyle = '#EDE7DF';
-                ctx.font = `${Math.round(9.5 * uiScale)}px sans-serif`;
-                const advisoryLines = [
-                    '1. 《叩叩解压》是一款以中华禅文化为背景的益智修心休闲小游戏，适用于年满 8 周岁及以上的用户。',
+                const fontSize = Math.round(10.5 * uiScale);
+                const lineHeight = Math.round(18 * uiScale);
+                const paraGap = Math.round(8 * uiScale);
+                ctx.font = `${fontSize}px sans-serif`;
+
+                const advisoryParas = [
+                    '1. 《静心敲木鱼》是一款以中华传统静心文化为背景的休闲益智小游戏，适用于年满 8 周岁及以上的用户。',
                     '2. 游戏旨在帮助用户在闲暇时放松身心、舒缓压力，倡导静心专注的积极生活态度。',
-                    '3. 游戏内无暴力、血腥或不良诱导内容。所有木鱼敲击与寻宝玩法均为休闲娱乐设计。',
+                    '3. 游戏内无暴力、血腥或不良诱导内容。所有木鱼敲击与趣味寻宝玩法均为休闲娱乐设计。',
                     '4. 未成年人请在监护人指导下体验，请合理安排作息时间，注意保护视力，享受健康生活。'
                 ];
-                let lineY = textCardY + 20;
-                advisoryLines.forEach(al => {
-                    const words = al;
-                    ctx.fillText(words.slice(0, 22), cardX + 22, lineY);
-                    if (words.length > 22) {
-                        ctx.fillText(words.slice(22, 44), cardX + 22, lineY + 15);
-                        lineY += 15;
+
+                const textPadX = cardX + 22;
+                const textMaxW = cardW - 44;
+                let curY = textCardY + Math.round(18 * uiScale);
+
+                advisoryParas.forEach(para => {
+                    let curLine = '';
+                    for (let i = 0; i < para.length; i++) {
+                        const char = para[i];
+                        const testLine = curLine + char;
+                        if (ctx.measureText(testLine).width > textMaxW && curLine.length > 0) {
+                            ctx.fillText(curLine, textPadX, curY);
+                            curLine = char;
+                            curY += lineHeight;
+                        } else {
+                            curLine = testLine;
+                        }
                     }
-                    lineY += 20;
+                    if (curLine) {
+                        ctx.fillText(curLine, textPadX, curY);
+                        curY += lineHeight;
+                    }
+                    curY += paraGap;
                 });
 
                 // [我知道了] 确认按钮
-                const okBtnY = cardY + cardH - 52;
+                const okBtnY = cardY + cardH - 50;
                 ctx.fillStyle = '#D48806';
                 drawRoundRect(ctx, cardX + 30, okBtnY, cardW - 60, 36, 18);
                 ctx.fill();
@@ -6936,7 +6954,7 @@ function render() {
                 ctx.fillText('×', cardX + cardW - 22, cardY + 26);
 
                 const textCardY = cardY + 44;
-                const textCardH = cardH - 108;
+                const textCardH = cardH - 106;
                 ctx.fillStyle = 'rgba(38, 26, 17, 0.9)';
                 drawRoundRect(ctx, cardX + 14, textCardY, cardW - 28, textCardH, 8);
                 ctx.fill();
@@ -6945,42 +6963,78 @@ function render() {
                 ctx.stroke();
 
                 ctx.textAlign = 'left';
+                const textPadX = cardX + 22;
+                const textMaxW = cardW - 44;
+                let curY = textCardY + Math.round(18 * uiScale);
+
                 // 1. 健康游戏忠告 (国家新闻出版署标准)
                 ctx.fillStyle = '#FFD700';
-                ctx.font = `bold ${Math.round(10.5 * uiScale)}px sans-serif`;
-                ctx.fillText('【健康游戏忠告】', cardX + 22, textCardY + 20);
+                ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
+                ctx.fillText('【健康游戏忠告】', textPadX, curY);
+                curY += Math.round(18 * uiScale);
 
                 ctx.fillStyle = '#EDE7DF';
                 ctx.font = `${Math.round(9.5 * uiScale)}px sans-serif`;
-                ctx.fillText('抵制不良游戏，拒绝盗版游戏。', cardX + 22, textCardY + 38);
-                ctx.fillText('注意自我保护，谨防受骗上当。', cardX + 22, textCardY + 54);
-                ctx.fillText('适度游戏益脑，沉迷游戏伤身。', cardX + 22, textCardY + 70);
-                ctx.fillText('合理安排时间，享受健康生活。', cardX + 22, textCardY + 86);
+                const healthTips = [
+                    '抵制不良游戏，拒绝盗版游戏。注意自我保护，谨防受骗上当。',
+                    '适度游戏益脑，沉迷游戏伤身。合理安排时间，享受健康生活。'
+                ];
+                healthTips.forEach(tip => {
+                    let curLine = '';
+                    for (let i = 0; i < tip.length; i++) {
+                        const char = tip[i];
+                        const testLine = curLine + char;
+                        if (ctx.measureText(testLine).width > textMaxW && curLine.length > 0) {
+                            ctx.fillText(curLine, textPadX, curY);
+                            curLine = char;
+                            curY += Math.round(16 * uiScale);
+                        } else {
+                            curLine = testLine;
+                        }
+                    }
+                    if (curLine) {
+                        ctx.fillText(curLine, textPadX, curY);
+                        curY += Math.round(16 * uiScale);
+                    }
+                });
+
+                curY += Math.round(8 * uiScale);
 
                 // 2. 隐私保护声明
                 ctx.fillStyle = '#FFD700';
-                ctx.font = `bold ${Math.round(10.5 * uiScale)}px sans-serif`;
-                ctx.fillText('【用户隐私保护声明】', cardX + 22, textCardY + 114);
+                ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
+                ctx.fillText('【用户隐私保护声明】', textPadX, curY);
+                curY += Math.round(18 * uiScale);
 
                 ctx.fillStyle = '#EDE7DF';
-                ctx.font = `${Math.round(9 * uiScale)}px sans-serif`;
-                const privacyTexts = [
-                    '· 本小游戏为纯本地安全运行，不收集用户手机号、通讯录或个人敏感信息。',
-                    '· 玩家功德敲击值、法号与设置仅保存在本地设备及微信官方好友云中。',
-                    '· 游戏严格遵守《微信小程序平台服务条款》及国家网络安全法律法规。'
+                ctx.font = `${Math.round(9.5 * uiScale)}px sans-serif`;
+                const privacyParas = [
+                    '· 本游戏为纯本地安全运行，不收集用户手机号、通讯录或个人敏感隐私信息。',
+                    '· 玩家功德数据、法号与设置仅保存在本地设备及微信官方好友云中。',
+                    '· 游戏严格遵守《微信小程序平台服务条款》及国家相关网络安全法律法规。'
                 ];
-                let pY = textCardY + 132;
-                privacyTexts.forEach(pt => {
-                    ctx.fillText(pt.slice(0, 24), cardX + 22, pY);
-                    if (pt.length > 24) {
-                        ctx.fillText(pt.slice(24), cardX + 22, pY + 14);
-                        pY += 14;
+                privacyParas.forEach(para => {
+                    let curLine = '';
+                    for (let i = 0; i < para.length; i++) {
+                        const char = para[i];
+                        const testLine = curLine + char;
+                        if (ctx.measureText(testLine).width > textMaxW && curLine.length > 0) {
+                            ctx.fillText(curLine, textPadX, curY);
+                            curLine = char;
+                            curY += Math.round(16 * uiScale);
+                        } else {
+                            curLine = testLine;
+                        }
                     }
-                    pY += 18;
+                    if (curLine) {
+                        ctx.fillText(curLine, textPadX, curY);
+                        curY += Math.round(16 * uiScale);
+                    }
+                    curY += Math.round(4 * uiScale);
                 });
 
                 // [我知道了] 确认按钮
-                const okBtnY = cardY + cardH - 52;
+                const okBtnY = cardY + cardH - 50;
                 ctx.fillStyle = '#D48806';
                 drawRoundRect(ctx, cardX + 30, okBtnY, cardW - 60, 36, 18);
                 ctx.fill();
