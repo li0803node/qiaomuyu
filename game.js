@@ -6676,85 +6676,59 @@ function render() {
                     ctx.stroke();
                 }
 
-                // 3. 圆盘内排版内容
+                // 3. 圆盘内排版内容 (清爽大气，居中呈现称号、图腾与大额功德值)
                 // 3.1 顶部华彩主标题
                 ctx.textAlign = 'center';
                 ctx.save();
                 ctx.shadowColor = '#FFD700';
-                ctx.shadowBlur = 10;
-                ctx.font = `bold ${Math.round(15 * uiScale)}px sans-serif`;
+                ctx.shadowBlur = 12;
+                ctx.font = `bold ${Math.round(16 * uiScale)}px sans-serif`;
                 ctx.fillStyle = '#FFE072';
-                ctx.fillText(tierTitle, centerCX, centerCY - innerR * 0.58);
+                ctx.fillText(tierTitle, centerCX, centerCY - innerR * 0.52);
                 ctx.restore();
 
                 // 3.2 副标题金色飘带徽章
-                const ribbonW = Math.min(innerR * 1.5, 156);
-                const ribbonH = 19;
+                const ribbonW = Math.min(innerR * 1.5, 160);
+                const ribbonH = 20;
                 const ribbonX = centerCX - ribbonW / 2;
-                const ribbonY = centerCY - innerR * 0.45;
+                const ribbonY = centerCY - innerR * 0.36;
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
-                drawRoundRect(ctx, ribbonX, ribbonY, ribbonW, ribbonH, 9.5);
+                drawRoundRect(ctx, ribbonX, ribbonY, ribbonW, ribbonH, 10);
                 ctx.fill();
-                ctx.strokeStyle = 'rgba(245, 196, 75, 0.4)';
+                ctx.strokeStyle = 'rgba(245, 196, 75, 0.45)';
                 ctx.lineWidth = 1;
                 ctx.stroke();
 
-                ctx.font = `bold ${Math.round(9 * uiScale)}px sans-serif`;
+                ctx.font = `bold ${Math.round(9.5 * uiScale)}px sans-serif`;
                 ctx.fillStyle = '#F5C44B';
-                ctx.fillText(tierBadge, centerCX, ribbonY + 13.5);
+                ctx.fillText(tierBadge, centerCX, ribbonY + 14);
 
-                // 3.3 中间法宝矢量图腾徽标
-                const iconCenterY = centerCY - innerR * 0.14;
+                // 3.3 中间法宝矢量图腾徽标 (放大至黄金比例)
+                const iconCenterY = centerCY - innerR * 0.05;
                 if (mult >= 15) {
-                    drawVectorTrophy(ctx, centerCX, iconCenterY, 18);
+                    drawVectorTrophy(ctx, centerCX, iconCenterY, 24);
                 } else if (mult >= 5) {
-                    drawVectorScroll(ctx, centerCX, iconCenterY, 16);
+                    drawVectorScroll(ctx, centerCX, iconCenterY, 22);
                 } else {
-                    drawVectorBell(ctx, centerCX, iconCenterY, 16, '#FFE072');
+                    drawVectorBell(ctx, centerCX, iconCenterY, 22, '#FFE072');
                 }
 
-                // 3.4 核心大额功德数字 (超大鎏金高光浮凸字体)
+                // 3.4 核心大额功德数字 (超大鎏金高光浮凸字体，动态呼吸金芒)
                 const numPulse = 0.5 + 0.5 * Math.sin(nowTime * 0.006);
                 ctx.save();
                 ctx.shadowColor = '#FFD700';
-                ctx.shadowBlur = 16 + 8 * numPulse;
-                ctx.font = `bold ${Math.round(30 * uiScale)}px sans-serif`;
+                ctx.shadowBlur = 18 + 10 * numPulse;
+                ctx.font = `bold ${Math.round(36 * uiScale)}px sans-serif`;
                 ctx.fillStyle = '#FFF8E7';
-                ctx.fillText(`+${bw.winAmount.toLocaleString()}`, centerCX, centerCY + innerR * 0.24);
+                ctx.fillText(`+${bw.winAmount.toLocaleString()}`, centerCX, centerCY + innerR * 0.42);
                 ctx.restore();
-
-                // 倍率小标签
-                ctx.font = `bold ${Math.round(9 * uiScale)}px sans-serif`;
-                ctx.fillStyle = '#FFD591';
-                ctx.fillText(`连线倍率 ×${bw.multiplier}`, centerCX, centerCY + innerR * 0.40);
-
-                // 3.5 底部精致金光胶囊按钮
-                const btnW = Math.min(innerR * 1.3, 136);
-                const btnH = Math.round(28 * uiScale);
-                const btnX = centerCX - btnW / 2;
-                const btnY = centerCY + innerR * 0.54;
-
-                const btnGrad = ctx.createLinearGradient(btnX, btnY, btnX, btnY + btnH);
-                btnGrad.addColorStop(0, '#FFE072');
-                btnGrad.addColorStop(0.5, '#F5C44B');
-                btnGrad.addColorStop(1, '#D48806');
-                ctx.fillStyle = btnGrad;
-                drawRoundRect(ctx, btnX, btnY, btnW, btnH, btnH / 2);
-                ctx.fill();
-                ctx.strokeStyle = '#FFF8E7';
-                ctx.lineWidth = 1.2;
-                ctx.stroke();
-
-                ctx.fillStyle = '#241406';
-                ctx.font = `bold ${Math.round(11.5 * uiScale)}px sans-serif`;
-                ctx.fillText(btnText, centerCX, btnY + btnH * 0.67);
 
                 // 4. 圆盘下方呼吸提示文案：“—— 轻触屏幕任意处关闭 ——”
                 const promptY = centerCY + radius + Math.round(26 * uiScale);
                 const promptAlpha = 0.65 + 0.35 * Math.sin(nowTime * 0.004);
                 ctx.save();
                 ctx.globalAlpha = promptAlpha;
-                ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
+                ctx.font = `bold ${Math.round(11.5 * uiScale)}px sans-serif`;
                 ctx.fillStyle = '#FFE072';
                 ctx.fillText('—— 轻触屏幕任意处关闭 ——', centerCX, promptY);
                 ctx.restore();
