@@ -3468,13 +3468,13 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                     const scrollY = cardY + 44;
                     const scrollW = cardW - 24;
                     const scrollH = cardH - 56;
-                    const btnH = Math.round(32 * uiScale);
-                    const btnY = scrollY + scrollH - btnH - Math.round(22 * uiScale);
+                    const btnH = Math.round(34 * uiScale);
+                    const btnY = scrollY + scrollH - btnH - Math.round(30 * uiScale);
                     const btnW = (scrollW - Math.round(24 * uiScale)) / 2;
                     const btn1X = scrollX + Math.round(8 * uiScale);
                     const btn2X = btn1X + btnW + Math.round(8 * uiScale);
 
-                    // 1. 赠好友灵签按钮 (热区扩展 ±6px)
+                    // 1. 分享灵签按钮 (热区扩展 ±6px)
                     if (tx >= btn1X - 6 && tx <= btn1X + btnW + 4 && ty >= btnY - 8 && ty <= btnY + btnH + 12) {
                         try { soundManager.playWoodHit(); } catch(e) {}
                         if (typeof wx !== 'undefined' && wx.vibrateShort) {
@@ -5572,72 +5572,121 @@ function render() {
                     ctx.lineWidth = 1.5;
                     ctx.stroke();
 
-                    // 签题 (带卷轴图标)
-                    drawVectorScroll(ctx, scrollX + 16, scrollY + 20, Math.round(5.5 * uiScale));
+                    // 内层金色边框 (增加古风卷轴精致感)
+                    ctx.strokeStyle = 'rgba(245, 196, 75, 0.35)';
+                    ctx.lineWidth = 1;
+                    drawRoundRect(ctx, scrollX + 4, scrollY + 4, scrollW - 8, scrollH - 8, 8);
+                    ctx.stroke();
+
+                    // 1. 签题 (带卷轴图标)
+                    const headerY = scrollY + Math.round(14 * uiScale);
+                    drawVectorScroll(ctx, scrollX + 16, headerY + 8, Math.round(5.5 * uiScale));
                     ctx.textAlign = 'left';
-                    ctx.font = `bold ${Math.round(13 * uiScale)}px sans-serif`;
+                    ctx.font = `bold ${Math.round(13.5 * uiScale)}px sans-serif`;
                     ctx.fillStyle = '#FFE072';
                     const slipName = (slip && slip.name) ? String(slip.name) : '《祈愿灵签》';
-                    ctx.fillText(slipName, scrollX + 26, scrollY + 24);
+                    ctx.fillText(slipName, scrollX + 28, headerY + 12);
 
-                    // 朱砂印章 (带轻微弹跳呼吸动效)
-                    const stampW = Math.round(72 * uiScale);
+                    // 朱砂印章 (带精致金边)
+                    const stampW = Math.round(74 * uiScale);
                     const stampH = Math.round(24 * uiScale);
-                    const stampX = scrollX + scrollW - stampW - 10;
-                    const stampY = scrollY + 10;
+                    const stampX = scrollX + scrollW - stampW - 12;
+                    const stampY = headerY;
                     ctx.fillStyle = 'rgba(192, 57, 43, 0.95)';
                     drawRoundRect(ctx, stampX, stampY, stampW, stampH, 4);
                     ctx.fill();
                     ctx.strokeStyle = '#FFD700';
-                    ctx.lineWidth = 1;
+                    ctx.lineWidth = 1.2;
                     ctx.stroke();
                     ctx.textAlign = 'center';
-                    ctx.font = `bold ${Math.round(10 * uiScale)}px sans-serif`;
+                    ctx.font = `bold ${Math.round(10.5 * uiScale)}px sans-serif`;
                     ctx.fillStyle = '#FFF8E7';
-                    ctx.fillText((slip && slip.tier) ? String(slip.tier) : '【上上大吉】', stampX + stampW / 2, stampY + 16);
+                    ctx.fillText((slip && slip.tier) ? String(slip.tier) : '【上上大吉】', stampX + stampW / 2, stampY + Math.round(16 * uiScale));
 
-                    // 四句签诗
+                    // 2. 四句签诗 (楷体书法美感，饱满间距，黄金居中，彻底消除上半部拥挤与下半部空旷)
                     ctx.textAlign = 'center';
-                    ctx.font = `bold ${Math.round(13 * uiScale)}px Kaiti, serif, sans-serif`;
-                    ctx.fillStyle = '#FFF0A8';
-                    const poemStartY = scrollY + 56;
+                    ctx.font = `bold ${Math.round(14.5 * uiScale)}px Kaiti, STKaiti, KaiTi, serif, sans-serif`;
+                    ctx.fillStyle = '#FFF2B2';
+                    const poemStartY = scrollY + Math.round(62 * uiScale);
+                    const poemGap = Math.round(23 * uiScale);
                     const poemList = (slip && Array.isArray(slip.poem) && slip.poem.length) 
                         ? slip.poem 
                         : ['心诚则灵福自来', '一念清净化尘埃', '诸般顺遂皆如意', '福慧圆满照灵台'];
                     poemList.forEach((line, pIdx) => {
-                        ctx.fillText(String(line), W / 2, poemStartY + pIdx * 20);
+                        ctx.fillText(String(line), W / 2, poemStartY + pIdx * poemGap);
                     });
 
-                    // 金色分割线
-                    const divY = scrollY + 142;
-                    ctx.strokeStyle = 'rgba(245, 196, 75, 0.3)';
+                    // 3. 雅致双层金色分割线 + 中央璀璨星芒
+                    const divY = poemStartY + (poemList.length - 1) * poemGap + Math.round(26 * uiScale);
+                    ctx.strokeStyle = 'rgba(245, 196, 75, 0.35)';
+                    ctx.lineWidth = 1;
                     ctx.beginPath();
-                    ctx.moveTo(scrollX + 16, divY);
-                    ctx.lineTo(scrollX + scrollW - 16, divY);
+                    ctx.moveTo(scrollX + 18, divY);
+                    ctx.lineTo(W / 2 - Math.round(16 * uiScale), divY);
+                    ctx.moveTo(W / 2 + Math.round(16 * uiScale), divY);
+                    ctx.lineTo(scrollX + scrollW - 18, divY);
+                    ctx.stroke();
+                    drawVectorSparkle(ctx, W / 2, divY, 4.5 * uiScale, '#FFE072');
+
+                    // 4. 今日所宜与所忌 (带雅致矢量圆点角标)
+                    const yiY = divY + Math.round(19 * uiScale);
+                    const jiY = divY + Math.round(39 * uiScale);
+                    
+                    ctx.textAlign = 'left';
+                    drawVectorDot(ctx, scrollX + 18, yiY, 3.2, '#95DE64');
+                    ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
+                    ctx.fillStyle = '#95DE64';
+                    ctx.fillText(`【宜】${(slip && slip.yi) ? slip.yi : '静心笃行 · 广结善缘'}`, scrollX + 28, yiY + Math.round(3.5 * uiScale));
+
+                    drawVectorDot(ctx, scrollX + 18, jiY, 3.2, '#FF7875');
+                    ctx.fillStyle = '#FF7875';
+                    ctx.fillText(`【忌】${(slip && slip.ji) ? slip.ji : '急躁内耗 · 执念过重'}`, scrollX + 28, jiY + Math.round(3.5 * uiScale));
+
+                    // 5. 【禅师解惑】专属透金古风卡片 (填补中下部视觉空隙，层次丰富)
+                    const descCardX = scrollX + Math.round(10 * uiScale);
+                    const descCardY = jiY + Math.round(14 * uiScale);
+                    const descCardW = scrollW - Math.round(20 * uiScale);
+                    const btnH = Math.round(34 * uiScale);
+                    const btnY = scrollY + scrollH - btnH - Math.round(30 * uiScale);
+                    const descCardH = Math.max(Math.round(44 * uiScale), btnY - descCardY - Math.round(10 * uiScale));
+
+                    ctx.fillStyle = 'rgba(20, 8, 5, 0.45)';
+                    drawRoundRect(ctx, descCardX, descCardY, descCardW, descCardH, 6);
+                    ctx.fill();
+                    ctx.strokeStyle = 'rgba(245, 196, 75, 0.3)';
+                    ctx.lineWidth = 1;
                     ctx.stroke();
 
-                    // 今日所宜与所忌 (带雅致矢量圆点角标)
-                    ctx.textAlign = 'left';
-                    drawVectorDot(ctx, scrollX + 18, divY + 15, 3.2, '#95DE64');
-                    ctx.font = `bold ${Math.round(10 * uiScale)}px sans-serif`;
-                    ctx.fillStyle = '#95DE64';
-                    ctx.fillText(`【宜】${(slip && slip.yi) ? slip.yi : '静心笃行'}`, scrollX + 26, divY + 18);
-
-                    drawVectorDot(ctx, scrollX + 18, divY + 33, 3.2, '#FF7875');
-                    ctx.fillStyle = '#FF7875';
-                    ctx.fillText(`【忌】${(slip && slip.ji) ? slip.ji : '急躁内耗'}`, scrollX + 26, divY + 36);
-
-                    // 禅语解惑
-                    drawVectorSparkle(ctx, scrollX + 18, divY + 52, 3.5, '#FFE072');
+                    // 卡片标题与禅语
+                    drawVectorSparkle(ctx, descCardX + Math.round(12 * uiScale), descCardY + Math.round(14 * uiScale), 3.5 * uiScale, '#FFE072');
                     ctx.fillStyle = '#FFE072';
+                    ctx.font = `bold ${Math.round(10 * uiScale)}px sans-serif`;
+                    ctx.textAlign = 'left';
+                    ctx.fillText('【禅师解惑】', descCardX + Math.round(20 * uiScale), descCardY + Math.round(17 * uiScale));
+
+                    const descText = (slip && slip.desc) ? slip.desc : '心若安定，万事亨通。一念清净，福泽自生。';
+                    ctx.fillStyle = '#EDE7DF';
                     ctx.font = `${Math.round(9.5 * uiScale)}px sans-serif`;
-                    ctx.fillText(`解曰：${(slip && slip.desc) ? slip.desc : '心若安定，万事亨通。'}`, scrollX + 26, divY + 56);
+                    // 动态换行两行文本
+                    const maxTextW = descCardW - Math.round(24 * uiScale);
+                    let line1 = '', line2 = '';
+                    for (let c of descText) {
+                        if (ctx.measureText(line1 + c).width <= maxTextW && !line2) {
+                            line1 += c;
+                        } else {
+                            line2 += c;
+                        }
+                    }
+                    if (line2) {
+                        ctx.fillText(line1, descCardX + Math.round(12 * uiScale), descCardY + Math.round(31 * uiScale));
+                        ctx.fillText(line2, descCardX + Math.round(12 * uiScale), descCardY + Math.round(44 * uiScale));
+                    } else {
+                        ctx.fillText(line1, descCardX + Math.round(12 * uiScale), descCardY + Math.round(33 * uiScale));
+                    }
 
                     // ==========================================
-                    // 底部功能按钮：【分享灵签】 与 【保存壁纸海报】
+                    // 6. 底部功能按钮：【分享灵签】 与 【保存壁纸海报】
                     // ==========================================
-                    const btnH = Math.round(32 * uiScale);
-                    const btnY = scrollY + scrollH - btnH - Math.round(22 * uiScale);
                     const btnW = (scrollW - Math.round(24 * uiScale)) / 2;
                     const btn1X = scrollX + Math.round(8 * uiScale);
                     const btn2X = btn1X + btnW + Math.round(8 * uiScale);
@@ -5653,11 +5702,11 @@ function render() {
                     ctx.lineWidth = 1;
                     ctx.stroke();
 
-                    drawVectorEnvelope(ctx, btn1X + Math.round(16 * uiScale), btnY + btnH / 2, Math.round(7.5 * uiScale));
+                    drawVectorEnvelope(ctx, btn1X + Math.round(18 * uiScale), btnY + btnH / 2, Math.round(7.5 * uiScale));
                     ctx.fillStyle = '#FFF8E7';
-                    ctx.font = `bold ${Math.round(10.5 * uiScale)}px sans-serif`;
+                    ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
                     ctx.textAlign = 'center';
-                    ctx.fillText('分享灵签', btn1X + btnW / 2 + Math.round(7 * uiScale), btnY + Math.round(20 * uiScale));
+                    ctx.fillText('分享灵签', btn1X + btnW / 2 + Math.round(7 * uiScale), btnY + Math.round(22 * uiScale));
 
                     // 按钮2：保存壁纸海报 (琥珀金渐变 + 纯矢量画框图标)
                     const b2Grad = ctx.createLinearGradient(btn2X, btnY, btn2X, btnY + btnH);
@@ -5670,17 +5719,17 @@ function render() {
                     ctx.lineWidth = 1;
                     ctx.stroke();
 
-                    drawVectorPhotoFrame(ctx, btn2X + Math.round(16 * uiScale), btnY + btnH / 2, Math.round(7.5 * uiScale));
+                    drawVectorPhotoFrame(ctx, btn2X + Math.round(18 * uiScale), btnY + btnH / 2, Math.round(7.5 * uiScale));
                     ctx.fillStyle = '#FFF8E7';
-                    ctx.font = `bold ${Math.round(10.5 * uiScale)}px sans-serif`;
+                    ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
                     ctx.textAlign = 'center';
-                    ctx.fillText('保存壁纸海报', btn2X + btnW / 2 + Math.round(7 * uiScale), btnY + Math.round(20 * uiScale));
+                    ctx.fillText('保存壁纸海报', btn2X + btnW / 2 + Math.round(7 * uiScale), btnY + Math.round(22 * uiScale));
 
-                    // 底部归档日历提示
+                    // 7. 底部归档日历提示 (优雅下移与底部保留舒适边距)
                     ctx.textAlign = 'center';
                     ctx.font = `${Math.round(8.5 * uiScale)}px sans-serif`;
-                    ctx.fillStyle = '#D4AF37';
-                    ctx.fillText('今日签到已圆满，明日 0 点刷新 · 记录已存入【修行日历】', W / 2, scrollY + scrollH - 6);
+                    ctx.fillStyle = 'rgba(212, 175, 55, 0.85)';
+                    ctx.fillText('✦ 今日签到已圆满，明日 0 点刷新 · 记录已存入【修行日历】 ✦', W / 2, scrollY + scrollH - Math.round(10 * uiScale));
                 }
 
             } else if (state.currentModal === 'calendar') {
