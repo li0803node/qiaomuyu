@@ -5040,11 +5040,12 @@ function render() {
                 const nowTime = Date.now();
 
                 // 动画状态机流水线
+                const potBaseCenterY = cardY + Math.round(cardH * 0.48);
                 if (state.fortuneState === 'shaking') {
                     const elapsed = nowTime - state.fortuneStartTime;
-                    // 产生升腾金光粒子
+                    // 产生升腾金光粒子 (从签筒口升起)
                     if (Math.random() < 0.6) {
-                        spawnFortuneParticles(W / 2, cardY + Math.round(135 * uiScale), 1);
+                        spawnFortuneParticles(W / 2, potBaseCenterY - Math.round(45 * uiScale), 1);
                     }
                     if (elapsed >= 1400) {
                         state.fortuneState = 'rising';
@@ -5058,7 +5059,7 @@ function render() {
                     const riseElapsed = nowTime - state.fortuneRiseStartTime;
                     // 灵签升起时周围爆出璀璨星芒
                     if (Math.random() < 0.8) {
-                        spawnFortuneParticles(W / 2, cardY + Math.round(100 * uiScale), 2);
+                        spawnFortuneParticles(W / 2, potBaseCenterY - Math.round(75 * uiScale), 2);
                     }
                     if (riseElapsed >= 750) {
                         state.fortuneState = 'revealed';
@@ -5106,10 +5107,10 @@ function render() {
                     ctx.textAlign = 'center';
                     ctx.fillText(tipText, W / 2, cardY + 54);
 
-                    const potW = Math.round(96 * uiScale);
-                    const potH = Math.round(136 * uiScale);
+                    const potW = Math.round(102 * uiScale);
+                    const potH = Math.round(144 * uiScale);
                     const potBaseX = W / 2;
-                    const potBaseY = cardY + Math.round(155 * uiScale); // 签筒中心定位
+                    const potBaseY = potBaseCenterY; // 签筒垂直黄金比例绝对居中定位
 
                     // 计算摇签倾角与上下浮动
                     let rotAngle = 0;
