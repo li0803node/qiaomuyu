@@ -2527,6 +2527,127 @@ function drawVectorInfo(ctx, cx, cy, s, color = '#FFE072') {
     ctx.restore();
 }
 
+function drawRankMedal(ctx, cx, cy, idx, s) {
+    ctx.save();
+    if (idx === 0) {
+        // 1. 冠军：鎏金宝印 + 纯金王冠
+        const r = 10.5 * s;
+        const grad = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
+        grad.addColorStop(0, '#FFF566');
+        grad.addColorStop(0.3, '#FFD700');
+        grad.addColorStop(0.7, '#D48806');
+        grad.addColorStop(1, '#8C5618');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#FFE072';
+        ctx.lineWidth = 1.2 * s;
+        ctx.stroke();
+
+        // 内部金冠造型
+        const cw = 6 * s;
+        const ch = 4.2 * s;
+        ctx.fillStyle = '#42240C';
+        ctx.beginPath();
+        ctx.moveTo(cx - cw, cy + ch * 0.7);
+        ctx.lineTo(cx - cw * 0.9, cy - ch * 0.3);
+        ctx.lineTo(cx - cw * 0.35, cy + ch * 0.2);
+        ctx.lineTo(cx, cy - ch);
+        ctx.lineTo(cx + cw * 0.35, cy + ch * 0.2);
+        ctx.lineTo(cx + cw * 0.9, cy - ch * 0.3);
+        ctx.lineTo(cx + cw, cy + ch * 0.7);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = '#FFFDF0';
+        ctx.beginPath();
+        ctx.arc(cx, cy - ch - 0.5 * s, 1.0 * s, 0, Math.PI * 2);
+        ctx.arc(cx - cw * 0.9, cy - ch * 0.3 - 0.5 * s, 0.8 * s, 0, Math.PI * 2);
+        ctx.arc(cx + cw * 0.9, cy - ch * 0.3 - 0.5 * s, 0.8 * s, 0, Math.PI * 2);
+        ctx.fill();
+
+    } else if (idx === 1) {
+        // 2. 亚军：皓银宝印 + 银杯造型
+        const r = 10 * s;
+        const grad = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
+        grad.addColorStop(0, '#FFFFFF');
+        grad.addColorStop(0.4, '#E6F7FF');
+        grad.addColorStop(0.8, '#ADC6E5');
+        grad.addColorStop(1, '#788CA6');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#E6F7FF';
+        ctx.lineWidth = 1.2 * s;
+        ctx.stroke();
+
+        const tw = 5.2 * s;
+        const th = 4.2 * s;
+        ctx.fillStyle = '#1D2A3A';
+        ctx.beginPath();
+        ctx.moveTo(cx - tw, cy - th * 0.8);
+        ctx.lineTo(cx + tw, cy - th * 0.8);
+        ctx.lineTo(cx + tw * 0.6, cy + th * 0.1);
+        ctx.lineTo(cx - tw * 0.6, cy + th * 0.1);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillRect(cx - tw * 0.2, cy + th * 0.1, tw * 0.4, th * 0.4);
+        ctx.fillRect(cx - tw * 0.6, cy + th * 0.5, tw * 1.2, th * 0.25);
+
+    } else if (idx === 2) {
+        // 3. 季军：赤铜宝印 + 铜杯造型
+        const r = 10 * s;
+        const grad = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
+        grad.addColorStop(0, '#FFD591');
+        grad.addColorStop(0.4, '#FA8C16');
+        grad.addColorStop(0.8, '#D46B08');
+        grad.addColorStop(1, '#873800');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#FFA39E';
+        ctx.lineWidth = 1.2 * s;
+        ctx.stroke();
+
+        const tw = 5.2 * s;
+        const th = 4.2 * s;
+        ctx.fillStyle = '#3E1805';
+        ctx.beginPath();
+        ctx.moveTo(cx - tw, cy - th * 0.8);
+        ctx.lineTo(cx + tw, cy - th * 0.8);
+        ctx.lineTo(cx + tw * 0.6, cy + th * 0.1);
+        ctx.lineTo(cx - tw * 0.6, cy + th * 0.1);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillRect(cx - tw * 0.2, cy + th * 0.1, tw * 0.4, th * 0.4);
+        ctx.fillRect(cx - tw * 0.6, cy + th * 0.5, tw * 1.2, th * 0.25);
+
+    } else {
+        // 4 ~ N 名：典雅禅金圆章
+        const r = 9 * s;
+        ctx.fillStyle = 'rgba(42, 30, 20, 0.92)';
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = idx < 10 ? 'rgba(245, 196, 75, 0.45)' : 'rgba(255, 255, 255, 0.15)';
+        ctx.lineWidth = 1 * s;
+        ctx.stroke();
+
+        ctx.font = `bold ${Math.round((idx < 9 ? 10 : 8.5) * s)}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.fillStyle = idx < 10 ? '#FFE072' : '#8C7B6E';
+        ctx.fillText(String(idx + 1), cx, cy + 3.5 * s);
+    }
+    ctx.restore();
+}
+
 // =====================================================================
 // 离屏位图静态烘焙系统 (Offscreen Bitmap Cache: 消除 90% 每帧重复渐变计算)
 // =====================================================================
@@ -5007,18 +5128,7 @@ function render() {
                             ctx.stroke();
                         }
 
-                        if (idx === 0) {
-                            drawVectorCrown(ctx, cardX + 28, ry + 16, Math.round(6.5 * uiScale), '#FFD700');
-                        } else if (idx === 1) {
-                            drawVectorTrophy(ctx, cardX + 28, ry + 16, Math.round(6 * uiScale), '#E6F7FF');
-                        } else if (idx === 2) {
-                            drawVectorTrophy(ctx, cardX + 28, ry + 16, Math.round(6 * uiScale), '#FFA39E');
-                        } else {
-                            ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
-                            ctx.textAlign = 'center';
-                            ctx.fillStyle = '#A8988B';
-                            ctx.fillText(`${idx + 1}`, cardX + 28, ry + 20);
-                        }
+                        drawRankMedal(ctx, cardX + 28, ry + 16, idx, uiScale);
 
                         ctx.textAlign = 'left';
                         ctx.fillStyle = item.isMe ? '#FFE072' : '#EDE7DF';

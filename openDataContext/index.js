@@ -200,30 +200,10 @@ function drawRankItem(ctx, item, idx, startY, itemH, avatarR, avatarImg, s) {
         ctx.stroke();
     }
 
-    // 排名徽章
+    // 排名专属高质感勋章
     const badgeX = 24 * s;
     const badgeY = y + itemH / 2;
-    if (idx === 0) {
-        ctx.font = `bold ${Math.round(15 * s)}px sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#FFD700';
-        ctx.fillText('壹', badgeX, badgeY + 5 * s);
-    } else if (idx === 1) {
-        ctx.font = `bold ${Math.round(15 * s)}px sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#E6F7FF';
-        ctx.fillText('贰', badgeX, badgeY + 5 * s);
-    } else if (idx === 2) {
-        ctx.font = `bold ${Math.round(15 * s)}px sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#FFA39E';
-        ctx.fillText('叁', badgeX, badgeY + 5 * s);
-    } else {
-        ctx.fillStyle = idx < 10 ? '#FFE072' : '#8C7B6E';
-        ctx.font = `bold ${Math.round(13 * s)}px sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.fillText(String(idx + 1), badgeX, badgeY + 4.5 * s);
-    }
+    drawRankMedal(ctx, badgeX, badgeY, idx, s);
 
     // 圆形头像
     const avX = 52 * s;
@@ -271,6 +251,133 @@ function drawRankItem(ctx, item, idx, startY, itemH, avatarR, avatarImg, s) {
 }
 
 // ----------------------------------------------------------------
+// 绘制高阶排名徽章勋章 (冠/亚/季军金银铜宝印 + 序号圆牌)
+// ----------------------------------------------------------------
+function drawRankMedal(ctx, cx, cy, idx, s) {
+    ctx.save();
+    if (idx === 0) {
+        // 1. 冠军：鎏金宝印 + 纯金王冠
+        const r = 12 * s;
+        const grad = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
+        grad.addColorStop(0, '#FFF566');
+        grad.addColorStop(0.3, '#FFD700');
+        grad.addColorStop(0.7, '#D48806');
+        grad.addColorStop(1, '#8C5618');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#FFE072';
+        ctx.lineWidth = 1.5 * s;
+        ctx.stroke();
+
+        // 内部金冠造型
+        const cw = 7 * s;
+        const ch = 5 * s;
+        ctx.fillStyle = '#42240C';
+        ctx.beginPath();
+        ctx.moveTo(cx - cw, cy + ch * 0.7);
+        ctx.lineTo(cx - cw * 0.9, cy - ch * 0.3);
+        ctx.lineTo(cx - cw * 0.35, cy + ch * 0.2);
+        ctx.lineTo(cx, cy - ch);
+        ctx.lineTo(cx + cw * 0.35, cy + ch * 0.2);
+        ctx.lineTo(cx + cw * 0.9, cy - ch * 0.3);
+        ctx.lineTo(cx + cw, cy + ch * 0.7);
+        ctx.closePath();
+        ctx.fill();
+
+        // 冠顶白玉明珠
+        ctx.fillStyle = '#FFFDF0';
+        ctx.beginPath();
+        ctx.arc(cx, cy - ch - 0.5 * s, 1.2 * s, 0, Math.PI * 2);
+        ctx.arc(cx - cw * 0.9, cy - ch * 0.3 - 0.5 * s, 0.9 * s, 0, Math.PI * 2);
+        ctx.arc(cx + cw * 0.9, cy - ch * 0.3 - 0.5 * s, 0.9 * s, 0, Math.PI * 2);
+        ctx.fill();
+
+    } else if (idx === 1) {
+        // 2. 亚军：皓银宝印 + 银杯造型
+        const r = 11.5 * s;
+        const grad = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
+        grad.addColorStop(0, '#FFFFFF');
+        grad.addColorStop(0.4, '#E6F7FF');
+        grad.addColorStop(0.8, '#ADC6E5');
+        grad.addColorStop(1, '#788CA6');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#E6F7FF';
+        ctx.lineWidth = 1.4 * s;
+        ctx.stroke();
+
+        // 内部银杯造型
+        const tw = 6 * s;
+        const th = 5 * s;
+        ctx.fillStyle = '#1D2A3A';
+        ctx.beginPath();
+        ctx.moveTo(cx - tw, cy - th * 0.8);
+        ctx.lineTo(cx + tw, cy - th * 0.8);
+        ctx.lineTo(cx + tw * 0.6, cy + th * 0.1);
+        ctx.lineTo(cx - tw * 0.6, cy + th * 0.1);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillRect(cx - tw * 0.2, cy + th * 0.1, tw * 0.4, th * 0.4);
+        ctx.fillRect(cx - tw * 0.6, cy + th * 0.5, tw * 1.2, th * 0.25);
+
+    } else if (idx === 2) {
+        // 3. 季军：赤铜宝印 + 铜杯造型
+        const r = 11.5 * s;
+        const grad = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
+        grad.addColorStop(0, '#FFD591');
+        grad.addColorStop(0.4, '#FA8C16');
+        grad.addColorStop(0.8, '#D46B08');
+        grad.addColorStop(1, '#873800');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#FFA39E';
+        ctx.lineWidth = 1.4 * s;
+        ctx.stroke();
+
+        // 内部铜杯造型
+        const tw = 6 * s;
+        const th = 5 * s;
+        ctx.fillStyle = '#3E1805';
+        ctx.beginPath();
+        ctx.moveTo(cx - tw, cy - th * 0.8);
+        ctx.lineTo(cx + tw, cy - th * 0.8);
+        ctx.lineTo(cx + tw * 0.6, cy + th * 0.1);
+        ctx.lineTo(cx - tw * 0.6, cy + th * 0.1);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillRect(cx - tw * 0.2, cy + th * 0.1, tw * 0.4, th * 0.4);
+        ctx.fillRect(cx - tw * 0.6, cy + th * 0.5, tw * 1.2, th * 0.25);
+
+    } else {
+        // 4 ~ N 名：典雅禅金圆章
+        const r = 10 * s;
+        ctx.fillStyle = 'rgba(42, 30, 20, 0.92)';
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = idx < 10 ? 'rgba(245, 196, 75, 0.45)' : 'rgba(255, 255, 255, 0.15)';
+        ctx.lineWidth = 1 * s;
+        ctx.stroke();
+
+        ctx.font = `bold ${Math.round((idx < 9 ? 11 : 9.5) * s)}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.fillStyle = idx < 10 ? '#FFE072' : '#8C7B6E';
+        ctx.fillText(String(idx + 1), cx, cy + 3.8 * s);
+    }
+    ctx.restore();
+}
+
+// ----------------------------------------------------------------
 // 空状态提示 (展示自己的排名卡片 + 好友邀请引导)
 // ----------------------------------------------------------------
 function drawEmptyState(scale, selfInfo) {
@@ -294,24 +401,26 @@ function drawEmptyState(scale, selfInfo) {
 
     // 下方绘制邀请好友引导区
     const midX = CW / 2;
-    const midY = START_Y + ITEM_H + Math.round(85 * s);
+    const midY = START_Y + ITEM_H + Math.round(92 * s);
 
     // 装饰星芒
-    ctx.font = `bold ${Math.round(22 * s)}px sans-serif`;
+    ctx.save();
+    ctx.font = `bold ${Math.round(20 * s)}px sans-serif`;
     ctx.fillStyle = '#FFE072';
     ctx.textAlign = 'center';
-    ctx.fillText('✦', midX, midY - 20 * s);
+    ctx.fillText('✦', midX, midY - 24 * s);
 
     // 主提示语
     ctx.fillStyle = '#FFE072';
-    ctx.font = `bold ${Math.round(12.5 * s)}px sans-serif`;
-    ctx.fillText('暂无其他好友同修记录', midX, midY + 8 * s);
+    ctx.font = `bold ${Math.round(13 * s)}px sans-serif`;
+    ctx.fillText('暂无其他好友同修记录', midX, midY + 4 * s);
 
-    // 副提示语
+    // 副提示语 (舒适行距，彻底杜绝重叠)
     ctx.fillStyle = '#A8988B';
-    ctx.font = `${Math.round(9.5 * s)}px sans-serif`;
-    ctx.fillText('点击下方按钮分享到微信群或好友', midX, midY + 26 * s);
-    ctx.fillText('一同静心持咒 · 共登功德圣榜', midX, midY + 40 * s);
+    ctx.font = `${Math.round(10 * s)}px sans-serif`;
+    ctx.fillText('点击下方按钮分享到微信群或好友', midX, midY + 28 * s);
+    ctx.fillText('一同静心持咒 · 共登功德圣榜', midX, midY + 46 * s);
+    ctx.restore();
 }
 
 // ----------------------------------------------------------------
