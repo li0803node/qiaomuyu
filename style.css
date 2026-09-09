@@ -2023,9 +2023,10 @@ input:checked + .slider:before {
 }
 
 .gh-lantern {
-    width: 36px;
-    height: 32px;
-    border-radius: 8px;
+    min-width: 42px;
+    height: 30px;
+    padding: 0 6px;
+    border-radius: 6px;
     background: radial-gradient(circle, #5A3D24, #26190E);
     border: 1px solid var(--gold-primary);
     display: flex;

@@ -526,6 +526,7 @@ const state = {
     rulesTab: 'icons',
     rulesPage: 0,            // 25 条连线规则分页索引 (0: 1-10, 1: 11-20, 2: 21-25)
     rankTab: 'friends',
+    rankReturnModal: null,   // 排行榜关闭后返回的弹窗/界面 (如 'gemhunt')
     floatingTexts: [],
     hitRipples: [],
     malletAngle: 28,
@@ -2197,9 +2198,24 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                 return;
             }
 
-            // 规则按钮
-            if (tx < 65 && ty >= plaqueY - 5 && ty <= plaqueY + plaqueH + 5) {
+            // 规则按钮 (左侧)
+            const btnRuleX = 12;
+            const btnRuleW = Math.round(50 * uiScale);
+            if (tx >= btnRuleX - 4 && tx <= btnRuleX + btnRuleW + 4 && ty >= plaqueY - 5 && ty <= plaqueY + plaqueH + 5) {
+                try { soundManager.playWoodHit(); } catch(e) {}
                 state.currentModal = 'rules';
+                return;
+            }
+
+            // 排行榜按钮 (右侧)
+            const btnRankW = Math.round(58 * uiScale);
+            const btnRankX = W - 12 - btnRankW;
+            if (tx >= btnRankX - 4 && tx <= btnRankX + btnRankW + 4 && ty >= plaqueY - 5 && ty <= plaqueY + plaqueH + 5) {
+                try { soundManager.playWoodHit(); } catch(e) {}
+                state.rankReturnModal = 'gemhunt';
+                state.currentModal = 'rank';
+                reportScoreToFriendCloud();
+                requestFriendRankData();
                 return;
             }
 
@@ -2500,7 +2516,8 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
             if (state.currentModal === 'rank') {
                 // 关闭按钮 ×
                 if (tx > cardX + cardW - 45 && ty > cardY && ty < cardY + 45) {
-                    state.currentModal = null;
+                    state.currentModal = state.rankReturnModal || null;
+                    state.rankReturnModal = null;
                     return;
                 }
                 // Tab 切换触摸（👥 微信好友榜 / 🏆 功德修心榜）
@@ -2533,7 +2550,8 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                 }
                 // 点击弹窗外部 → 关闭
                 if (ty < cardY || ty > cardY + cardH || tx < cardX || tx > cardX + cardW) {
-                    state.currentModal = null;
+                    state.currentModal = state.rankReturnModal || null;
+                    state.rankReturnModal = null;
                     return;
                 }
                 return;
@@ -3004,9 +3022,17 @@ function render() {
             ctx.textAlign = 'center';
             ctx.fillText(`敲击值: ${state.totalHit.toLocaleString()}`, scoreX + scoreW / 2, scoreY + scoreH / 2 + 4);
 
-            // 大殿金字匾额与规则按钮
+            // 大殿金字匾额与两翼按钮（左边规则，右边排行榜）
+            const btnRuleX = 12;
+            const btnRuleW = Math.round(50 * uiScale);
+            const btnRankW = Math.round(58 * uiScale);
+            const btnRankX = W - 12 - btnRankW;
+            const plaqueX = btnRuleX + btnRuleW + 6;
+            const plaqueW = btnRankX - 6 - plaqueX;
+
+            // 1. 左侧【规则】按钮
             ctx.fillStyle = '#26190E';
-            drawRoundRect(ctx, 12, plaqueY + 3, 50, plaqueH - 6, 6);
+            drawRoundRect(ctx, btnRuleX, plaqueY + 3, btnRuleW, plaqueH - 6, 6);
             ctx.fill();
             ctx.strokeStyle = '#F5C44B';
             ctx.lineWidth = 1;
@@ -3014,10 +3040,9 @@ function render() {
             ctx.fillStyle = '#FFE072';
             ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
             ctx.textAlign = 'center';
-            ctx.fillText('规则', 37, plaqueY + plaqueH / 2 + 4);
+            ctx.fillText('规则', btnRuleX + btnRuleW / 2, plaqueY + plaqueH / 2 + 4);
 
-            const plaqueW = W - 80;
-            const plaqueX = 68;
+            // 2. 中间【佛光普照 · 功德寻宝】匾额
             ctx.fillStyle = '#7A1400';
             drawRoundRect(ctx, plaqueX, plaqueY + 3, plaqueW, plaqueH - 6, 6);
             ctx.fill();
@@ -3027,13 +3052,25 @@ function render() {
 
             const isFreeSpinMode = (state.gemHunt.freeSpinsRemaining || 0) > 0;
             ctx.fillStyle = isFreeSpinMode ? '#FFF566' : '#FFE072';
-            ctx.font = `bold ${Math.round(11.5 * uiScale)}px sans-serif`;
+            ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
             ctx.textAlign = 'center';
             if (isFreeSpinMode) {
-                ctx.fillText(`🏮 慈悲方丈福佑 · 免费祈福中 (余 ${state.gemHunt.freeSpinsRemaining} 次)`, plaqueX + plaqueW / 2, plaqueY + plaqueH / 2 + 4);
+                ctx.fillText(`🏮 免费祈福中 (余 ${state.gemHunt.freeSpinsRemaining} 次)`, plaqueX + plaqueW / 2, plaqueY + plaqueH / 2 + 4);
             } else {
                 ctx.fillText('✦ 佛光普照 · 功德寻宝 ✦', plaqueX + plaqueW / 2, plaqueY + plaqueH / 2 + 4);
             }
+
+            // 3. 右侧【排行榜】按钮
+            ctx.fillStyle = '#26190E';
+            drawRoundRect(ctx, btnRankX, plaqueY + 3, btnRankW, plaqueH - 6, 6);
+            ctx.fill();
+            ctx.strokeStyle = '#F5C44B';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.fillStyle = '#FFE072';
+            ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.fillText('排行榜', btnRankX + btnRankW / 2, plaqueY + plaqueH / 2 + 4);
 
             // 5x3 滚轴网格
             const cabinetTop = plaqueY + plaqueH + 6;
