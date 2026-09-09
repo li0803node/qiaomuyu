@@ -52,7 +52,7 @@ const state = {
     currentTitleId: 1,
     userProfile: {
         nickname: '静心居士',
-        avatarIcon: '🪷',
+        avatarIcon: '蓮',
         customAvatarImg: '',
         openid: 'wx_zen_8892147',
         uid: '2026081042',
@@ -178,7 +178,7 @@ const BGM_TRACK_CONFIGS = [
 ];
 
 // ==========================================================================
-// 🔊 游艺坊 · 功德寻宝物理音效引擎 (纯 WebAudio 合成)
+// 游艺坊 · 功德寻宝物理音效引擎 (纯 WebAudio 合成)
 // ==========================================================================
 function playSpinStartSound() {
     if (!state.sfxEnabled) return;
@@ -974,7 +974,7 @@ function renderUserProfile() {
             dom.userLargeAvatarBox.textContent = '';
         }
     } else {
-        const icon = p.avatarIcon || '🪷';
+        const icon = p.avatarIcon || '蓮';
         if (dom.headerAvatarBox) {
             dom.headerAvatarBox.style.backgroundImage = 'none';
             dom.headerAvatarBox.textContent = icon;
@@ -1121,7 +1121,7 @@ function updateUI() {
     }
     if (title.id !== state.currentTitleId) {
         state.currentTitleId = title.id;
-        showToast(`✨ 达成新称号：【${title.name}】！`);
+        showToast(`达成新称号：【${title.name}】！`);
     }
 
     // 暴击 Buff 视觉
@@ -1164,7 +1164,7 @@ function updateUI() {
 // 敲击动作执行
 function hitWoodfish(isManual = true) {
     if (state.isResting) {
-        showToast('🧘 您正在静心歇息中，请稍候恢复敲击');
+        showToast('您正在静心歇息中，请稍候恢复敲击');
         return;
     }
 
@@ -1403,28 +1403,28 @@ function finishAdReward() {
         state.critEndTime = Date.now() + CONFIG.CRIT_DURATION_MS;
         saveData();
         updateUI();
-        showToast(`🎉 恭喜抽取到【×${drawnRate} 暴击倍率】！持续 1 小时`);
+        showToast(`恭喜抽取到【×${drawnRate} 暴击倍率】！持续 1 小时`);
     } else if (currentAdRewardType === 'AUTO') {
         state.dailyAutoCount++;
         saveData();
         startAutoHit(CONFIG.AUTO_HIT_DURATION_SEC);
         const m = Math.floor(state.autoRemainingSec / 60);
         const s = state.autoRemainingSec % 60;
-        showToast(`🔔 自动敲击时长已累计 +10 分钟！（当前剩余 ${m} 分 ${s < 10 ? '0' : ''}${s} 秒）`);
+        showToast(`自动敲击时长已累计 +10 分钟！（当前剩余 ${m} 分 ${s < 10 ? '0' : ''}${s} 秒）`);
     } else if (currentAdRewardType === 'GH_SCORE') {
         state.gemHunt.dailyAdScoreCount++;
         state.totalHit += 2000;
         saveData();
         updateUI();
         renderGemHuntUI();
-        showToast('🎉 恭喜获得 +2,000 敲击值！');
+        showToast('恭喜获得 +2,000 敲击值！');
     } else if (currentAdRewardType === 'UNLOCK_BET') {
         state.gemHunt.unlockedBets[pendingUnlockBetAmount] = Date.now() + 24 * 3600 * 1000;
         saveData();
         renderGemHuntUI();
         renderGemRules('bets');
         if (dom.modalUnlockBet) dom.modalUnlockBet.classList.add('hidden');
-        showToast(`🎉 成功解锁【${pendingUnlockBetAmount.toLocaleString()} 战力档位】24 小时！`);
+        showToast(`成功解锁【${pendingUnlockBetAmount.toLocaleString()} 战力档位】24 小时！`);
     }
 }
 
@@ -1521,12 +1521,12 @@ function renderRankList(tab) {
         const itemTitle = getCurrentTitle(item.score);
 
         let locClass = 'province-tag';
-        let locText = `📍 ${item.location}`;
+        let locText = `${item.location}`;
         if (tab === 'province') {
             locClass = 'district-tag';
         } else if (tab === 'friend') {
             locClass = 'friend-tag';
-            locText = `👥 ${item.location}`;
+            locText = `${item.location}`;
         }
 
         const rowEl = document.createElement('div');
@@ -1598,7 +1598,7 @@ function renderTitleList() {
 }
 
 // ==========================================================================
-// 🧘 健康防疲劳休息系统 (连续敲击 1 小时休息 10 分钟)
+// 健康防疲劳休息系统 (连续敲击 1 小时休息 10 分钟)
 // ==========================================================================
 let restCountdownInterval = null;
 
@@ -1628,7 +1628,7 @@ function startZenRest(durationSec = 600) {
             state.isResting = false;
             state.continuousTappingSec = 0;
             if (dom.zenRestOverlay) dom.zenRestOverlay.classList.add('hidden');
-            showToast('🧘 10分钟静心歇息已毕，涵养心神，可继续敲击修行！');
+            showToast('10分钟静心歇息已毕，涵养心神，可继续敲击修行！');
         }
     }, 1000);
 }
@@ -1645,21 +1645,21 @@ function exitGemHunt() {
 window.exitGemHunt = exitGemHunt;
 
 // ==========================================================================
-// 🎰 游艺坊 · 功德寻宝 (5x3 滚轴连线小游戏) 算法引擎 (100% 纯正寺庙法宝)
+// 游艺坊 · 功德寻宝 (5x3 滚轴连线小游戏) 算法引擎 (100% 纯正寺庙法宝)
 // ==========================================================================
 const ZEN_SYMBOLS = [
-    { id: 'wild',     name: '功德', icon: '🪷', isWild: true, weight: 6 },
-    { id: 'scatter',  name: '方丈', icon: '🧘', isScatter: true, weight: 5 },
-    { id: 'hat',      name: '五佛宝冠', icon: '👑', rates: [8, 12, 20], weight: 8 },
-    { id: 'bowl',     name: '紫金佛钵', icon: '🥣', rates: [6, 10, 15], weight: 10 },
-    { id: 'woodfish', name: '红木木鱼', icon: '🪵', rates: [5, 8, 12], weight: 12 },
-    { id: 'incense',  name: '宣德香炉', icon: '🪔', rates: [4, 6, 10], weight: 14 },
-    { id: 'monk',     name: '小沙弥', icon: '👶', rates: [4, 6, 9], weight: 15 },
-    { id: 'lamp',     name: '琉璃供灯', icon: '🏮', rates: [3, 5, 8], weight: 18 },
-    { id: 'chime',    name: '古刹铜磬', icon: '🔔', rates: [3, 4, 5], weight: 20 },
-    { id: 'beads',    name: '菩提佛珠', icon: '📿', rates: [2, 3, 5], weight: 24 },
-    { id: 'vase',     name: '白玉净瓶', icon: '🏺', rates: [1, 2, 3], weight: 28 },
-    { id: 'ruyi',     name: '翡翠如意', icon: '🪄', rates: [1, 2, 3], weight: 32 }
+    { id: 'wild',     name: '功德', icon: '✦', isWild: true, weight: 6 },
+    { id: 'scatter',  name: '方丈', icon: '✦', isScatter: true, weight: 5 },
+    { id: 'hat',      name: '五佛宝冠', icon: '✦', rates: [8, 12, 20], weight: 8 },
+    { id: 'bowl',     name: '紫金佛钵', icon: '✦', rates: [6, 10, 15], weight: 10 },
+    { id: 'woodfish', name: '红木木鱼', icon: '✦', rates: [5, 8, 12], weight: 12 },
+    { id: 'incense',  name: '宣德香炉', icon: '✦', rates: [4, 6, 10], weight: 14 },
+    { id: 'monk',     name: '小沙弥', icon: '✦', rates: [4, 6, 9], weight: 15 },
+    { id: 'lamp',     name: '琉璃供灯', icon: '✦', rates: [3, 5, 8], weight: 18 },
+    { id: 'chime',    name: '古刹铜磬', icon: '✦', rates: [3, 4, 5], weight: 20 },
+    { id: 'beads',    name: '菩提佛珠', icon: '✦', rates: [2, 3, 5], weight: 24 },
+    { id: 'vase',     name: '白玉净瓶', icon: '✦', rates: [1, 2, 3], weight: 28 },
+    { id: 'ruyi',     name: '翡翠如意', icon: '✦', rates: [1, 2, 3], weight: 32 }
 ];
 
 const BET_TIERS = [200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000];
@@ -1960,7 +1960,7 @@ function finishSpinSettlement(grid, currentBet, scatterCount) {
         state.gemHunt.freeSpinsRemaining += 10;
         triggeredFreeSpins = true;
         playScatterCollectSound();
-        showToast('🎉 恭喜转出 3 位方丈！触发 10 次免费祈福！');
+        showToast('恭喜转出 3 位方丈！触发 10 次免费祈福！');
     }
 
     // 2. 评估 25 条连线
@@ -2043,7 +2043,7 @@ function finishSpinSettlement(grid, currentBet, scatterCount) {
 
         // 结算画面呈现
         if (state.gemHunt.skipWinAnimation) {
-            showToast(`✨ 命中 ${lineResults.length} 条连线，获得 +${totalWinScore.toLocaleString()} 敲击值！`);
+            showToast(`命中 ${lineResults.length} 条连线，获得 +${totalWinScore.toLocaleString()} 敲击值！`);
             checkAutoSpinNext(triggeredFreeSpins);
         } else {
             showWinCelebrationModal(totalWinScore, () => {
@@ -2075,12 +2075,12 @@ function renderBetPickerModal() {
 
         let statusHtml = '';
         if (isFree) {
-            statusHtml = '<span class="bet-picker-status-tag free">🟢 免费</span>';
+            statusHtml = '<span class="bet-picker-status-tag free">免费</span>';
         } else if (isUnlocked) {
             const hoursLeft = Math.ceil((expireTime - Date.now()) / (3600 * 1000));
-            statusHtml = `<span class="bet-picker-status-tag unlocked">✨ 剩余 ${hoursLeft}h</span>`;
+            statusHtml = `<span class="bet-picker-status-tag unlocked">剩余 ${hoursLeft}h</span>`;
         } else {
-            statusHtml = '<span class="bet-picker-status-tag locked">🎬 广告解锁</span>';
+            statusHtml = '<span class="bet-picker-status-tag locked">广告解锁</span>';
         }
 
         card.innerHTML = `
@@ -2169,13 +2169,13 @@ function showWinCelebrationModal(winAmount, onDismiss) {
 
     if (winAmount >= 50000) {
         if (tagEl) tagEl.textContent = '功德无量 · 旷世大捷';
-        if (titleEl) titleEl.textContent = '👑 极品福报';
+        if (titleEl) titleEl.textContent = '极品福报';
     } else if (winAmount >= 10000) {
         if (tagEl) tagEl.textContent = '福光普照 · 财源广进';
-        if (titleEl) titleEl.textContent = '🌟 大获丰收';
+        if (titleEl) titleEl.textContent = '大获丰收';
     } else {
         if (tagEl) tagEl.textContent = '清心吉照 · 功德圆满';
-        if (titleEl) titleEl.textContent = '🎉 福德降临';
+        if (titleEl) titleEl.textContent = '福德降临';
     }
 
     if (dom.modalGemWin) dom.modalGemWin.classList.remove('hidden');
@@ -2327,7 +2327,7 @@ function renderGemRules(activeTab = 'icons') {
                         <span class="bet-tier-val number-font">${bet.toLocaleString()}</span>
                         <span class="bet-tier-status ${statusClass}">${statusText}</span>
                     </div>
-                    ${(!isFree && !isUnlocked) ? `<button class="btn-unlock-tier" data-bet="${bet}">🎬 看广告解锁</button>` : ''}
+                    ${(!isFree && !isUnlocked) ? `<button class="btn-unlock-tier" data-bet="${bet}">看广告解锁</button>` : ''}
                 `;
                 list.appendChild(row);
             });
@@ -2500,7 +2500,7 @@ function initEvents() {
             }
             zenBGM.setTrack(trackId);
             const trackName = trackId === 0 ? `《${zenBGM.customAudioName}》` : (BGM_TRACK_CONFIGS.find(t => t.id === trackId) || BGM_TRACK_CONFIGS[0]).name;
-            showToast(`🎵 背景音乐已切换为：${trackName}`);
+            showToast(`背景音乐已切换为：${trackName}`);
         });
     });
 
@@ -2535,7 +2535,7 @@ function initEvents() {
                 const decodedBuffer = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
                 zenBGM.setCustomAudio(file.name, decodedBuffer);
                 zenBGM.setTrack(0); // 自动切换至自定义曲目并开始播放
-                showToast(`🎉 成功导入并播放专属曲目：《${file.name}》`);
+                showToast(`成功导入并播放专属曲目：《${file.name}》`);
             } catch (err) {
                 console.error('[Audio] Decode custom audio failed:', err);
                 showToast('音频格式解析失败，请尝试标准 MP3/WAV/M4A 格式');
@@ -2575,10 +2575,10 @@ function initEvents() {
 
             if (state.bgmEnabled) {
                 playGenerativeBGM();
-                showToast('🎵 已开启静心禅音背景音乐');
+                showToast('已开启静心禅音背景音乐');
             } else {
                 stopGenerativeBGM();
-                showToast('🔇 已暂停背景音乐');
+                showToast('已暂停背景音乐');
             }
         });
     }
@@ -2629,7 +2629,7 @@ function initEvents() {
                 state.userProfile.customAvatarImg = event.target.result;
                 saveData();
                 renderUserProfile();
-                showToast('🎉 自定义头像上传成功！');
+                showToast('自定义头像上传成功！');
             };
             reader.readAsDataURL(file);
             dom.inputCustomAvatar.value = '';
@@ -2648,7 +2648,7 @@ function initEvents() {
             saveData();
             renderUserProfile();
             renderRankList('friend');
-            showToast(`✨ 已成功修改道号为：${name}`);
+            showToast(`已成功修改道号为：${name}`);
         });
     }
 
@@ -2663,7 +2663,7 @@ function initEvents() {
             }
             state.userProfile.account = acc;
             saveData();
-            showToast(`🔐 当前敲击进度 (${state.totalHit}) 已成功绑定至账号：${acc}`);
+            showToast(`当前敲击进度 (${state.totalHit}) 已成功绑定至账号：${acc}`);
         });
     }
 
@@ -2677,7 +2677,7 @@ function initEvents() {
             }
             state.userProfile.account = acc;
             saveData();
-            showToast(`✅ 登录成功！已载入账号【${acc}】的专属进度`);
+            showToast(`登录成功！已载入账号【${acc}】的专属进度`);
         });
     }
 
@@ -2741,7 +2741,7 @@ function initEvents() {
             state.gemHunt.skipWinAnimation = !state.gemHunt.skipWinAnimation;
             saveData();
             renderGemHuntUI();
-            showToast(state.gemHunt.skipWinAnimation ? '⚡ 已开启跳过结算画面' : '⚡ 已关闭跳过结算画面');
+            showToast(state.gemHunt.skipWinAnimation ? '已开启跳过结算画面' : '已关闭跳过结算画面');
         });
     }
 
@@ -2825,7 +2825,7 @@ function initEvents() {
                     state.gemHunt.isAutoSpinning = true;
                     dom.btnGhSpin.classList.add('auto-active');
                     if (dom.ghSpinText) dom.ghSpinText.textContent = '停止';
-                    showToast('🔄 已开启长按自动祈福');
+                    showToast('已开启长按自动祈福');
                     spinGemHunt();
                 }
             }, 600);

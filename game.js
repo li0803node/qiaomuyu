@@ -125,40 +125,40 @@ function getCurrentTitle(hits) {
 }
 
 const RANK_LIST_DATA = [
-    { rank: 1, name: "慧能居士", loc: "📍 广东省", title: "【大音希声】", score: 8520000 },
-    { rank: 2, name: "弘一禅师", loc: "📍 浙江省", title: "【虚境听禅】", score: 4310000 },
-    { rank: 3, name: "鉴真修者", loc: "📍 江苏省", title: "【云间叩者】", score: 2190000 },
-    { rank: 4, name: "虚云行客", loc: "📍 四川省", title: "【万音归寂】", score: 1050000 },
-    { rank: 5, name: "清心修行者", loc: "📍 北京市", title: "【静心渡己】", score: 620000 }
+    { rank: 1, name: "慧能居士", loc: "广东省", title: "【大音希声】", score: 8520000 },
+    { rank: 2, name: "弘一禅师", loc: "浙江省", title: "【虚境听禅】", score: 4310000 },
+    { rank: 3, name: "鉴真修者", loc: "江苏省", title: "【云间叩者】", score: 2190000 },
+    { rank: 4, name: "虚云行客", loc: "四川省", title: "【万音归寂】", score: 1050000 },
+    { rank: 5, name: "清心修行者", loc: "北京市", title: "【静心渡己】", score: 620000 }
 ];
 
 const BGM_TRACKS = [
-    { id: 1,  name: '《古刹檐雨》', desc: '青瓦檐滴 · 润物无声', icon: '🌧️', src: 'assets/audio/ambient_rain.mp3' },
-    { id: 2,  name: '《空山竹语》', desc: '清风拂竹 · 幽谷山雀', icon: '🎋', src: 'assets/audio/ambient_bamboo.mp3' },
-    { id: 3,  name: '《苔痕添水》', desc: '枯山流水 · 惊鹿叩石', icon: '💧', src: 'assets/audio/ambient_shishi.mp3' },
-    { id: 4,  name: '《幽涧鸣泉》', desc: '高山活泉 · 漱石流芳', icon: '🌊', src: 'assets/audio/ambient_stream.mp3' },
-    { id: 5,  name: '《禅房沉香》', desc: '古炉微炭 · 沉香轻燃', icon: '🔥', src: 'assets/audio/ambient_incense.mp3' },
-    { id: 6,  name: '《晨钟远磬》', desc: '破晓梵音 · 洪钟荡谷', icon: '🔔', src: 'assets/audio/ambient_bell.mp3' },
-    { id: 7,  name: '《晚寺蝉鸣》', desc: '暮色庭院 · 晚风微蝉', icon: '🦗', src: 'assets/audio/ambient_crickets.mp3' },
-    { id: 8,  name: '《深山颂钵》', desc: '藏地纯铜 · 432Hz共鸣', icon: '🥣', src: 'assets/audio/ambient_bowl.mp3' },
-    { id: 9,  name: '《万壑松风》', desc: '千山暮雪 · 松涛回荡', icon: '🌬️', src: 'assets/audio/ambient_pinewind.mp3' },
-    { id: 10, name: '《瀛海潮汐》', desc: '普陀潮音 · 沧海涤心', icon: '🌊', src: 'assets/audio/ambient_ocean.mp3' }
+    { id: 1,  name: '《古刹檐雨》', desc: '青瓦檐滴 · 润物无声', icon: '01', src: 'assets/audio/ambient_rain.mp3' },
+    { id: 2,  name: '《空山竹语》', desc: '清风拂竹 · 幽谷山雀', icon: '02', src: 'assets/audio/ambient_bamboo.mp3' },
+    { id: 3,  name: '《苔痕添水》', desc: '枯山流水 · 惊鹿叩石', icon: '03', src: 'assets/audio/ambient_shishi.mp3' },
+    { id: 4,  name: '《幽涧鸣泉》', desc: '高山活泉 · 漱石流芳', icon: '04', src: 'assets/audio/ambient_stream.mp3' },
+    { id: 5,  name: '《禅房沉香》', desc: '古炉微炭 · 沉香轻燃', icon: '05', src: 'assets/audio/ambient_incense.mp3' },
+    { id: 6,  name: '《晨钟远磬》', desc: '破晓梵音 · 洪钟荡谷', icon: '06', src: 'assets/audio/ambient_bell.mp3' },
+    { id: 7,  name: '《晚寺蝉鸣》', desc: '暮色庭院 · 晚风微蝉', icon: '07', src: 'assets/audio/ambient_crickets.mp3' },
+    { id: 8,  name: '《深山颂钵》', desc: '藏地纯铜 · 432Hz共鸣', icon: '08', src: 'assets/audio/ambient_bowl.mp3' },
+    { id: 9,  name: '《万壑松风》', desc: '千山暮雪 · 松涛回荡', icon: '09', src: 'assets/audio/ambient_pinewind.mp3' },
+    { id: 10, name: '《瀛海潮汐》', desc: '普陀潮音 · 沧海涤心', icon: '04', src: 'assets/audio/ambient_ocean.mp3' }
 ];
 
 // 5x3 功德寻宝 12 种法宝阶梯倍率与加权出率定义 (黄金休闲 92.5% RTP + 中奖波浪回血模型)
 const SYMBOLS = [
-    { id: 'wild',     name: '功德', iconKey: 'gongde', fallbackIcon: '✨', isWild: true, rates: [75, 250, 1000], weight: 12 }, // 万能金莲提升至 12 (原 5)
-    { id: 'scatter',  name: '方丈', iconKey: 'fangzhang', fallbackIcon: '🏮', isScatter: true, rates: [50, 150, 500],   weight: 7 },  // 免费祈福提升至 7 (原 4)
-    { id: 'hat',      name: '五佛宝冠', iconKey: 'hat', fallbackIcon: '👑', rates: [45, 180, 600], weight: 9 },  // 高级法宝
-    { id: 'monk',     name: '小沙弥', iconKey: 'monk', fallbackIcon: '👶', rates: [35, 120, 380], weight: 14 }, // 中高级法宝 (中奖核心)
-    { id: 'bowl',     name: '紫金佛钵', iconKey: 'bowl', fallbackIcon: '🥣', rates: [25, 85, 240],  weight: 18 }, // 中级法宝
-    { id: 'incense',  name: '宣德香炉', iconKey: 'incense', fallbackIcon: '🕯', rates: [22, 70, 200],  weight: 20 }, // 中级法宝
-    { id: 'chime',    name: '古刹铜磬', iconKey: 'chime', fallbackIcon: '🔔', rates: [18, 55, 160],  weight: 22 }, // 中级法宝
-    { id: 'ruyi',     name: '翡翠如意', iconKey: 'ruyi', fallbackIcon: '🌿', rates: [16, 45, 130],  weight: 24 }, // 中级法宝
-    { id: 'woodfish', name: '红木木鱼', iconKey: 'woodfish', fallbackIcon: '🪵', rates: [12, 35, 95],   weight: 26 }, // 基础法宝
-    { id: 'lamp',     name: '琉璃供灯', iconKey: 'lamp', fallbackIcon: '🏮', rates: [10, 28, 75],   weight: 28 }, // 基础法宝
-    { id: 'beads',   name: '菩提佛珠', iconKey: 'beads', fallbackIcon: '🔮', rates: [9, 24, 65],    weight: 30 }, // 基础法宝
-    { id: 'vase',     name: '白玉净瓶', iconKey: 'vase', fallbackIcon: '🍶', rates: [8, 20, 55],    weight: 32 }  // 基础法宝
+    { id: 'wild',     name: '功德', iconKey: 'gongde', fallbackIcon: '✦', isWild: true, rates: [75, 250, 1000], weight: 12 }, // 万能金莲提升至 12 (原 5)
+    { id: 'scatter',  name: '方丈', iconKey: 'fangzhang', fallbackIcon: '✦', isScatter: true, rates: [50, 150, 500],   weight: 7 },  // 免费祈福提升至 7 (原 4)
+    { id: 'hat',      name: '五佛宝冠', iconKey: 'hat', fallbackIcon: '✦', rates: [45, 180, 600], weight: 9 },  // 高级法宝
+    { id: 'monk',     name: '小沙弥', iconKey: 'monk', fallbackIcon: '✦', rates: [35, 120, 380], weight: 14 }, // 中高级法宝 (中奖核心)
+    { id: 'bowl',     name: '紫金佛钵', iconKey: 'bowl', fallbackIcon: '✦', rates: [25, 85, 240],  weight: 18 }, // 中级法宝
+    { id: 'incense',  name: '宣德香炉', iconKey: 'incense', fallbackIcon: '✦', rates: [22, 70, 200],  weight: 20 }, // 中级法宝
+    { id: 'chime',    name: '古刹铜磬', iconKey: 'chime', fallbackIcon: '✦', rates: [18, 55, 160],  weight: 22 }, // 中级法宝
+    { id: 'ruyi',     name: '翡翠如意', iconKey: 'ruyi', fallbackIcon: '✦', rates: [16, 45, 130],  weight: 24 }, // 中级法宝
+    { id: 'woodfish', name: '红木木鱼', iconKey: 'woodfish', fallbackIcon: '✦', rates: [12, 35, 95],   weight: 26 }, // 基础法宝
+    { id: 'lamp',     name: '琉璃供灯', iconKey: 'lamp', fallbackIcon: '✦', rates: [10, 28, 75],   weight: 28 }, // 基础法宝
+    { id: 'beads',   name: '菩提佛珠', iconKey: 'beads', fallbackIcon: '✦', rates: [9, 24, 65],    weight: 30 }, // 基础法宝
+    { id: 'vase',     name: '白玉净瓶', iconKey: 'vase', fallbackIcon: '✦', rates: [8, 20, 55],    weight: 32 }  // 基础法宝
 ];
 
 let consecutiveLossSpins = 0; // 连续未中奖计数 (用于保底防黑脸)
@@ -427,7 +427,7 @@ const TEMPLE_MODES = [
     {
         id: 'ankang',
         name: '安康殿',
-        icon: '🕊️',
+        icon: '【福】',
         title: '安康殿 · 身心清净',
         desc: '功德福报 · 身心康泰',
         accentColor: '#FFD700',
@@ -437,7 +437,7 @@ const TEMPLE_MODES = [
     {
         id: 'wenchang',
         name: '文昌阁',
-        icon: '🎓',
+        icon: '【禄】',
         title: '文昌阁 · 金榜题名',
         desc: '考研考公 · 题题全对',
         accentColor: '#40A9FF',
@@ -447,7 +447,7 @@ const TEMPLE_MODES = [
     {
         id: 'wealth',
         name: '财神殿',
-        icon: '💰',
+        icon: '【财】',
         title: '财神殿 · 日进斗金',
         desc: '财运亨通 · 加薪暴富',
         accentColor: '#FFA940',
@@ -457,7 +457,7 @@ const TEMPLE_MODES = [
     {
         id: 'jieyou',
         name: '解忧殿',
-        icon: '🌿',
+        icon: '【寿】',
         title: '解忧殿 · 远离内耗',
         desc: '退散小人 · 降压解忧',
         accentColor: '#73D13D',
@@ -815,7 +815,7 @@ function generateFortuneShareCard(slip, callback) {
     sctx.textAlign = 'center';
     sctx.fillStyle = '#FFE072';
     sctx.font = 'bold 20px sans-serif';
-    sctx.fillText(`🎋 ${temple.name} · 每日祈愿灵签 🎋`, sw / 2, 40);
+    sctx.fillText(`【${temple.name} · 每日祈愿灵签】`, sw / 2, 40);
 
     // 3. 红笺古卷
     const scrollX = 24;
@@ -893,7 +893,7 @@ function generateFortuneShareCard(slip, callback) {
     sctx.textAlign = 'center';
     sctx.font = 'bold 14px sans-serif';
     sctx.fillStyle = '#FFE072';
-    sctx.fillText('✨ 点击测测你的今日运势 · 开启每日灵签 ✨', sw / 2, sh - 18);
+    sctx.fillText('✦ 点击测测你的今日运势 · 开启每日灵签 ✦', sw / 2, sh - 18);
 
     try {
         if (sCanvas.toTempFilePath) {
@@ -924,7 +924,7 @@ function shareFortuneSlip(slip) {
     const temple = getCurrentTemple();
     const poemFirstLine = (slip.poem && slip.poem[0]) ? slip.poem[0] : '诸般顺遂皆如意';
     const tierText = slip.tier ? slip.tier.replace(/【|】/g, '') : '大吉';
-    const shareTitle = `🎋 喜提【${tierText}】！我在${temple.name}抽到${slip.name}：“${poemFirstLine}”～快来测测今日运势！`;
+    const shareTitle = `喜提【${tierText}】！我在${temple.name}抽到${slip.name}：“${poemFirstLine}”～快来测测今日运势！`;
     const shareQuery = `modal=fortune_slip&temple=${temple.id}`;
     
     generateFortuneShareCard(slip, (tempImgPath) => {
@@ -936,12 +936,12 @@ function shareFortuneSlip(slip) {
                     imageUrl: shareImg,
                     query: shareQuery
                 });
-                showToast('🧧 已发起灵签分享，快送给好友吧！');
+                showToast('已发起灵签分享，快送给好友吧！');
             } catch(e) {
-                showToast('🧧 灵签福运已备好，请点击右上角分享！');
+                showToast('灵签福运已备好，请点击右上角分享！');
             }
         } else {
-            showToast('🧧 灵签福运已备好，请点击右上角分享！');
+            showToast('灵签福运已备好，请点击右上角分享！');
         }
     });
 }
@@ -950,7 +950,7 @@ function saveFortunePoster(slip) {
     if (!slip) slip = state.todayFortuneSlip;
     if (!slip) return;
     
-    showToast('⏳ 正在生成高清灵签壁纸...');
+    showToast('正在生成高清灵签壁纸...');
     
     const pw = 720;
     const ph = 1280;
@@ -970,13 +970,13 @@ function saveFortunePoster(slip) {
         } catch(e) {}
     }
     if (!posterCanvas) {
-        showToast('⚠️ 当前环境暂不支持生成壁纸');
+        showToast('当前环境暂不支持生成壁纸');
         return;
     }
     
     const pctx = posterCanvas.getContext('2d');
     if (!pctx) {
-        showToast('⚠️ 画布初始化异常');
+        showToast('画布初始化异常');
         return;
     }
     
@@ -1015,12 +1015,12 @@ function saveFortunePoster(slip) {
     pctx.textAlign = 'center';
     pctx.fillStyle = '#FFE072';
     pctx.font = 'bold 32px sans-serif';
-    pctx.fillText(`🎋 ${temple.name} · 每日祈愿灵签 🎋`, pw / 2, 90);
+    pctx.fillText(`【${temple.name} · 每日祈愿灵签】`, pw / 2, 90);
     
     const dStr = getTodayDateStr();
     pctx.fillStyle = '#D4AF37';
     pctx.font = '20px sans-serif';
-    pctx.fillText(`📅 诚心所愿 · 公历 ${dStr}`, pw / 2, 128);
+    pctx.fillText(`诚心所愿 · 公历 ${dStr}`, pw / 2, 128);
     
     // 4. 中央红笺古卷主体
     const scrollX = 54;
@@ -1132,7 +1132,7 @@ function saveFortunePoster(slip) {
     pctx.textAlign = 'center';
     pctx.font = '22px sans-serif';
     pctx.fillStyle = '#FFE072';
-    pctx.fillText(`📿 持修者：${dharmaName} · 称号：${titleName} · 功德值：${state.totalHit || 0}`, pw / 2, footerBoxY);
+    pctx.fillText(`持修者：${dharmaName} · 称号：${titleName} · 功德值：${state.totalHit || 0}`, pw / 2, footerBoxY);
     
     pctx.font = '18px sans-serif';
     pctx.fillStyle = '#A8988B';
@@ -1179,7 +1179,7 @@ function saveFortunePoster(slip) {
                             wx.saveImageToPhotosAlbum({
                                 filePath: tempFilePath,
                                 success: () => {
-                                    showToast('🖼️ 灵签壁纸海报已自动保存至相册！');
+                                    showToast('灵签壁纸海报已自动保存至相册！');
                                     if (typeof wx.vibrateShort === 'function') {
                                         try { wx.vibrateShort({ type: 'medium', fail: () => {} }); } catch(e) {}
                                     }
@@ -1200,25 +1200,25 @@ function saveFortunePoster(slip) {
                                             });
                                         }
                                     } else {
-                                        showToast('🖼️ 灵签壁纸已生成，长按图片即可保存！');
+                                        showToast('灵签壁纸已生成，长按图片即可保存！');
                                     }
                                 }
                             });
                         } else {
-                            showToast('🖼️ 灵签壁纸已生成，长按图片即可保存！');
+                            showToast('灵签壁纸已生成，长按图片即可保存！');
                         }
                     },
                     fail: (err) => {
                         console.error('壁纸导出失败:', err);
-                        showToast('⚠️ 壁纸生成失败，请重试');
+                        showToast('壁纸生成失败，请重试');
                     }
                 });
             } else {
-                showToast('⚠️ 当前设备环境暂不支持导出图片');
+                showToast('当前设备环境暂不支持导出图片');
             }
         } catch(e) {
             console.error('生成壁纸捕获异常:', e);
-            showToast('⚠️ 保存壁纸遇到问题');
+            showToast('保存壁纸遇到问题');
         }
     };
 
@@ -1580,7 +1580,7 @@ function tapWoodfish(clientX, clientY) {
     const activeTemple = getCurrentTemple();
     const words = activeTemple.floatWords;
     const baseWord = words[Math.floor(Math.random() * words.length)];
-    const text = state.critRate > 1 ? `${baseWord} (⚡×${state.critRate})` : baseWord;
+    const text = state.critRate > 1 ? `${baseWord} (暴击×${state.critRate})` : baseWord;
     state.floatingTexts.push({
         text,
         x: clientX || (W / 2),
@@ -1826,10 +1826,10 @@ function computeLayouts() {
         critAd: { x: side, y: actionY, w: actionW, h: actionH },
         autoAd: { x: side + actionW + gap, y: actionY, w: actionW, h: actionH },
         navBar: { x: side, y: navY, w: navW, h: navH },
-        minigames: { x: side + itemW * 0, y: navY, w: itemW, h: navH, icon: '🎮', label: '游艺坊' },
-        rank: { x: side + itemW * 1, y: navY, w: itemW, h: navH, icon: '🏆', label: '排行榜' },
-        titles: { x: side + itemW * 2, y: navY, w: itemW, h: navH, icon: '📜', label: '我的称号' },
-        settings: { x: side + itemW * 3, y: navY, w: itemW, h: navH, icon: '⚙', label: '设置' }
+        minigames: { x: side + itemW * 0, y: navY, w: itemW, h: navH, icon: '', label: '游艺坊' },
+        rank: { x: side + itemW * 1, y: navY, w: itemW, h: navH, icon: '', label: '排行榜' },
+        titles: { x: side + itemW * 2, y: navY, w: itemW, h: navH, icon: '', label: '我的称号' },
+        settings: { x: side + itemW * 3, y: navY, w: itemW, h: navH, icon: '', label: '设置' }
     };
 }
 
@@ -1980,6 +1980,89 @@ function drawVectorGear(ctx, cx, cy, radius) {
     ctx.fillStyle = '#221811';
     ctx.beginPath();
     ctx.arc(0, 0, holeR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+}
+
+function drawVectorGamepad(ctx, cx, cy, s) {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.fillStyle = '#FFE072';
+    drawRoundRect(ctx, -s * 1.1, -s * 0.65, s * 2.2, s * 1.3, s * 0.4);
+    ctx.fill();
+    ctx.fillStyle = '#221811';
+    ctx.fillRect(-s * 0.75, -s * 0.15, s * 0.48, s * 0.3);
+    ctx.fillRect(-s * 0.61, -s * 0.29, s * 0.2, s * 0.58);
+    ctx.beginPath();
+    ctx.arc(s * 0.5, -s * 0.15, s * 0.14, 0, Math.PI * 2);
+    ctx.arc(s * 0.72, 0.08, s * 0.14, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+}
+
+function drawVectorTrophy(ctx, cx, cy, s) {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.fillStyle = '#FFE072';
+    ctx.beginPath();
+    ctx.moveTo(-s * 0.65, -s * 0.7);
+    ctx.lineTo(s * 0.65, -s * 0.7);
+    ctx.lineTo(s * 0.45, s * 0.15);
+    ctx.quadraticCurveTo(0, s * 0.45, -s * 0.45, s * 0.15);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#FFE072';
+    ctx.lineWidth = Math.max(1.2, s * 0.16);
+    ctx.beginPath();
+    ctx.arc(-s * 0.6, -s * 0.25, s * 0.24, Math.PI * 0.5, Math.PI * 1.5);
+    ctx.arc(s * 0.6, -s * 0.25, s * 0.24, -Math.PI * 0.5, Math.PI * 0.5);
+    ctx.stroke();
+    ctx.fillRect(-s * 0.14, s * 0.35, s * 0.28, s * 0.25);
+    ctx.fillRect(-s * 0.55, s * 0.6, s * 1.1, s * 0.2);
+    ctx.restore();
+}
+
+function drawVectorScroll(ctx, cx, cy, s) {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.fillStyle = '#FFE072';
+    drawRoundRect(ctx, -s * 0.65, -s * 0.7, s * 1.3, s * 1.4, s * 0.2);
+    ctx.fill();
+    ctx.fillStyle = '#221811';
+    ctx.fillRect(-s * 0.42, -s * 0.32, s * 0.84, s * 0.12);
+    ctx.fillRect(-s * 0.42, -s * 0.05, s * 0.84, s * 0.12);
+    ctx.fillRect(-s * 0.42, s * 0.22, s * 0.55, s * 0.12);
+    ctx.restore();
+}
+
+function drawVectorBolt(ctx, cx, cy, s, color = '#52C41A') {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(s * 0.12, -s * 0.85);
+    ctx.lineTo(-s * 0.55, s * 0.05);
+    ctx.lineTo(0, s * 0.05);
+    ctx.lineTo(-s * 0.18, s * 0.85);
+    ctx.lineTo(s * 0.55, -s * 0.05);
+    ctx.lineTo(0, -s * 0.05);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+}
+
+function drawVectorBell(ctx, cx, cy, s, color = '#FFE072') {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(0, -s * 0.15, s * 0.45, Math.PI, 0);
+    ctx.lineTo(s * 0.55, s * 0.4);
+    ctx.lineTo(-s * 0.55, s * 0.4);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(0, s * 0.5, s * 0.14, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
 }
@@ -2474,7 +2557,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                         state.totalHit += 2000;
                         state.dailyHit = (state.dailyHit || 0) + 2000;
                         state.currentModal = 'gemhunt';
-                        showToast(`🎉 化缘功德圆满！获得 +2,000 敲击值 (今日剩余 ${Math.max(0, 5 - state.dailyAlmsCount)} 次)`);
+                        showToast(`化缘功德圆满！获得 +2,000 敲击值 (今日剩余 ${Math.max(0, 5 - state.dailyAlmsCount)} 次)`);
                         try {
                             if (wx.setStorageSync) {
                                 wx.setStorageSync('qmy_total_hit', state.totalHit.toString());
@@ -2510,7 +2593,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                         return;
                     }
                     if (state.critRate > 1 && state.critRemainingSec > 0) {
-                        showToast(`⚡ 暴击生效中 (剩余 ${formatTime(state.critRemainingSec)})，请结束后再看！`);
+                        showToast(`暴击生效中 (剩余 ${formatTime(state.critRemainingSec)})，请结束后再看！`);
                         return;
                     }
                     adManager.showRewardedVideo(() => {
@@ -2523,7 +2606,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                         state.critRate = chosenCrit;
                         state.critRemainingSec = 1800;
                         state.currentModal = null;
-                        showToast(`⚡ 视频观看完成！鸿运当头，获得 ×${chosenCrit} 暴击倍率 (持续 30 分钟)！`);
+                        showToast(`鸿运当头！获得 ×${chosenCrit} 暴击倍率 (持续 30 分钟)！`);
                     }, () => {
                         state.currentModal = null;
                     }, '获得暴击倍率');
@@ -2560,7 +2643,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                         state.isAutoHitting = true;
                         state.autoRemainingSec = (state.autoRemainingSec || 0) + 3600;
                         state.currentModal = null;
-                        showToast(`🔔 视频观看完成！自动敲击时长 +1 小时 (累计剩余 ${formatTime(state.autoRemainingSec)})！`);
+                        showToast(`自动敲击时长 +1 小时 (累计剩余 ${formatTime(state.autoRemainingSec)})！`);
                     }, () => {
                         state.currentModal = null;
                     }, '开启/叠加自动敲击');
@@ -2591,7 +2674,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                         saveUnlockedTiers();
                         state.gemHunt.currentBetIdx = unlockIdx;
                         state.currentModal = 'gemhunt';
-                        showToast(`👑 恭喜解锁【${BET_TIERS[unlockIdx].toLocaleString()}】战力 (24小时生效)！`);
+                        showToast(`恭喜解锁【${BET_TIERS[unlockIdx].toLocaleString()}】战力 (24小时生效)！`);
                     }, () => {
                         state.currentModal = 'gemhunt';
                     }, '解锁战力档位24小时');
@@ -2633,7 +2716,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                             return;
                         } else {
                             if (clickedIdx > 0 && !isTierUnlocked(clickedIdx - 1)) {
-                                showToast(`🔒 需先解锁前置战力【${BET_TIERS[clickedIdx - 1].toLocaleString()}】方可修习后续档位！`);
+                                showToast(`需先解锁前置战力【${BET_TIERS[clickedIdx - 1].toLocaleString()}】方可修习后续档位！`);
                                 return;
                             }
                             state.targetUnlockTierIdx = clickedIdx;
@@ -2704,7 +2787,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                     state.rankReturnModal = null;
                     return;
                 }
-                // Tab 切换触摸（👥 微信好友榜 / 🏆 功德修心榜）
+                // Tab 切换触摸（微信好友榜 / 功德修行榜）
                 const rankTabW2 = (cardW - 32) / 2;
                 if (ty >= cardY + 38 && ty <= cardY + 72) {
                     if (tx >= cardX + 16 && tx < cardX + 16 + rankTabW2) {
@@ -2764,7 +2847,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                         if (typeof wx !== 'undefined' && wx.setStorageSync) {
                             try { wx.setStorageSync('qmy_temple_id', state.currentTempleId); } catch(e) {}
                         }
-                        showToast(`🏛️ 已移步至【${TEMPLE_MODES[i].name}】！`);
+                        showToast(`已移步至【${TEMPLE_MODES[i].name}】！`);
                         state.currentModal = null;
                         return;
                     }
@@ -2898,7 +2981,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                 if (tx >= muteBtnX && tx <= muteBtnX + muteBtnW && ty >= muteBtnY && ty <= muteBtnY + muteBtnH) {
                     state.bgmEnabled = !state.bgmEnabled;
                     soundManager.updateBgmState();
-                    showToast(state.bgmEnabled ? '🔊 声音已开启' : '🔇 已静音');
+                    showToast(state.bgmEnabled ? '声音已开启' : '已静音');
                     return;
                 }
                 // 10 首曲目点击 (2列 x 5行)
@@ -2920,7 +3003,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                         state.selectedTrackIdx = i;
                         state.bgmEnabled = true;
                         soundManager.playBgm(i);
-                        showToast(`🎵 已切换：${BGM_TRACKS[i].name}`);
+                        showToast(`已切换：${BGM_TRACKS[i].name}`);
                         return;
                     }
                 }
@@ -2967,7 +3050,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                             state.selectedTrackIdx = clickedIdx;
                             state.bgmEnabled = true;
                             soundManager.playBgm(clickedIdx);
-                            showToast(`🎵 已切换：${BGM_TRACKS[clickedIdx].name}`);
+                            showToast(`已切换：${BGM_TRACKS[clickedIdx].name}`);
                             return;
                         }
                     }
@@ -3069,7 +3152,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                     return;
                 }
                 if (state.critRate > 1 && state.critRemainingSec > 0) {
-                    showToast(`⚡ 暴击生效中 (剩余 ${formatTime(state.critRemainingSec)})，请结束后再看！`);
+                    showToast(`暴击生效中 (剩余 ${formatTime(state.critRemainingSec)})，请结束后再看！`);
                     return;
                 }
                 state.currentModal = 'ad_crit';
@@ -3245,7 +3328,7 @@ function render() {
             ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
             ctx.textAlign = 'center';
             if (isFreeSpinMode) {
-                ctx.fillText(`🏮 免费祈福中 (余 ${state.gemHunt.freeSpinsRemaining} 次)`, plaqueX + plaqueW / 2, plaqueY + plaqueH / 2 + 4);
+                ctx.fillText(`免费祈福中 (余 ${state.gemHunt.freeSpinsRemaining} 次)`, plaqueX + plaqueW / 2, plaqueY + plaqueH / 2 + 4);
             } else {
                 ctx.fillText('✦ 佛光普照 · 功德寻宝 ✦', plaqueX + plaqueW / 2, plaqueY + plaqueH / 2 + 4);
             }
@@ -3335,7 +3418,7 @@ function render() {
                 } else {
                     ctx.font = `${Math.round(22 * uiScale)}px sans-serif`;
                     ctx.textAlign = 'center';
-                    ctx.fillText(sym.fallbackIcon || '✨', cx + cellW / 2, cy + cellH / 2 + 2);
+                    ctx.fillText(sym.fallbackIcon || '✦', cx + cellW / 2, cy + cellH / 2 + 2);
                 }
 
                 if (sym.isWild) {
@@ -3496,13 +3579,13 @@ function render() {
                 } else if (winScore > 0) {
                     soundManager.playWin();
                     if (state.gemHunt.pendingFreeSpinsWon > 0) {
-                        showToast(`🎉 祈福大吉！+${winScore.toLocaleString()} 敲击值，获赠 ${state.gemHunt.pendingFreeSpinsWon} 次免费祈福！`);
+                        showToast(`祈福大吉！+${winScore.toLocaleString()} 敲击值，获赠 ${state.gemHunt.pendingFreeSpinsWon} 次免费祈福！`);
                     } else {
-                        showToast(`🎉 祈福大吉！获得 +${winScore.toLocaleString()} 敲击值！`);
+                        showToast(`祈福大吉！获得 +${winScore.toLocaleString()} 敲击值！`);
                     }
                 } else if (state.gemHunt.pendingFreeSpinsWon > 0) {
                     soundManager.playWin();
-                    showToast(`🏮 方丈显圣！获赠 ${state.gemHunt.pendingFreeSpinsWon} 次免消耗免费祈福！`);
+                    showToast(`方丈显圣！获赠 ${state.gemHunt.pendingFreeSpinsWon} 次免消耗免费祈福！`);
                 } else {
                     showToast(`祈福完成，心神更宁`);
                 }
@@ -3564,7 +3647,7 @@ function render() {
                     } else {
                         ctx.font = `${Math.round(24 * uiScale)}px sans-serif`;
                         ctx.textAlign = 'center';
-                        ctx.fillText(sym.fallbackIcon || '✨', 0, 4);
+                        ctx.fillText(sym.fallbackIcon || '✦', 0, 4);
                     }
 
                     // 5. 法宝标签
@@ -3852,7 +3935,7 @@ function render() {
         ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
         ctx.fillStyle = '#FFE072';
         ctx.textAlign = 'center';
-        ctx.fillText('🎋 每日一签', btn1X + actW / 2, actY + actH / 2 + Math.round(4 * uiScale));
+        ctx.fillText('每日一签', btn1X + actW / 2, actY + actH / 2 + Math.round(4 * uiScale));
 
         // 今日未摇签提示红点
         if (!state.hasShakenFortuneToday && !state.todayFortuneSlip) {
@@ -3873,7 +3956,7 @@ function render() {
         ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
         ctx.fillStyle = activeTemple.accentColor || '#FFE072';
         ctx.textAlign = 'center';
-        ctx.fillText(`${activeTemple.icon} ${activeTemple.name} ▾`, btn2X + actW / 2, actY + actH / 2 + Math.round(4 * uiScale));
+        ctx.fillText(`${activeTemple.name} ▾`, btn2X + actW / 2, actY + actH / 2 + Math.round(4 * uiScale));
 
         // 按钮 3: 修行日历
         ctx.fillStyle = 'rgba(42, 33, 26, 0.92)';
@@ -3886,7 +3969,7 @@ function render() {
         ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
         ctx.fillStyle = '#FFE072';
         ctx.textAlign = 'center';
-        ctx.fillText('📅 修行日历', btn3X + actW / 2, actY + actH / 2 + Math.round(4 * uiScale));
+        ctx.fillText('修行日历', btn3X + actW / 2, actY + actH / 2 + Math.round(4 * uiScale));
         ctx.textAlign = 'left';
 
         // 暴击增益倒计时横幅卡片
@@ -3898,9 +3981,7 @@ function render() {
         ctx.lineWidth = 1;
         ctx.stroke();
 
-        ctx.fillStyle = state.critRate > 1 ? '#FFE072' : '#8C7663';
-        ctx.font = `${Math.round(18 * uiScale)}px sans-serif`;
-        ctx.fillText('⚡', layout.side + 12, bannerY + Math.round(30 * uiScale));
+        drawVectorBolt(ctx, layout.side + Math.round(18 * uiScale), bannerY + Math.round(25 * uiScale), Math.round(8.5 * uiScale), state.critRate > 1 ? '#FFE072' : '#8C7663');
 
         ctx.font = `bold ${Math.round(13 * uiScale)}px sans-serif`;
         ctx.fillStyle = state.critRate > 1 ? '#FFE072' : '#B8A99B';
@@ -3934,8 +4015,11 @@ function render() {
             ctx.stroke();
 
             ctx.fillStyle = '#FFE072';
-            ctx.font = `${Math.round(18 * uiScale)}px sans-serif`;
-            ctx.fillText(isCrit ? '⚡' : '🔔', b.x + 8, b.y + Math.round(30 * uiScale));
+            if (isCrit) {
+                drawVectorBolt(ctx, b.x + 16, b.y + Math.round(26 * uiScale), Math.round(9 * uiScale), state.critRate > 1 ? '#52C41A' : '#FFE072');
+            } else {
+                drawVectorBell(ctx, b.x + 16, b.y + Math.round(26 * uiScale), Math.round(9 * uiScale), state.isAutoHitting ? '#52C41A' : '#FFE072');
+            }
 
             ctx.font = `bold ${Math.round(12 * uiScale)}px sans-serif`;
             ctx.fillStyle = isCrit && state.critRate > 1 ? '#52C41A' : '#FFE072';
@@ -3958,7 +4042,7 @@ function render() {
             ctx.textAlign = 'left';
         });
 
-        // 底部 4 个导航按钮
+        // 底部 4 个导航按钮 (全部采用矢量几何图标渲染，100% 消除真机 Emoji 缺字/白块/不显示问题)
         ctx.fillStyle = 'rgba(26, 20, 16, 0.92)';
         drawRoundRect(ctx, btns.navBar.x, btns.navBar.y, btns.navBar.w, btns.navBar.h, 14);
         ctx.fill();
@@ -3968,12 +4052,16 @@ function render() {
 
         [btns.minigames, btns.rank, btns.titles, btns.settings].forEach((b) => {
             ctx.textAlign = 'center';
-            if (b === btns.settings) {
-                drawVectorGear(ctx, b.x + b.w / 2, b.y + Math.round(17 * uiScale), Math.round(8 * uiScale));
-            } else {
-                ctx.fillStyle = '#FFE072';
-                ctx.font = `${Math.round(16 * uiScale)}px sans-serif`;
-                ctx.fillText(b.icon, b.x + b.w / 2, b.y + Math.round(23 * uiScale));
+            const iconY = b.y + Math.round(18 * uiScale);
+            const iconS = Math.round(8.5 * uiScale);
+            if (b === btns.minigames) {
+                drawVectorGamepad(ctx, b.x + b.w / 2, iconY, iconS);
+            } else if (b === btns.rank) {
+                drawVectorTrophy(ctx, b.x + b.w / 2, iconY, iconS);
+            } else if (b === btns.titles) {
+                drawVectorScroll(ctx, b.x + b.w / 2, iconY, iconS);
+            } else if (b === btns.settings) {
+                drawVectorGear(ctx, b.x + b.w / 2, iconY, iconS);
             }
             ctx.font = `${Math.round(11 * uiScale)}px sans-serif`;
             ctx.fillStyle = '#B8A99B';
@@ -4045,7 +4133,7 @@ function render() {
                 ctx.fillStyle = '#FFE072';
                 ctx.font = `bold ${Math.round(15 * uiScale)}px sans-serif`;
                 ctx.textAlign = 'center';
-                ctx.fillText('📜 功德寻宝 · 规则说明', W / 2, cardY + 26);
+                ctx.fillText('功德寻宝 · 规则说明', W / 2, cardY + 26);
 
                 ctx.fillStyle = '#F5C44B';
                 ctx.font = `bold ${Math.round(18 * uiScale)}px sans-serif`;
@@ -4098,7 +4186,7 @@ function render() {
                         } else {
                             ctx.font = `${Math.round(16 * uiScale)}px sans-serif`;
                             ctx.textAlign = 'center';
-                            ctx.fillText(sym.fallbackIcon || '✨', sx + 17, sy + rowH / 2 + 5);
+                            ctx.fillText(sym.fallbackIcon || '✦', sx + 17, sy + rowH / 2 + 5);
                         }
 
                         ctx.textAlign = 'left';
@@ -4211,9 +4299,9 @@ function render() {
                     ctx.fillText('战力越高单次消耗越多敲击值，连线大奖成倍暴增：', W / 2, cardY + 80);
 
                     const tierCards = [
-                        { tag: '🟢 免费基础档', range: '200 / 500 / 1,000 战力', desc: '新手居士修行入门，平稳积累功德敲击值，稳健成长。', border: '#52C41A' },
-                        { tag: '🔥 进阶高阶档', range: '2,000 / 5,000 / 10,000 战力', desc: '连线大奖倍率飙升，适合极速冲刺静心称号与排行榜！', border: '#F5C44B' },
-                        { tag: '👑 殿堂极品档', range: '20,000 / 50,000 / 100,000 战力', desc: '方丈密传最高战力，一击收获千万级海量敲击值！', border: '#FF4D4F' }
+                        { tag: '免费基础档', range: '200 / 500 / 1,000 战力', desc: '新手居士修行入门，平稳积累功德敲击值，稳健成长。', border: '#52C41A' },
+                        { tag: '进阶高阶档', range: '2,000 / 5,000 / 10,000 战力', desc: '连线大奖倍率飙升，适合极速冲刺静心称号与排行榜！', border: '#F5C44B' },
+                        { tag: '殿堂极品档', range: '20,000 / 50,000 / 100,000 战力', desc: '方丈密传最高战力，一击收获千万级海量敲击值！', border: '#FF4D4F' }
                     ];
 
                     tierCards.forEach((item, idx) => {
@@ -4242,7 +4330,7 @@ function render() {
                     ctx.textAlign = 'center';
                     ctx.font = `bold ${Math.round(9.5 * uiScale)}px sans-serif`;
                     ctx.fillStyle = '#F5C44B';
-                    ctx.fillText('✨ 《功德寻宝》玩法修行指引：', W / 2, cardY + 80);
+                    ctx.fillText('《功德寻宝》玩法修行指引：', W / 2, cardY + 80);
 
                     const helps = [
                         '1. 每次祈福消耗选定战力档位的对应【敲击值】。',
@@ -4270,7 +4358,7 @@ function render() {
                 ctx.font = `bold ${Math.round(15 * uiScale)}px sans-serif`;
                 ctx.fillStyle = '#FFE072';
                 ctx.textAlign = 'center';
-                ctx.fillText('🎮 游艺坊 · 休闲阁', W / 2, cardY + 28);
+                ctx.fillText('游艺坊 · 休闲阁', W / 2, cardY + 28);
 
                 ctx.fillStyle = '#F5C44B';
                 ctx.font = `bold ${Math.round(18 * uiScale)}px sans-serif`;
@@ -4285,7 +4373,7 @@ function render() {
 
                 ctx.fillStyle = '#FFE072';
                 ctx.font = `bold ${Math.round(15 * uiScale)}px sans-serif`;
-                ctx.fillText('✨ 《功德寻宝》', W / 2, cardY + 84);
+                ctx.fillText('《功德寻宝》', W / 2, cardY + 84);
 
                 ctx.font = `bold ${Math.round(11.5 * uiScale)}px sans-serif`;
                 ctx.fillStyle = '#F5C44B';
@@ -4299,17 +4387,17 @@ function render() {
                 ctx.font = `bold ${Math.round(15 * uiScale)}px sans-serif`;
                 ctx.fillStyle = '#FFE072';
                 ctx.textAlign = 'center';
-                ctx.fillText('🏆 功德排行榜 · 虔心争先', W / 2, cardY + 28);
+                ctx.fillText('功德排行榜 · 虔心争先', W / 2, cardY + 28);
 
                 ctx.fillStyle = '#F5C44B';
                 ctx.font = `bold ${Math.round(18 * uiScale)}px sans-serif`;
                 ctx.fillText('×', cardX + cardW - 22, cardY + 28);
 
-                // Tab 切换：👥 微信好友榜 / 🏆 功德修行榜
+                // Tab 切换：微信好友榜 / 功德修行榜
                 const rankTabW = (cardW - 32) / 2;
                 const rankTabs = [
-                    { key: 'friends', label: '👥 微信好友榜' },
-                    { key: 'world',   label: '🏆 功德修行榜' }
+                    { key: 'friends', label: '微信好友榜' },
+                    { key: 'world',   label: '功德修行榜' }
                 ];
                 rankTabs.forEach((t, i) => {
                     const tabX = cardX + 16 + i * rankTabW;
@@ -4368,7 +4456,7 @@ function render() {
                     ctx.fillStyle = '#FFF8E7';
                     ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
                     ctx.textAlign = 'center';
-                    ctx.fillText('💌 邀请好友 · 转发至微信群查看群排行', inviteBtnX + inviteBtnW / 2, inviteBtnY + Math.round(18 * uiScale));
+                    ctx.fillText('邀请好友 · 转发至微信群查看群排行', inviteBtnX + inviteBtnW / 2, inviteBtnY + Math.round(18 * uiScale));
 
                 } else {
                     // ----------------------------------------------------
@@ -4405,8 +4493,8 @@ function render() {
 
                         ctx.font = `bold ${Math.round(12 * uiScale)}px sans-serif`;
                         ctx.textAlign = 'center';
-                        const medal = idx === 0 ? '👑' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `${idx + 1}`));
-                        ctx.fillStyle = idx < 3 ? '#FFE072' : '#A8988B';
+                        const medal = idx === 0 ? '壹' : (idx === 1 ? '贰' : (idx === 2 ? '叁' : `${idx + 1}`));
+                        ctx.fillStyle = idx === 0 ? '#FFD700' : (idx === 1 ? '#E6F7FF' : (idx === 2 ? '#FFA39E' : '#A8988B'));
                         ctx.fillText(medal, cardX + 28, ry + 20);
 
                         ctx.textAlign = 'left';
@@ -4442,7 +4530,7 @@ function render() {
                 ctx.font = `bold ${Math.round(15 * uiScale)}px sans-serif`;
                 ctx.fillStyle = '#FFE072';
                 ctx.textAlign = 'center';
-                ctx.fillText('🏛️ 切换祈愿法殿 (情绪对号入座)', W / 2, cardY + 26);
+                ctx.fillText('切换祈愿法殿 (情绪对号入座)', W / 2, cardY + 26);
 
                 ctx.fillStyle = '#F5C44B';
                 ctx.font = `bold ${Math.round(18 * uiScale)}px sans-serif`;
@@ -4475,7 +4563,7 @@ function render() {
                     ctx.textAlign = 'left';
                     ctx.font = `bold ${Math.round(13 * uiScale)}px sans-serif`;
                     ctx.fillStyle = isSelected ? temple.accentColor : '#FFE072';
-                    ctx.fillText(`${temple.icon} ${temple.name}`, tx + 10, ty + 24);
+                    ctx.fillText(`${temple.name}`, tx + 10, ty + 24);
 
                     if (isSelected) {
                         ctx.textAlign = 'right';
@@ -4509,7 +4597,7 @@ function render() {
                 ctx.font = `bold ${Math.round(15 * uiScale)}px sans-serif`;
                 ctx.fillStyle = '#FFE072';
                 ctx.textAlign = 'center';
-                ctx.fillText('🎋 每日一签 · 灵签解惑', W / 2, cardY + 26);
+                ctx.fillText('每日一签 · 灵签解惑', W / 2, cardY + 26);
 
                 ctx.fillStyle = '#F5C44B';
                 ctx.font = `bold ${Math.round(18 * uiScale)}px sans-serif`;
@@ -4565,7 +4653,7 @@ function render() {
                         if (state.sfxEnabled && typeof wx !== 'undefined' && wx.vibrateShort) {
                             try { wx.vibrateShort({ type: 'heavy', fail: () => {} }); } catch(e) {}
                         }
-                        showToast('✨ 诚心抽签！获每日祈福功德 +88！');
+                        showToast('诚心抽签！获每日祈福功德 +88！');
                     }
                 }
 
@@ -4577,8 +4665,8 @@ function render() {
                     // 摇签阶段 (支持物理晃动、竹签跳跃、灵签飞升与粒子特效)
                     // ==========================================
                     let tipText = `【${activeTemple.name}】祈愿灵签 · 轻触按钮或晃动手机摇签`;
-                    if (state.fortuneState === 'shaking') tipText = `✨ 诚心摇动中 · 诸神福佑 (心诚则灵)...`;
-                    else if (state.fortuneState === 'rising') tipText = `🌟 灵签显现 · 吉星高照！`;
+                    if (state.fortuneState === 'shaking') tipText = `诚心摇动中 · 诸神福佑 (心诚则灵)...`;
+                    else if (state.fortuneState === 'rising') tipText = `灵签显现 · 吉星高照！`;
 
                     ctx.font = `${Math.round(11 * uiScale)}px sans-serif`;
                     ctx.fillStyle = (state.fortuneState === 'rising') ? '#FFE072' : '#E8D5B5';
@@ -4802,11 +4890,11 @@ function render() {
                     ctx.font = `bold ${Math.round(13 * uiScale)}px sans-serif`;
                     ctx.textAlign = 'center';
                     if (state.fortuneState === 'shaking') {
-                        ctx.fillText('✨ 诚心摇荡中... (心诚则灵)', W / 2, shakeBtnY + Math.round(23 * uiScale));
+                        ctx.fillText('诚心摇荡中... (心诚则灵)', W / 2, shakeBtnY + Math.round(23 * uiScale));
                     } else if (state.fortuneState === 'rising') {
-                        ctx.fillText('🌟 灵签高照 · 解签中...', W / 2, shakeBtnY + Math.round(23 * uiScale));
+                        ctx.fillText('灵签高照 · 解签中...', W / 2, shakeBtnY + Math.round(23 * uiScale));
                     } else {
-                        ctx.fillText('🎋 诚心摇签 · 抽取今日运势 (+88功德)', W / 2, shakeBtnY + Math.round(23 * uiScale));
+                        ctx.fillText('诚心摇签 · 抽取今日运势 (+88功德)', W / 2, shakeBtnY + Math.round(23 * uiScale));
                     }
 
                 } else if (slip) {
@@ -4886,7 +4974,7 @@ function render() {
                     ctx.fillText(`解曰：${(slip && slip.desc) ? slip.desc : '心若安定，万事亨通。'}`, scrollX + 14, divY + 56);
 
                     // ==========================================
-                    // 底部功能按钮：【🧧 赠好友灵签】 与 【🖼️ 保存壁纸海报】
+                    // 底部功能按钮：【赠送好友】 与 【保存壁纸海报】
                     // ==========================================
                     const btnH = Math.round(32 * uiScale);
                     const btnY = scrollY + scrollH - btnH - Math.round(22 * uiScale);
@@ -4907,7 +4995,7 @@ function render() {
                     ctx.fillStyle = '#FFF8E7';
                     ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
                     ctx.textAlign = 'center';
-                    ctx.fillText('🧧 赠好友灵签', btn1X + btnW / 2, btnY + Math.round(20 * uiScale));
+                    ctx.fillText('赠送好友', btn1X + btnW / 2, btnY + Math.round(20 * uiScale));
 
                     // 按钮2：保存壁纸海报 (琥珀金渐变)
                     const b2Grad = ctx.createLinearGradient(btn2X, btnY, btn2X, btnY + btnH);
@@ -4922,13 +5010,13 @@ function render() {
                     ctx.fillStyle = '#FFF8E7';
                     ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
                     ctx.textAlign = 'center';
-                    ctx.fillText('🖼️ 保存壁纸海报', btn2X + btnW / 2, btnY + Math.round(20 * uiScale));
+                    ctx.fillText('保存壁纸海报', btn2X + btnW / 2, btnY + Math.round(20 * uiScale));
 
                     // 底部归档日历提示
                     ctx.textAlign = 'center';
                     ctx.font = `${Math.round(8.5 * uiScale)}px sans-serif`;
                     ctx.fillStyle = '#D4AF37';
-                    ctx.fillText('✨ 今日灵签已自动记录于【修行日历】', W / 2, scrollY + scrollH - 6);
+                    ctx.fillText('今日灵签已自动记录于【修行日历】', W / 2, scrollY + scrollH - 6);
                 }
 
             } else if (state.currentModal === 'calendar') {
@@ -4936,7 +5024,7 @@ function render() {
                 ctx.font = `bold ${Math.round(15 * uiScale)}px sans-serif`;
                 ctx.fillStyle = '#FFE072';
                 ctx.textAlign = 'center';
-                ctx.fillText('📅 修行日历 · 功德画卷', W / 2, cardY + 26);
+                ctx.fillText('修行日历 · 功德画卷', W / 2, cardY + 26);
 
                 ctx.fillStyle = '#F5C44B';
                 ctx.font = `bold ${Math.round(18 * uiScale)}px sans-serif`;
@@ -4967,7 +5055,7 @@ function render() {
                     const fTitle = (state.todayFortuneSlip && state.todayFortuneSlip.name) ? String(state.todayFortuneSlip.name).replace(/《|》/g, '') : '灵签';
                     ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
                     ctx.fillStyle = '#FFE072';
-                    ctx.fillText(`🎋 今日灵签：${fTitle}`, cardX + 18, fortuneTextY);
+                    ctx.fillText(`今日灵签：${fTitle}`, cardX + 18, fortuneTextY);
 
                     ctx.font = `bold ${Math.round(9.5 * uiScale)}px sans-serif`;
                     ctx.fillStyle = '#FF7875';
@@ -4979,7 +5067,7 @@ function render() {
                 } else {
                     ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
                     ctx.fillStyle = '#FFA940';
-                    ctx.fillText('🎋 今日尚未求签 · 【点击前往摇签 (+88功德)】', cardX + 18, fortuneTextY);
+                    ctx.fillText('今日尚未求签 · 【点击前往摇签 (+88功德)】', cardX + 18, fortuneTextY);
 
                     ctx.font = `${Math.round(9.5 * uiScale)}px sans-serif`;
                     ctx.fillStyle = '#B8A99B';
@@ -4991,7 +5079,7 @@ function render() {
                 const hitBarY = overviewY + Math.round(48 * uiScale);
                 ctx.font = `bold ${Math.round(10 * uiScale)}px sans-serif`;
                 ctx.fillStyle = '#FFE072';
-                ctx.fillText(`🪵 今日持咒：${state.dailyHit || 0}/108 下`, cardX + 18, hitBarY + 5);
+                ctx.fillText(`今日持咒：${state.dailyHit || 0}/108 下`, cardX + 18, hitBarY + 5);
 
                 const barX = cardX + Math.round(135 * uiScale);
                 const barW = cardW - Math.round(195 * uiScale);
@@ -5089,7 +5177,7 @@ function render() {
                     // 灵签角标 (右上角金绿竹签)
                     if (hasDayFortune) {
                         ctx.font = `${Math.round(8 * uiScale)}px sans-serif`;
-                        ctx.fillText('🎋', cx + cellW - 7, cy + 9);
+                        ctx.fillText('★', cx + cellW - 7, cy + 9);
                     }
 
                     // 朱砂印章【圆满】
@@ -5145,7 +5233,7 @@ function render() {
                 ctx.textAlign = 'left';
                 ctx.font = `bold ${Math.round(14 * uiScale)}px sans-serif`;
                 ctx.fillStyle = '#FFE072';
-                ctx.fillText('🎵 自然声景 (10款现实白噪音)', cardX + 14, cardY + 28);
+                ctx.fillText('自然声景 (10款现实白噪音)', cardX + 14, cardY + 28);
 
                 // 右上角关闭按钮 '×'
                 ctx.textAlign = 'center';
@@ -5167,7 +5255,7 @@ function render() {
 
                 ctx.font = `bold ${Math.round(9.5 * uiScale)}px sans-serif`;
                 ctx.fillStyle = state.bgmEnabled ? '#95DE64' : '#BFBFBF';
-                ctx.fillText(state.bgmEnabled ? '🔊 正在播放' : '🔇 已静音', muteBtnX + muteBtnW / 2, muteBtnY + 16);
+                ctx.fillText(state.bgmEnabled ? '正在播放' : '已静音', muteBtnX + muteBtnW / 2, muteBtnY + 16);
 
                 // 10 首曲目网格 (2列 x 5行)
                 const gridStartX = cardX + 10;
@@ -5203,7 +5291,7 @@ function render() {
                     ctx.textAlign = 'left';
                     ctx.font = `bold ${Math.round(10.5 * uiScale)}px sans-serif`;
                     ctx.fillStyle = isSelected ? '#FFE072' : '#F5C44B';
-                    ctx.fillText(`${track.icon} ${track.name}`, itX + 8, itY + 16);
+                    ctx.fillText(`${track.name}`, itX + 8, itY + 16);
 
                     // 播放状态小图标 (右侧)
                     if (isSelected && state.bgmEnabled) {
@@ -5230,7 +5318,7 @@ function render() {
                 ctx.font = `bold ${Math.round(15 * uiScale)}px sans-serif`;
                 ctx.fillStyle = '#FFE072';
                 ctx.textAlign = 'center';
-                ctx.fillText('⚙ 游戏设置 & 禅音曲库', W / 2, cardY + 26);
+                ctx.fillText('游戏设置 & 禅音曲库', W / 2, cardY + 26);
 
                 ctx.fillStyle = '#F5C44B';
                 ctx.font = `bold ${Math.round(18 * uiScale)}px sans-serif`;
@@ -5273,7 +5361,7 @@ function render() {
                 ctx.textAlign = 'left';
                 ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
                 ctx.fillStyle = '#FFE072';
-                ctx.fillText('🎵 自然声景曲库 (10款现实白噪音 · 点击直切)', cardX + 14, cardY + 128);
+                ctx.fillText('自然声景曲库 (10款现实白噪音 · 点击直切)', cardX + 14, cardY + 128);
 
                 const trackStartY = cardY + 138;
                 const cols = 2;
@@ -5300,7 +5388,7 @@ function render() {
                     ctx.textAlign = 'left';
                     ctx.font = `bold ${Math.round(9.5 * uiScale)}px sans-serif`;
                     ctx.fillStyle = isSelected ? '#FFE072' : '#F5C44B';
-                    ctx.fillText(`${track.icon} ${track.name}`, tx + 6, ty + 18);
+                    ctx.fillText(`${track.name}`, tx + 6, ty + 18);
 
                     if (isSelected && state.bgmEnabled) {
                         ctx.textAlign = 'right';
@@ -5325,7 +5413,7 @@ function render() {
                 ctx.fillStyle = '#95DE64';
                 ctx.font = `bold ${Math.round(9.5 * uiScale)}px sans-serif`;
                 ctx.textAlign = 'center';
-                ctx.fillText('🛡️ CADPA 8+ 适龄提示', cardX + 12 + compBtnW / 2, compY + 17);
+                ctx.fillText('CADPA 8+ 适龄提示', cardX + 12 + compBtnW / 2, compY + 17);
 
                 // 隐私保护与健康忠告按钮
                 ctx.fillStyle = 'rgba(50, 38, 26, 0.9)';
@@ -5337,7 +5425,7 @@ function render() {
                 ctx.fillStyle = '#FFE072';
                 ctx.font = `bold ${Math.round(9.5 * uiScale)}px sans-serif`;
                 ctx.textAlign = 'center';
-                ctx.fillText('📜 隐私指引 & 健康忠告', cardX + 12 + compBtnW + 8 + compBtnW / 2, compY + 17);
+                ctx.fillText('隐私指引 & 健康忠告', cardX + 12 + compBtnW + 8 + compBtnW / 2, compY + 17);
 
                 // 底部合规备案小字
                 ctx.textAlign = 'center';
@@ -5349,7 +5437,7 @@ function render() {
                 ctx.font = `bold ${Math.round(15 * uiScale)}px sans-serif`;
                 ctx.fillStyle = '#FFE072';
                 ctx.textAlign = 'center';
-                ctx.fillText('🛡️ CADPA 适龄提示 (8+)', W / 2, cardY + 26);
+                ctx.fillText('CADPA 适龄提示 (8+)', W / 2, cardY + 26);
 
                 ctx.fillStyle = '#F5C44B';
                 ctx.font = `bold ${Math.round(18 * uiScale)}px sans-serif`;
@@ -5416,7 +5504,7 @@ function render() {
                 ctx.font = `bold ${Math.round(15 * uiScale)}px sans-serif`;
                 ctx.fillStyle = '#FFE072';
                 ctx.textAlign = 'center';
-                ctx.fillText('📜 隐私指引 & 健康游戏忠告', W / 2, cardY + 26);
+                ctx.fillText('隐私指引 & 健康游戏忠告', W / 2, cardY + 26);
 
                 ctx.fillStyle = '#F5C44B';
                 ctx.font = `bold ${Math.round(18 * uiScale)}px sans-serif`;
@@ -5483,7 +5571,7 @@ function render() {
                 ctx.font = `bold ${Math.round(15 * uiScale)}px sans-serif`;
                 ctx.fillStyle = '#FFE072';
                 ctx.textAlign = 'center';
-                ctx.fillText('📜 静心称号', W / 2, cardY + 28);
+                ctx.fillText('静心称号', W / 2, cardY + 28);
 
                 ctx.fillStyle = '#F5C44B';
                 ctx.font = `bold ${Math.round(18 * uiScale)}px sans-serif`;
@@ -5583,7 +5671,7 @@ function render() {
                 ctx.textAlign = 'center';
                 ctx.font = `bold ${Math.round(15 * uiScale)}px sans-serif`;
                 ctx.fillStyle = '#FFE072';
-                ctx.fillText('🎬 功德不足 · 善缘化缘', W / 2, cardY + 26);
+                ctx.fillText('功德不足 · 善缘化缘', W / 2, cardY + 26);
 
                 ctx.fillStyle = '#F5C44B';
                 ctx.font = `bold ${Math.round(18 * uiScale)}px sans-serif`;
@@ -5602,7 +5690,7 @@ function render() {
                     ctx.drawImage(images.bowl, W / 2 - 18, cardY + 50, 36, 36);
                 } else {
                     ctx.font = `${Math.round(28 * uiScale)}px sans-serif`;
-                    ctx.fillText('🏮', W / 2, cardY + 76);
+                    drawVectorBell(ctx, W / 2, cardY + 68, 15, '#FFE072');
                 }
 
                 const isAlmsExhausted = (state.dailyAlmsCount >= 5);
@@ -5648,7 +5736,7 @@ function render() {
 
                     ctx.fillStyle = '#FFE072';
                     ctx.font = `bold ${Math.round(13 * uiScale)}px sans-serif`;
-                    ctx.fillText(`🎬 观看视频化缘 (+2,000) · 剩余 ${leftAlms} 次`, W / 2, adBtnY + 26);
+                    ctx.fillText(`观看视频化缘 (+2,000) · 剩余 ${leftAlms} 次`, W / 2, adBtnY + 26);
                 }
 
                 const closeBtnY = cardY + 212;
@@ -5672,7 +5760,7 @@ function render() {
                 ctx.textAlign = 'center';
                 ctx.font = `bold ${Math.round(15 * uiScale)}px sans-serif`;
                 ctx.fillStyle = '#FFE072';
-                ctx.fillText('⚡ 暴击增益 · 佛光护佑', W / 2, cardY + 26);
+                ctx.fillText('暴击增益 · 佛光护佑', W / 2, cardY + 26);
 
                 ctx.fillStyle = '#F5C44B';
                 ctx.font = `bold ${Math.round(18 * uiScale)}px sans-serif`;
@@ -5687,9 +5775,7 @@ function render() {
                 ctx.arc(W / 2, cardY + 68, iconR, 0, Math.PI * 2);
                 ctx.fill();
 
-                ctx.font = `${Math.round(28 * uiScale)}px sans-serif`;
-                ctx.fillStyle = '#FFE072';
-                ctx.fillText('⚡', W / 2, cardY + 76);
+                drawVectorBolt(ctx, W / 2, cardY + 68, 16, '#FFE072');
 
                 ctx.textAlign = 'center';
                 ctx.fillStyle = '#FFE072';
@@ -5704,7 +5790,7 @@ function render() {
                 } else if (isCritActive) {
                     ctx.fillStyle = '#52C41A';
                     ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
-                    ctx.fillText(`⚡ 暴击生效中 (${formatTime(state.critRemainingSec)})，结束后可再次化缘`, W / 2, cardY + 134);
+                    ctx.fillText(`暴击生效中 (${formatTime(state.critRemainingSec)})，结束后可再次化缘`, W / 2, cardY + 134);
                 } else {
                     ctx.fillStyle = '#F5C44B';
                     ctx.font = `bold ${Math.round(10.5 * uiScale)}px sans-serif`;
@@ -5731,7 +5817,7 @@ function render() {
                     ctx.stroke();
                     ctx.fillStyle = '#52C41A';
                     ctx.font = `bold ${Math.round(12.5 * uiScale)}px sans-serif`;
-                    ctx.fillText(`⚡ 暴击生效中 (${formatTime(state.critRemainingSec)})`, W / 2, adBtnY + 26);
+                    ctx.fillText(`暴击生效中 (${formatTime(state.critRemainingSec)})`, W / 2, adBtnY + 26);
                 } else {
                     const adGrad = ctx.createLinearGradient(cardX + 24, adBtnY, cardX + 24, adBtnY + 42);
                     adGrad.addColorStop(0, '#52C41A');
@@ -5744,7 +5830,7 @@ function render() {
                     ctx.stroke();
                     ctx.fillStyle = '#FFE072';
                     ctx.font = `bold ${Math.round(13.5 * uiScale)}px sans-serif`;
-                    ctx.fillText('🎬 观看视频开启暴击', W / 2, adBtnY + 26);
+                    ctx.fillText('观看视频开启暴击', W / 2, adBtnY + 26);
                 }
 
                 const closeBtnY = cardY + 212;
@@ -5768,7 +5854,7 @@ function render() {
                 ctx.textAlign = 'center';
                 ctx.font = `bold ${Math.round(15 * uiScale)}px sans-serif`;
                 ctx.fillStyle = '#FFE072';
-                ctx.fillText('🔔 自动敲击 · 禅意挂机', W / 2, cardY + 26);
+                ctx.fillText('自动敲击 · 禅意挂机', W / 2, cardY + 26);
 
                 ctx.fillStyle = '#F5C44B';
                 ctx.font = `bold ${Math.round(18 * uiScale)}px sans-serif`;
@@ -5783,9 +5869,7 @@ function render() {
                 ctx.arc(W / 2, cardY + 68, iconR, 0, Math.PI * 2);
                 ctx.fill();
 
-                ctx.font = `${Math.round(28 * uiScale)}px sans-serif`;
-                ctx.fillStyle = '#FFE072';
-                ctx.fillText('🔔', W / 2, cardY + 76);
+                drawVectorBell(ctx, W / 2, cardY + 68, 15, '#FFE072');
 
                 ctx.textAlign = 'center';
                 ctx.fillStyle = '#FFE072';
@@ -5826,7 +5910,7 @@ function render() {
                     ctx.stroke();
                     ctx.fillStyle = '#FFE072';
                     ctx.font = `bold ${Math.round(13.5 * uiScale)}px sans-serif`;
-                    ctx.fillText('🎬 观看视频开启挂机', W / 2, adBtnY + 26);
+                    ctx.fillText('观看视频开启挂机', W / 2, adBtnY + 26);
                 }
 
                 const closeBtnY = cardY + 212;
@@ -5848,7 +5932,7 @@ function render() {
                 ctx.textAlign = 'center';
                 ctx.font = `bold ${Math.round(15 * uiScale)}px sans-serif`;
                 ctx.fillStyle = '#FFE072';
-                ctx.fillText('👑 战力解锁 · 尊荣特权', W / 2, cardY + 26);
+                ctx.fillText('战力解锁 · 尊荣特权', W / 2, cardY + 26);
 
                 ctx.fillStyle = '#F5C44B';
                 ctx.font = `bold ${Math.round(18 * uiScale)}px sans-serif`;
@@ -5863,9 +5947,7 @@ function render() {
                 ctx.arc(W / 2, cardY + 68, iconR, 0, Math.PI * 2);
                 ctx.fill();
 
-                ctx.font = `${Math.round(28 * uiScale)}px sans-serif`;
-                ctx.fillStyle = '#FFE072';
-                ctx.fillText('👑', W / 2, cardY + 76);
+                drawVectorTrophy(ctx, W / 2, cardY + 68, 15);
 
                 const targetIdx = state.targetUnlockTierIdx || 3;
                 const targetBet = BET_TIERS[targetIdx] || 2000;
@@ -5891,7 +5973,7 @@ function render() {
 
                 ctx.fillStyle = '#FFE072';
                 ctx.font = `bold ${Math.round(13.5 * uiScale)}px sans-serif`;
-                ctx.fillText('🎬 观看视频解锁 24 小时', W / 2, adBtnY + 26);
+                ctx.fillText('观看视频解锁 24 小时', W / 2, adBtnY + 26);
 
                 const closeBtnY = cardY + 212;
                 const closeGrad = ctx.createLinearGradient(cardX + 24, closeBtnY, cardX + 24, closeBtnY + 38);
@@ -5912,7 +5994,7 @@ function render() {
                 ctx.font = `bold ${Math.round(15 * uiScale)}px sans-serif`;
                 ctx.fillStyle = '#FFE072';
                 ctx.textAlign = 'center';
-                ctx.fillText('⚡ 选择祈福战力', W / 2, cardY + 28);
+                ctx.fillText('选择祈福战力', W / 2, cardY + 28);
 
                 ctx.fillStyle = '#F5C44B';
                 ctx.font = `bold ${Math.round(18 * uiScale)}px sans-serif`;
@@ -6001,7 +6083,7 @@ function render() {
                             ctx.stroke();
                             ctx.fillStyle = '#52C41A';
                             ctx.font = `bold ${Math.round(8.5 * uiScale)}px sans-serif`;
-                            ctx.fillText('🟢 免费', tagX + tagW / 2, tagY + 11);
+                            ctx.fillText('免费', tagX + tagW / 2, tagY + 11);
                         } else {
                             const remainH = Math.max(1, Math.ceil((state.unlockedTiers[idx] - Date.now()) / (3600 * 1000)));
                             ctx.fillStyle = 'rgba(82, 196, 26, 0.25)';
@@ -6012,7 +6094,7 @@ function render() {
                             ctx.stroke();
                             ctx.fillStyle = '#52C41A';
                             ctx.font = `bold ${Math.round(8.5 * uiScale)}px sans-serif`;
-                            ctx.fillText(`⚡ 余${remainH}h`, tagX + tagW / 2, tagY + 11);
+                            ctx.fillText(`余${remainH}h`, tagX + tagW / 2, tagY + 11);
                         }
                     } else if (isPrevUnlocked) {
                         ctx.fillStyle = 'rgba(245, 196, 75, 0.2)';
@@ -6023,7 +6105,7 @@ function render() {
                         ctx.stroke();
                         ctx.fillStyle = '#FFE072';
                         ctx.font = `bold ${Math.round(8 * uiScale)}px sans-serif`;
-                        ctx.fillText('🎬 解锁24h', tagX + tagW / 2, tagY + 11);
+                        ctx.fillText('解锁24h', tagX + tagW / 2, tagY + 11);
                     } else {
                         ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
                         drawRoundRect(ctx, tagX, tagY, tagW, tagH, 4);
@@ -6033,7 +6115,7 @@ function render() {
                         ctx.stroke();
                         ctx.fillStyle = '#7A6E64';
                         ctx.font = `${Math.round(8 * uiScale)}px sans-serif`;
-                        ctx.fillText('🔒 待前置', tagX + tagW / 2, tagY + 11);
+                        ctx.fillText('待前置', tagX + tagW / 2, tagY + 11);
                     }
                 });
             } else if (state.currentModal === 'bigwin') {
@@ -6041,21 +6123,21 @@ function render() {
                 const mult = parseFloat(bw.multiplier || '2.0');
                 const nowTime = Date.now();
 
-                let tierTitle = '🎉 佛光普照 · 功德大吉';
-                let tierBadge = '✨ 喜乐翻倍 · 欢喜纳福 ✨';
+                let tierTitle = '佛光普照 · 功德大吉';
+                let tierBadge = '✦ 喜乐翻倍 · 欢喜纳福 ✦';
                 let btnText = '领受福报 · 继续修行';
                 let haloColor = 'rgba(255, 215, 0, 0.4)';
                 let glowBorder = '#FFD700';
 
                 if (mult >= 15) {
-                    tierTitle = '👑 震古烁今 · 九品至尊';
-                    tierBadge = '👑 至尊无上 · 万佛朝宗 👑';
+                    tierTitle = '震古烁今 · 九品至尊';
+                    tierBadge = '✦ 至尊无上 · 万佛朝宗 ✦';
                     btnText = '感怀圣恩 · 功德圆满';
                     haloColor = 'rgba(255, 77, 79, 0.45)';
                     glowBorder = '#FFA39E';
                 } else if (mult >= 5) {
-                    tierTitle = '🌟 鸿运齐天 · 万福齐聚';
-                    tierBadge = '🔥 鸿运当头 · 功德无量 🔥';
+                    tierTitle = '鸿运齐天 · 万福齐聚';
+                    tierBadge = '✦ 鸿运当头 · 功德无量 ✦';
                     btnText = '恭谢恩典 · 领受福报';
                     haloColor = 'rgba(255, 170, 0, 0.45)';
                     glowBorder = '#FFC53D';
@@ -6105,9 +6187,14 @@ function render() {
                 ctx.fillText(tierBadge, W / 2, cardY + 62);
 
                 // 4. 中央巨大金光翻倍数值与金莲宝座
-                const centerIconY = cardY + 110;
-                ctx.font = `${Math.round(42 * uiScale)}px sans-serif`;
-                ctx.fillText(mult >= 15 ? '👑' : (mult >= 5 ? '🌟' : '🏮'), W / 2, centerIconY);
+                const centerIconY = cardY + 104;
+                if (mult >= 15) {
+                    drawVectorTrophy(ctx, W / 2, centerIconY, 26);
+                } else if (mult >= 5) {
+                    drawVectorScroll(ctx, W / 2, centerIconY, 24);
+                } else {
+                    drawVectorBell(ctx, W / 2, centerIconY, 24, '#FFE072');
+                }
 
                 // 中奖数字 (超大金光高亮大字直接展示)
                 ctx.save();
@@ -6227,7 +6314,7 @@ if (typeof wx !== 'undefined') {
                 const tierText = slip.tier ? slip.tier.replace(/【|】/g, '') : '大吉';
                 const poemFirstLine = (slip.poem && slip.poem[0]) ? slip.poem[0] : '诸般顺遂皆如意';
                 return {
-                    title: `🎋 喜提【${tierText}】！我在${temple.name}抽到${slip.name}：“${poemFirstLine}”～快来测测今日运势！`,
+                    title: `喜提【${tierText}】！我在${temple.name}抽到${slip.name}：“${poemFirstLine}”～快来测测今日运势！`,
                     imageUrl: 'share_500x400.jpg',
                     query: `modal=fortune_slip&temple=${temple.id}`
                 };

@@ -204,20 +204,20 @@ function drawRankItem(ctx, item, idx, startY, itemH, avatarR, avatarImg, s) {
     const badgeX = 24 * s;
     const badgeY = y + itemH / 2;
     if (idx === 0) {
-        ctx.font = `bold ${Math.round(18 * s)}px sans-serif`;
+        ctx.font = `bold ${Math.round(15 * s)}px sans-serif`;
         ctx.textAlign = 'center';
         ctx.fillStyle = '#FFD700';
-        ctx.fillText('👑', badgeX, badgeY + 6 * s);
+        ctx.fillText('壹', badgeX, badgeY + 5 * s);
     } else if (idx === 1) {
-        ctx.font = `bold ${Math.round(16 * s)}px sans-serif`;
+        ctx.font = `bold ${Math.round(15 * s)}px sans-serif`;
         ctx.textAlign = 'center';
-        ctx.fillStyle = '#C0C0C0';
-        ctx.fillText('🥈', badgeX, badgeY + 5 * s);
+        ctx.fillStyle = '#E6F7FF';
+        ctx.fillText('贰', badgeX, badgeY + 5 * s);
     } else if (idx === 2) {
-        ctx.font = `bold ${Math.round(16 * s)}px sans-serif`;
+        ctx.font = `bold ${Math.round(15 * s)}px sans-serif`;
         ctx.textAlign = 'center';
-        ctx.fillStyle = '#CD7F32';
-        ctx.fillText('🥉', badgeX, badgeY + 5 * s);
+        ctx.fillStyle = '#FFA39E';
+        ctx.fillText('叁', badgeX, badgeY + 5 * s);
     } else {
         ctx.fillStyle = idx < 10 ? '#FFE072' : '#8C7B6E';
         ctx.font = `bold ${Math.round(13 * s)}px sans-serif`;
@@ -296,10 +296,11 @@ function drawEmptyState(scale, selfInfo) {
     const midX = CW / 2;
     const midY = START_Y + ITEM_H + Math.round(85 * s);
 
-    // 🏮 灯笼
-    ctx.font = `${Math.round(26 * s)}px sans-serif`;
+    // 装饰星芒
+    ctx.font = `bold ${Math.round(22 * s)}px sans-serif`;
+    ctx.fillStyle = '#FFE072';
     ctx.textAlign = 'center';
-    ctx.fillText('🏮', midX, midY - 24 * s);
+    ctx.fillText('✦', midX, midY - 20 * s);
 
     // 主提示语
     ctx.fillStyle = '#FFE072';
