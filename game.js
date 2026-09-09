@@ -764,6 +764,283 @@ function stopFortuneShakeListener() {
     } catch(e) {}
 }
 
+// ------------------------------------------------------------------
+// 每日灵签：微信好友/群分享与高清壁纸海报生成系统
+// ------------------------------------------------------------------
+function shareFortuneSlip(slip) {
+    if (!slip) slip = state.todayFortuneSlip;
+    if (!slip) return;
+    const temple = getCurrentTemple();
+    const poemFirstLine = (slip.poem && slip.poem[0]) ? slip.poem[0] : '诸般顺遂皆如意';
+    const tierText = slip.tier ? slip.tier.replace(/【|】/g, '') : '大吉';
+    const shareTitle = `🎋 喜提【${tierText}】！我在${temple.name}抽到${slip.name}：“${poemFirstLine}”～快来测测今日运势！`;
+    
+    if (typeof wx !== 'undefined' && wx.shareAppMessage) {
+        try {
+            wx.shareAppMessage({
+                title: shareTitle,
+                imageUrl: 'share_500x400.jpg'
+            });
+            showToast('🧧 已发起灵签分享，快送给好友吧！');
+        } catch(e) {
+            showToast('🧧 灵签福运已备好，请点击右上角分享！');
+        }
+    } else {
+        showToast('🧧 灵签福运已备好，请点击右上角分享！');
+    }
+}
+
+function saveFortunePoster(slip) {
+    if (!slip) slip = state.todayFortuneSlip;
+    if (!slip) return;
+    
+    showToast('⏳ 正在生成高清灵签壁纸...');
+    
+    const pw = 720;
+    const ph = 1280;
+    
+    let posterCanvas = null;
+    if (typeof wx !== 'undefined' && wx.createOffscreenCanvas) {
+        try {
+            posterCanvas = wx.createOffscreenCanvas({ type: '2d', width: pw, height: ph });
+        } catch(e) {}
+    }
+    if (!posterCanvas && typeof wx !== 'undefined' && wx.createCanvas) {
+        try {
+            posterCanvas = wx.createCanvas();
+            posterCanvas.width = pw;
+            posterCanvas.height = ph;
+        } catch(e) {}
+    }
+    if (!posterCanvas) {
+        showToast('⚠️ 当前环境暂不支持生成壁纸');
+        return;
+    }
+    
+    const pctx = posterCanvas.getContext('2d');
+    if (!pctx) {
+        showToast('⚠️ 画布初始化异常');
+        return;
+    }
+    
+    // 1. 底色渐变与边框 (古刹深棕黑底色)
+    const bgGrad = pctx.createLinearGradient(0, 0, 0, ph);
+    bgGrad.addColorStop(0, '#160E08');
+    bgGrad.addColorStop(0.5, '#22150D');
+    bgGrad.addColorStop(1, '#120A05');
+    pctx.fillStyle = bgGrad;
+    pctx.fillRect(0, 0, pw, ph);
+    
+    // 2. 装饰性典雅双重金线边框
+    pctx.strokeStyle = '#8C6D1F';
+    pctx.lineWidth = 4;
+    drawRoundRect(pctx, 24, 24, pw - 48, ph - 48, 16);
+    pctx.stroke();
+    
+    pctx.strokeStyle = '#D4AF37';
+    pctx.lineWidth = 1.5;
+    drawRoundRect(pctx, 32, 32, pw - 64, ph - 64, 12);
+    pctx.stroke();
+    
+    // 四角金星圆点
+    const cornerDots = [
+        [32, 32], [pw - 32, 32], [32, ph - 32], [pw - 32, ph - 32]
+    ];
+    cornerDots.forEach(([cx, cy]) => {
+        pctx.fillStyle = '#FFE072';
+        pctx.beginPath();
+        pctx.arc(cx, cy, 5, 0, Math.PI * 2);
+        pctx.fill();
+    });
+    
+    // 3. 顶部古刹与日期题头
+    const temple = getCurrentTemple();
+    pctx.textAlign = 'center';
+    pctx.fillStyle = '#FFE072';
+    pctx.font = 'bold 32px sans-serif';
+    pctx.fillText(`🎋 ${temple.name} · 每日祈愿灵签 🎋`, pw / 2, 90);
+    
+    const dStr = getTodayDateStr();
+    pctx.fillStyle = '#D4AF37';
+    pctx.font = '20px sans-serif';
+    pctx.fillText(`📅 诚心所愿 · 公历 ${dStr}`, pw / 2, 128);
+    
+    // 4. 中央红笺古卷主体
+    const scrollX = 54;
+    const scrollY = 160;
+    const scrollW = pw - 108;
+    const scrollH = 820;
+    
+    const scrollGrad = pctx.createLinearGradient(scrollX, scrollY, scrollX, scrollY + scrollH);
+    scrollGrad.addColorStop(0, '#5A1E14');
+    scrollGrad.addColorStop(0.5, '#6E2519');
+    scrollGrad.addColorStop(1, '#3D120B');
+    pctx.fillStyle = scrollGrad;
+    drawRoundRect(pctx, scrollX, scrollY, scrollW, scrollH, 20);
+    pctx.fill();
+    
+    pctx.strokeStyle = '#F5C44B';
+    pctx.lineWidth = 3;
+    pctx.stroke();
+    
+    pctx.strokeStyle = 'rgba(255, 224, 114, 0.4)';
+    pctx.lineWidth = 1;
+    drawRoundRect(pctx, scrollX + 10, scrollY + 10, scrollW - 20, scrollH - 20, 14);
+    pctx.stroke();
+    
+    // 5. 签题与朱砂红印
+    pctx.textAlign = 'left';
+    pctx.fillStyle = '#FFE072';
+    pctx.font = 'bold 36px sans-serif';
+    pctx.fillText(slip.name || '《祈愿灵签》', scrollX + 36, scrollY + 68);
+    
+    // 朱砂金印
+    const stampW = 160;
+    const stampH = 50;
+    const stampX = scrollX + scrollW - stampW - 36;
+    const stampY = scrollY + 32;
+    pctx.fillStyle = '#C0392B';
+    drawRoundRect(pctx, stampX, stampY, stampW, stampH, 8);
+    pctx.fill();
+    pctx.strokeStyle = '#FFD700';
+    pctx.lineWidth = 2;
+    pctx.stroke();
+    
+    pctx.textAlign = 'center';
+    pctx.fillStyle = '#FFF8E7';
+    pctx.font = 'bold 24px sans-serif';
+    pctx.fillText(slip.tier || '【上上大吉】', stampX + stampW / 2, stampY + 34);
+    
+    // 6. 核心签诗四句 (大字书法感居中排版)
+    pctx.textAlign = 'center';
+    pctx.fillStyle = '#FFF2B2';
+    pctx.font = 'bold 38px Kaiti, serif, sans-serif';
+    const poemList = (Array.isArray(slip.poem) && slip.poem.length) 
+        ? slip.poem 
+        : ['心诚则灵福自来', '一念清净化尘埃', '诸般顺遂皆如意', '福慧圆满照灵台'];
+    
+    poemList.forEach((line, pIdx) => {
+        pctx.fillText(String(line), pw / 2, scrollY + 175 + pIdx * 62);
+    });
+    
+    // 7. 金色华彩分割纹样
+    const divY = scrollY + 440;
+    pctx.strokeStyle = '#D4AF37';
+    pctx.lineWidth = 2;
+    pctx.beginPath();
+    pctx.moveTo(scrollX + 40, divY);
+    pctx.lineTo(scrollX + scrollW - 40, divY);
+    pctx.stroke();
+    
+    pctx.fillStyle = '#D4AF37';
+    pctx.font = 'bold 20px sans-serif';
+    pctx.fillText('◈ 佛光普照 · 诸事顺遂 ◈', pw / 2, divY + 7);
+    
+    // 8. 今日【宜】与【忌】
+    pctx.textAlign = 'left';
+    pctx.font = 'bold 26px sans-serif';
+    pctx.fillStyle = '#95DE64';
+    pctx.fillText(`【宜】 ${slip.yi || '静心笃行 · 开启新程'}`, scrollX + 40, divY + 55);
+    
+    pctx.fillStyle = '#FF7875';
+    pctx.fillText(`【忌】 ${slip.ji || '急躁内耗 · 瞻前顾后'}`, scrollX + 40, divY + 105);
+    
+    // 9. 禅语解惑
+    pctx.fillStyle = '#FFE072';
+    pctx.font = '24px sans-serif';
+    const descText = `解曰：${slip.desc || '心若安定，万事亨通。顺应时势，自有吉兆。'}`;
+    const maxDescW = scrollW - 80;
+    let descLine = '';
+    let descLineY = divY + 165;
+    for (let c = 0; c < descText.length; c++) {
+        const testLine = descLine + descText[c];
+        if (pctx.measureText(testLine).width > maxDescW && c > 0) {
+            pctx.fillText(descLine, scrollX + 40, descLineY);
+            descLine = descText[c];
+            descLineY += 34;
+        } else {
+            descLine = testLine;
+        }
+    }
+    if (descLine) {
+        pctx.fillText(descLine, scrollX + 40, descLineY);
+    }
+    
+    // 10. 修行者功德结印落款
+    const titleObj = getCurrentTitle(state.totalHit || 0);
+    const dharmaName = state.dharmaName ? `【${state.dharmaName}】` : '【修行居士】';
+    const titleName = (titleObj && titleObj.current) ? titleObj.current.name : '初结善缘';
+    
+    const footerBoxY = scrollY + scrollH + 30;
+    pctx.textAlign = 'center';
+    pctx.font = '22px sans-serif';
+    pctx.fillStyle = '#FFE072';
+    pctx.fillText(`📿 持修者：${dharmaName} · 称号：${titleName} · 功德值：${state.totalHit || 0}`, pw / 2, footerBoxY);
+    
+    pctx.font = '18px sans-serif';
+    pctx.fillStyle = '#A8988B';
+    pctx.fillText('《叩叩解压 · 静心敲木鱼》· 每日一签 · 福运常伴', pw / 2, footerBoxY + 34);
+    pctx.fillText('长按保存壁纸 · 愿您心静自安，福慧双增', pw / 2, footerBoxY + 64);
+    
+    // 导出临时文件并保存至手机相册
+    try {
+        if (posterCanvas.toTempFilePath) {
+            posterCanvas.toTempFilePath({
+                x: 0,
+                y: 0,
+                width: pw,
+                height: ph,
+                destWidth: pw,
+                destHeight: ph,
+                fileType: 'png',
+                quality: 1.0,
+                success: (res) => {
+                    const tempFilePath = res.tempFilePath;
+                    if (typeof wx !== 'undefined' && wx.saveImageToPhotosAlbum) {
+                        wx.saveImageToPhotosAlbum({
+                            filePath: tempFilePath,
+                            success: () => {
+                                showToast('🖼️ 灵签壁纸海报已成功保存至手机相册！');
+                                if (typeof wx.vibrateShort === 'function') {
+                                    try { wx.vibrateShort({ type: 'medium', fail: () => {} }); } catch(e) {}
+                                }
+                            },
+                            fail: (err) => {
+                                if (err && err.errMsg && (err.errMsg.includes('auth') || err.errMsg.includes('deny') || err.errMsg.includes('fail auth'))) {
+                                    if (wx.showModal) {
+                                        wx.showModal({
+                                            title: '保存海报提示',
+                                            content: '需要您的相册权限才能将灵签壁纸保存到手机相册中哦～',
+                                            confirmText: '去授权',
+                                            cancelText: '取消',
+                                            success: (mRes) => {
+                                                if (mRes.confirm && wx.openSetting) {
+                                                    wx.openSetting({});
+                                                }
+                                            }
+                                        });
+                                    } else {
+                                        showToast('⚠️ 未获得相册权限，无法保存');
+                                    }
+                                } else {
+                                    showToast('🖼️ 已生成海报');
+                                }
+                            }
+                        });
+                    } else {
+                        showToast('🖼️ 壁纸已生成');
+                    }
+                },
+                fail: () => {
+                    showToast('⚠️ 壁纸生成导出失败，请重试');
+                }
+            });
+        }
+    } catch(e) {
+        showToast('⚠️ 保存相册遇到问题');
+    }
+}
+
 function loadUnlockedTiers() {
     try {
         if (typeof wx !== 'undefined' && wx.getStorageSync) {
@@ -1972,7 +2249,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
             const cardW = W * 0.86;
             const cardH = (state.currentModal === 'ad_insufficient' || state.currentModal === 'ad_crit' || state.currentModal === 'ad_auto' || state.currentModal === 'ad_tier_unlock')
                 ? Math.min(H * 0.44, 275)
-                : ((state.currentModal === 'betpicker') ? Math.min(H * 0.58, 360) : ((state.currentModal === 'quick_ambient') ? Math.min(H * 0.64, 395) : ((state.currentModal === 'calendar') ? Math.min(H * 0.72, 460) : Math.min(H * 0.65, 420))));
+                : ((state.currentModal === 'betpicker') ? Math.min(H * 0.58, 360) : ((state.currentModal === 'quick_ambient') ? Math.min(H * 0.64, 395) : ((state.currentModal === 'calendar' || state.currentModal === 'fortune_slip') ? Math.min(H * 0.74, 480) : Math.min(H * 0.65, 420))));
             const cardX = (W - cardW) / 2;
             const cardY = (H - cardH) / 2;
 
@@ -2303,7 +2580,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                     state.currentModal = null;
                     return;
                 }
-                // 点击摇签按钮或签筒触发动画
+                // 未摇签：点击摇签按钮或签筒触发动画
                 if (!state.hasShakenFortuneToday && !state.todayFortuneSlip && state.fortuneState === 'idle') {
                     const shakeBtnW = cardW - 48;
                     const shakeBtnH = Math.round(38 * uiScale);
@@ -2313,6 +2590,33 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                     const isPotTap = (tx >= cardX + 30 && tx <= cardX + cardW - 30 && ty >= cardY + 50 && ty <= cardY + cardH - 50);
                     if (isBtnTap || isPotTap) {
                         triggerFortuneShake();
+                        return;
+                    }
+                }
+                // 已解签：点击【赠好友灵签】或【保存壁纸海报】
+                const slip = state.todayFortuneSlip;
+                if (slip) {
+                    const scrollX = cardX + 12;
+                    const scrollY = cardY + 44;
+                    const scrollW = cardW - 24;
+                    const scrollH = cardH - 56;
+                    const btnH = Math.round(34 * uiScale);
+                    const btnY = scrollY + scrollH - btnH - Math.round(24 * uiScale);
+                    const btnW = (scrollW - Math.round(24 * uiScale)) / 2;
+                    const btn1X = scrollX + Math.round(8 * uiScale);
+                    const btn2X = btn1X + btnW + Math.round(8 * uiScale);
+
+                    // 1. 赠好友灵签按钮
+                    if (tx >= btn1X && tx <= btn1X + btnW && ty >= btnY && ty <= btnY + btnH) {
+                        try { soundManager.playWoodHit(); } catch(e) {}
+                        shareFortuneSlip(slip);
+                        return;
+                    }
+
+                    // 2. 保存壁纸海报按钮
+                    if (tx >= btn2X && tx <= btn2X + btnW && ty >= btnY && ty <= btnY + btnH) {
+                        try { soundManager.playWoodHit(); } catch(e) {}
+                        saveFortunePoster(slip);
                         return;
                     }
                 }
@@ -3497,7 +3801,7 @@ function render() {
                 const cardW = W * 0.86;
                 const cardH = (state.currentModal === 'ad_insufficient' || state.currentModal === 'ad_crit' || state.currentModal === 'ad_auto' || state.currentModal === 'ad_tier_unlock')
                     ? Math.min(H * 0.44, 275)
-                    : ((state.currentModal === 'betpicker') ? Math.min(H * 0.58, 360) : ((state.currentModal === 'quick_ambient') ? Math.min(H * 0.64, 395) : ((state.currentModal === 'calendar') ? Math.min(H * 0.72, 460) : Math.min(H * 0.65, 420))));
+                    : ((state.currentModal === 'betpicker') ? Math.min(H * 0.58, 360) : ((state.currentModal === 'quick_ambient') ? Math.min(H * 0.64, 395) : ((state.currentModal === 'calendar' || state.currentModal === 'fortune_slip') ? Math.min(H * 0.74, 480) : Math.min(H * 0.65, 420))));
                 const cardX = (W - cardW) / 2;
                 const cardY = (H - cardH) / 2;
 
@@ -4280,12 +4584,12 @@ function render() {
 
                 } else if (slip) {
                     // ==========================================
-                    // 已解签：红笺画卷展示 (带入场呼吸光与朱砂印章)
+                    // 已解签：红笺画卷展示 (带入场呼吸光与朱砂印章 + 双分享按钮)
                     // ==========================================
-                    const scrollX = cardX + 14;
-                    const scrollY = cardY + 46;
-                    const scrollW = cardW - 28;
-                    const scrollH = cardH - 62;
+                    const scrollX = cardX + 12;
+                    const scrollY = cardY + 44;
+                    const scrollW = cardW - 24;
+                    const scrollH = cardH - 56;
 
                     // 红笺底纸
                     const scrollGrad = ctx.createLinearGradient(scrollX, scrollY, scrollX, scrollY + scrollH);
@@ -4325,7 +4629,7 @@ function render() {
                     ctx.textAlign = 'center';
                     ctx.font = `bold ${Math.round(13 * uiScale)}px Kaiti, serif, sans-serif`;
                     ctx.fillStyle = '#FFF0A8';
-                    const poemStartY = scrollY + 58;
+                    const poemStartY = scrollY + 56;
                     const poemList = (slip && Array.isArray(slip.poem) && slip.poem.length) 
                         ? slip.poem 
                         : ['心诚则灵福自来', '一念清净化尘埃', '诸般顺遂皆如意', '福慧圆满照灵台'];
@@ -4334,31 +4638,70 @@ function render() {
                     });
 
                     // 金色分割线
-                    const divY = scrollY + 148;
+                    const divY = scrollY + 142;
                     ctx.strokeStyle = 'rgba(245, 196, 75, 0.3)';
                     ctx.beginPath();
-                    ctx.moveTo(scrollX + 20, divY);
-                    ctx.lineTo(scrollX + scrollW - 20, divY);
+                    ctx.moveTo(scrollX + 16, divY);
+                    ctx.lineTo(scrollX + scrollW - 16, divY);
                     ctx.stroke();
 
                     // 今日所宜与所忌
                     ctx.textAlign = 'left';
                     ctx.font = `bold ${Math.round(10 * uiScale)}px sans-serif`;
                     ctx.fillStyle = '#95DE64';
-                    ctx.fillText(`【宜】${(slip && slip.yi) ? slip.yi : '静心笃行'}`, scrollX + 16, divY + 22);
+                    ctx.fillText(`【宜】${(slip && slip.yi) ? slip.yi : '静心笃行'}`, scrollX + 14, divY + 18);
                     ctx.fillStyle = '#FF7875';
-                    ctx.fillText(`【忌】${(slip && slip.ji) ? slip.ji : '急躁内耗'}`, scrollX + 16, divY + 42);
+                    ctx.fillText(`【忌】${(slip && slip.ji) ? slip.ji : '急躁内耗'}`, scrollX + 14, divY + 36);
 
                     // 禅语解惑
                     ctx.fillStyle = '#FFE072';
                     ctx.font = `${Math.round(9.5 * uiScale)}px sans-serif`;
-                    ctx.fillText(`解曰：${(slip && slip.desc) ? slip.desc : '心若安定，万事亨通。'}`, scrollX + 16, divY + 66);
+                    ctx.fillText(`解曰：${(slip && slip.desc) ? slip.desc : '心若安定，万事亨通。'}`, scrollX + 14, divY + 56);
+
+                    // ==========================================
+                    // 底部功能按钮：【🧧 赠好友灵签】 与 【🖼️ 保存壁纸海报】
+                    // ==========================================
+                    const btnH = Math.round(32 * uiScale);
+                    const btnY = scrollY + scrollH - btnH - Math.round(22 * uiScale);
+                    const btnW = (scrollW - Math.round(24 * uiScale)) / 2;
+                    const btn1X = scrollX + Math.round(8 * uiScale);
+                    const btn2X = btn1X + btnW + Math.round(8 * uiScale);
+
+                    // 按钮1：赠好友灵签 (金红渐变)
+                    const b1Grad = ctx.createLinearGradient(btn1X, btnY, btn1X, btnY + btnH);
+                    b1Grad.addColorStop(0, '#E67E22');
+                    b1Grad.addColorStop(1, '#D35400');
+                    ctx.fillStyle = b1Grad;
+                    drawRoundRect(ctx, btn1X, btnY, btnW, btnH, 6);
+                    ctx.fill();
+                    ctx.strokeStyle = '#FFE072';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                    ctx.fillStyle = '#FFF8E7';
+                    ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText('🧧 赠好友灵签', btn1X + btnW / 2, btnY + Math.round(20 * uiScale));
+
+                    // 按钮2：保存壁纸海报 (琥珀金渐变)
+                    const b2Grad = ctx.createLinearGradient(btn2X, btnY, btn2X, btnY + btnH);
+                    b2Grad.addColorStop(0, '#F39C12');
+                    b2Grad.addColorStop(1, '#C0392B');
+                    ctx.fillStyle = b2Grad;
+                    drawRoundRect(ctx, btn2X, btnY, btnW, btnH, 6);
+                    ctx.fill();
+                    ctx.strokeStyle = '#FFD700';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                    ctx.fillStyle = '#FFF8E7';
+                    ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText('🖼️ 保存壁纸海报', btn2X + btnW / 2, btnY + Math.round(20 * uiScale));
 
                     // 底部归档日历提示
                     ctx.textAlign = 'center';
-                    ctx.font = `${Math.round(9 * uiScale)}px sans-serif`;
+                    ctx.font = `${Math.round(8.5 * uiScale)}px sans-serif`;
                     ctx.fillStyle = '#D4AF37';
-                    ctx.fillText('✨ 今日灵签已自动记录于【修行日历】', W / 2, scrollY + scrollH - 12);
+                    ctx.fillText('✨ 今日灵签已自动记录于【修行日历】', W / 2, scrollY + scrollH - 6);
                 }
 
             } else if (state.currentModal === 'calendar') {
