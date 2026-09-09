@@ -548,6 +548,11 @@ const state = {
     fortuneRiseStartTime: 0,
     fortuneRevealTime: 0,
     fortuneParticles: [],
+    collectedSlips: [],       // 已收录入【灵签谱】的签文名称列表
+    galleryTab: 'all',        // 'all' | 'general' | 'temple' | 'solar'
+    galleryPage: 0,           // 灵签谱当前分页索引
+    viewingGallerySlip: null, // 当前全屏研读的已解锁签文对象
+    fortuneReturnModal: null, // 灵签谱关闭或返回的目标弹窗
     calendarRecords: {},
     selectedCalendarDay: new Date().getDate(),
     titleScrollY: 0,
@@ -636,8 +641,58 @@ try {
         try { state.calendarRecords = JSON.parse(savedRecords); } catch(e) {}
     }
     if (!state.calendarRecords) state.calendarRecords = {};
+
+    // 恢复灵签谱收集档案并自动同步历史
+    const savedSlips = (typeof wx !== 'undefined' && wx.getStorageSync ? wx.getStorageSync('qmy_collected_slips') : '') || '';
+    if (savedSlips) {
+        try { state.collectedSlips = JSON.parse(savedSlips); } catch(e) {}
+    }
+    if (!Array.isArray(state.collectedSlips)) state.collectedSlips = [];
+
+    // 自动扫描修行日历中的历史灵签与今日灵签合并入库
+    if (state.calendarRecords && typeof state.calendarRecords === 'object') {
+        Object.values(state.calendarRecords).forEach(rec => {
+            if (rec && rec.fortuneSlip && rec.fortuneSlip.name && !state.collectedSlips.includes(rec.fortuneSlip.name)) {
+                state.collectedSlips.push(rec.fortuneSlip.name);
+            }
+        });
+    }
+    if (state.todayFortuneSlip && state.todayFortuneSlip.name && !state.collectedSlips.includes(state.todayFortuneSlip.name)) {
+        state.collectedSlips.push(state.todayFortuneSlip.name);
+    }
+    try {
+        if (typeof wx !== 'undefined' && wx.setStorageSync) {
+            wx.setStorageSync('qmy_collected_slips', JSON.stringify(state.collectedSlips));
+        }
+    } catch(e) {}
 } catch (e) {
     console.error('加载本地存储异常:', e);
+}
+
+// ------------------------------------------------------------------
+// 灵签收录与图鉴过滤工具函数
+// ------------------------------------------------------------------
+function collectFortuneSlip(slip) {
+    if (!slip || !slip.name) return false;
+    if (!Array.isArray(state.collectedSlips)) state.collectedSlips = [];
+    if (!state.collectedSlips.includes(slip.name)) {
+        state.collectedSlips.push(slip.name);
+        try {
+            if (typeof wx !== 'undefined' && wx.setStorageSync) {
+                wx.setStorageSync('qmy_collected_slips', JSON.stringify(state.collectedSlips));
+            }
+        } catch(e) {}
+        return true; // 标识首次点亮
+    }
+    return false;
+}
+
+function getGalleryFilteredSlips(tabKey) {
+    const all = FORTUNE_SLIPS_DATA || [];
+    if (tabKey === 'general') return all.filter(s => s.name && s.name.startsWith('《第'));
+    if (tabKey === 'temple') return all.filter(s => s.name && (s.name.includes('文昌') || s.name.includes('财神') || s.name.includes('解忧')));
+    if (tabKey === 'solar') return all.filter(s => s.name && (s.name.includes('节气') || s.name.includes('特签')));
+    return all;
 }
 
 // ------------------------------------------------------------------
@@ -3115,7 +3170,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
             const cardW = W * 0.86;
             const cardH = (state.currentModal === 'ad_insufficient' || state.currentModal === 'ad_crit' || state.currentModal === 'ad_auto' || state.currentModal === 'ad_tier_unlock')
                 ? Math.min(H * 0.44, 275)
-                : ((state.currentModal === 'betpicker') ? Math.min(H * 0.58, 360) : ((state.currentModal === 'quick_ambient') ? Math.min(H * 0.64, 395) : ((state.currentModal === 'calendar' || state.currentModal === 'fortune_slip') ? Math.min(H * 0.74, 480) : Math.min(H * 0.65, 420))));
+                : ((state.currentModal === 'betpicker') ? Math.min(H * 0.58, 360) : ((state.currentModal === 'quick_ambient') ? Math.min(H * 0.64, 395) : ((state.currentModal === 'calendar' || state.currentModal === 'fortune_slip' || state.currentModal === 'fortune_gallery') ? Math.min(H * 0.74, 480) : Math.min(H * 0.65, 420))));
             const cardX = (W - cardW) / 2;
             const cardY = (H - cardH) / 2;
 
@@ -3448,6 +3503,19 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                     state.currentModal = null;
                     return;
                 }
+                // 点击左上角【灵签谱】入口按钮
+                const galleryBtnW = Math.round(82 * uiScale);
+                const galleryBtnH = Math.round(24 * uiScale);
+                const galleryBtnX = cardX + 12;
+                const galleryBtnY = cardY + 14;
+                if (tx >= galleryBtnX - 4 && tx <= galleryBtnX + galleryBtnW + 4 && ty >= galleryBtnY - 4 && ty <= galleryBtnY + galleryBtnH + 6) {
+                    try { soundManager.playWoodHit(); } catch(e) {}
+                    state.fortuneReturnModal = 'fortune_slip';
+                    state.currentModal = 'fortune_gallery';
+                    state.viewingGallerySlip = null;
+                    state.galleryPage = 0;
+                    return;
+                }
                 // 未摇签：点击摇签按钮或签筒触发动画
                 if (!state.hasShakenFortuneToday && !state.todayFortuneSlip && state.fortuneState === 'idle') {
                     const shakeBtnW = cardW - 48;
@@ -3461,7 +3529,7 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                         return;
                     }
                 }
-                // 已解签：点击【赠好友灵签】或【保存壁纸海报】
+                // 已解签：点击【分享灵签】或【保存壁纸海报】
                 const slip = state.todayFortuneSlip;
                 if (slip) {
                     const scrollX = cardX + 12;
@@ -3497,6 +3565,132 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                 if (ty < cardY || ty > cardY + cardH || tx < cardX || tx > cardX + cardW) {
                     stopFortuneShakeListener();
                     state.currentModal = null;
+                    return;
+                }
+                return;
+            }
+
+            if (state.currentModal === 'fortune_gallery') {
+                // 如果正在全屏研读单支签
+                if (state.viewingGallerySlip) {
+                    const scrollX = cardX + 12;
+                    const scrollY = cardY + 16;
+                    const scrollW = cardW - 24;
+                    const scrollH = cardH - 32;
+                    const btnH = Math.round(34 * uiScale);
+                    const btnY = scrollY + scrollH - btnH - Math.round(20 * uiScale);
+                    const returnBtnW = scrollW - Math.round(24 * uiScale);
+                    const returnBtnX = scrollX + Math.round(12 * uiScale);
+
+                    const isCloseTap = (tx > cardX + cardW - 45 && ty > cardY && ty < cardY + 45);
+                    const isReturnBtnTap = (tx >= returnBtnX && tx <= returnBtnX + returnBtnW && ty >= btnY - 6 && ty <= btnY + btnH + 10);
+                    if (isCloseTap || isReturnBtnTap) {
+                        try { soundManager.playWoodHit(); } catch(e) {}
+                        state.viewingGallerySlip = null;
+                        return;
+                    }
+                    if (ty < cardY || ty > cardY + cardH || tx < cardX || tx > cardX + cardW) {
+                        state.viewingGallerySlip = null;
+                        return;
+                    }
+                    return;
+                }
+
+                // 主图鉴视图
+                // 1. 点击右上角 × 关闭
+                if (tx > cardX + cardW - 45 && ty > cardY && ty < cardY + 45) {
+                    state.currentModal = state.fortuneReturnModal || null;
+                    return;
+                }
+
+                // 2. 分类 Tabs 点击
+                const progY = cardY + 38;
+                const progH = Math.round(38 * uiScale);
+                const tabY = progY + progH + Math.round(8 * uiScale);
+                const tabH = Math.round(26 * uiScale);
+                const gTabs = ['all', 'general', 'temple', 'solar'];
+                const tabW = (cardW - 20) / gTabs.length;
+
+                if (ty >= tabY - 4 && ty <= tabY + tabH + 6) {
+                    for (let i = 0; i < gTabs.length; i++) {
+                        const txMin = cardX + 10 + i * tabW;
+                        const txMax = txMin + tabW;
+                        if (tx >= txMin && tx <= txMax) {
+                            try { soundManager.playWoodHit(); } catch(e) {}
+                            state.galleryTab = gTabs[i];
+                            state.galleryPage = 0;
+                            return;
+                        }
+                    }
+                }
+
+                // 3. 点击 6 支签牌卡片
+                const filtered = getGalleryFilteredSlips(state.galleryTab || 'all');
+                const pageSize = 6;
+                const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+                const curPage = Math.min(totalPages - 1, Math.max(0, state.galleryPage || 0));
+                const pageItems = filtered.slice(curPage * pageSize, (curPage + 1) * pageSize);
+
+                const gridY = tabY + tabH + Math.round(8 * uiScale);
+                const colGap = Math.round(8 * uiScale);
+                const rowGap = Math.round(6 * uiScale);
+                const colW = (cardW - 20 - colGap) / 2;
+                const rowH = Math.round(46 * uiScale);
+
+                for (let i = 0; i < pageItems.length; i++) {
+                    const col = i % 2;
+                    const row = Math.floor(i / 2);
+                    const itemX = cardX + 10 + col * (colW + colGap);
+                    const itemY = gridY + row * (rowH + rowGap);
+
+                    if (tx >= itemX && tx <= itemX + colW && ty >= itemY && ty <= itemY + rowH) {
+                        const slip = pageItems[i];
+                        const isUnlocked = Array.isArray(state.collectedSlips) && state.collectedSlips.includes(slip.name);
+                        if (isUnlocked) {
+                            try { soundManager.playChime(); } catch(e) {}
+                            if (typeof wx !== 'undefined' && wx.vibrateShort) {
+                                try { wx.vibrateShort({ type: 'light', fail: () => {} }); } catch(e) {}
+                            }
+                            state.viewingGallerySlip = slip;
+                        } else {
+                            try { soundManager.playWoodHit(); } catch(e) {}
+                            if (typeof wx !== 'undefined' && wx.vibrateShort) {
+                                try { wx.vibrateShort({ type: 'medium', fail: () => {} }); } catch(e) {}
+                            }
+                            showToast('此灵签尚未点亮 · 每日诚心摇签随机启封！');
+                        }
+                        return;
+                    }
+                }
+
+                // 4. 底部翻页按钮
+                const footY = cardY + cardH - Math.round(38 * uiScale);
+                const pageBtnW = Math.round(64 * uiScale);
+                const pageBtnH = Math.round(24 * uiScale);
+
+                // 上一页
+                const prevX = cardX + 16;
+                if (tx >= prevX - 6 && tx <= prevX + pageBtnW + 6 && ty >= footY - 6 && ty <= footY + pageBtnH + 8) {
+                    if (curPage > 0) {
+                        try { soundManager.playWoodHit(); } catch(e) {}
+                        state.galleryPage = curPage - 1;
+                    }
+                    return;
+                }
+
+                // 下一页
+                const nextX = cardX + cardW - 16 - pageBtnW;
+                if (tx >= nextX - 6 && tx <= nextX + pageBtnW + 6 && ty >= footY - 6 && ty <= footY + pageBtnH + 8) {
+                    if (curPage < totalPages - 1) {
+                        try { soundManager.playWoodHit(); } catch(e) {}
+                        state.galleryPage = curPage + 1;
+                    }
+                    return;
+                }
+
+                // 点击外部关闭
+                if (ty < cardY || ty > cardY + cardH || tx < cardX || tx > cardX + cardW) {
+                    state.currentModal = state.fortuneReturnModal || null;
                     return;
                 }
                 return;
@@ -4725,7 +4919,7 @@ function render() {
                 const cardW = W * 0.86;
                 const cardH = (state.currentModal === 'ad_insufficient' || state.currentModal === 'ad_crit' || state.currentModal === 'ad_auto' || state.currentModal === 'ad_tier_unlock')
                     ? Math.min(H * 0.44, 275)
-                    : ((state.currentModal === 'betpicker') ? Math.min(H * 0.58, 360) : ((state.currentModal === 'quick_ambient') ? Math.min(H * 0.64, 395) : ((state.currentModal === 'calendar' || state.currentModal === 'fortune_slip') ? Math.min(H * 0.74, 480) : Math.min(H * 0.65, 420))));
+                    : ((state.currentModal === 'betpicker') ? Math.min(H * 0.58, 360) : ((state.currentModal === 'quick_ambient') ? Math.min(H * 0.64, 395) : ((state.currentModal === 'calendar' || state.currentModal === 'fortune_slip' || state.currentModal === 'fortune_gallery') ? Math.min(H * 0.74, 480) : Math.min(H * 0.65, 420))));
                 const cardX = (W - cardW) / 2;
                 const cardY = (H - cardH) / 2;
 
@@ -5252,8 +5446,29 @@ function render() {
                 drawVectorFortuneStick(ctx, W / 2 - Math.round(80 * uiScale), cardY + 22, Math.round(7 * uiScale));
                 ctx.fillText('每日一签 · 灵签解惑', W / 2 + Math.round(8 * uiScale), cardY + 26);
 
+                // 左上角【灵签谱】图鉴入口
+                const galleryBtnW = Math.round(82 * uiScale);
+                const galleryBtnH = Math.round(22 * uiScale);
+                const galleryBtnX = cardX + 12;
+                const galleryBtnY = cardY + 15;
+                ctx.fillStyle = 'rgba(91, 64, 40, 0.85)';
+                drawRoundRect(ctx, galleryBtnX, galleryBtnY, galleryBtnW, galleryBtnH, 4);
+                ctx.fill();
+                ctx.strokeStyle = '#F5C44B';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                drawVectorScroll(ctx, galleryBtnX + Math.round(10 * uiScale), galleryBtnY + galleryBtnH / 2, Math.round(4.5 * uiScale));
+                ctx.fillStyle = '#FFE072';
+                ctx.font = `bold ${Math.round(9.5 * uiScale)}px sans-serif`;
+                ctx.textAlign = 'left';
+                const collCount = (Array.isArray(state.collectedSlips) ? state.collectedSlips.length : 0);
+                const totalSlips = (FORTUNE_SLIPS_DATA && FORTUNE_SLIPS_DATA.length) || 59;
+                ctx.fillText(`灵签谱 ${collCount}/${totalSlips}`, galleryBtnX + Math.round(18 * uiScale), galleryBtnY + Math.round(15 * uiScale));
+
                 ctx.fillStyle = '#F5C44B';
                 ctx.font = `bold ${Math.round(18 * uiScale)}px sans-serif`;
+                ctx.textAlign = 'center';
                 ctx.fillText('×', cardX + cardW - 22, cardY + 26);
 
                 const activeTemple = getCurrentTemple();
@@ -5285,6 +5500,7 @@ function render() {
                         state.fortuneState = 'revealed';
                         state.fortuneRevealTime = nowTime;
                         state.todayFortuneSlip = getDailyFortuneSlipFunc ? getDailyFortuneSlipFunc(getTodayDateStr(), state.currentTempleId) : null;
+                        const isNewSlip = collectFortuneSlip(state.todayFortuneSlip);
                         state.hasShakenFortuneToday = true;
                         state.totalHit = (state.totalHit || 0) + 88;
                         state.dailyHit = (state.dailyHit || 0) + 88;
@@ -5307,7 +5523,11 @@ function render() {
                         if (state.sfxEnabled && typeof wx !== 'undefined' && wx.vibrateShort) {
                             try { wx.vibrateShort({ type: 'heavy', fail: () => {} }); } catch(e) {}
                         }
-                        showToast('诚心抽签！获每日祈福功德 +88！');
+                        if (isNewSlip) {
+                            showToast('🎉 首次点亮新灵签！已收录至【灵签谱】');
+                        } else {
+                            showToast('诚心抽签！获每日祈福功德 +88！');
+                        }
                     }
                 }
 
@@ -5942,6 +6162,352 @@ function render() {
                     ctx.font = `${Math.round(8.5 * uiScale)}px sans-serif`;
                     ctx.fillStyle = '#A8988B';
                     ctx.fillText('✦ 每日摇签解惑 + 持咒满108下，自动盖【圆满】朱砂印 ✦', W / 2, footBarY + 3);
+                }
+
+            } else if (state.currentModal === 'fortune_gallery') {
+                // ==========================================
+                // 灵签谱 · 功德图鉴 (分类筛选、点亮进度、全签文研读)
+                // ==========================================
+                const allSlips = FORTUNE_SLIPS_DATA || [];
+                const collCount = (Array.isArray(state.collectedSlips) ? state.collectedSlips.length : 0);
+                const totalSlips = allSlips.length || 59;
+                const progressPct = Math.min(100, Math.round((collCount / totalSlips) * 100));
+
+                if (state.viewingGallerySlip) {
+                    // ----------------------------------------------------
+                    // A. 单签放大研读视图 (复用红笺画卷，纯研读 + 返回图鉴)
+                    // ----------------------------------------------------
+                    const vSlip = state.viewingGallerySlip;
+                    const scrollX = cardX + 12;
+                    const scrollY = cardY + 16;
+                    const scrollW = cardW - 24;
+                    const scrollH = cardH - 32;
+
+                    // 红笺底纸
+                    const scrollGrad = ctx.createLinearGradient(scrollX, scrollY, scrollX, scrollY + scrollH);
+                    scrollGrad.addColorStop(0, 'rgba(68, 26, 20, 0.98)');
+                    scrollGrad.addColorStop(1, 'rgba(42, 16, 12, 0.98)');
+                    ctx.fillStyle = scrollGrad;
+                    drawRoundRect(ctx, scrollX, scrollY, scrollW, scrollH, 10);
+                    ctx.fill();
+                    ctx.strokeStyle = '#D4AF37';
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+
+                    // 内层金色边框
+                    ctx.strokeStyle = 'rgba(245, 196, 75, 0.35)';
+                    ctx.lineWidth = 1;
+                    drawRoundRect(ctx, scrollX + 4, scrollY + 4, scrollW - 8, scrollH - 8, 8);
+                    ctx.stroke();
+
+                    // 1. 签题
+                    const headerY = scrollY + Math.round(14 * uiScale);
+                    drawVectorScroll(ctx, scrollX + 16, headerY + 8, Math.round(5.5 * uiScale));
+                    ctx.textAlign = 'left';
+                    ctx.font = `bold ${Math.round(13.5 * uiScale)}px sans-serif`;
+                    ctx.fillStyle = '#FFE072';
+                    ctx.fillText(String(vSlip.name || '《祈愿灵签》'), scrollX + 28, headerY + 12);
+
+                    // 朱砂印章
+                    const stampW = Math.round(74 * uiScale);
+                    const stampH = Math.round(24 * uiScale);
+                    const stampX = scrollX + scrollW - stampW - 12;
+                    const stampY = headerY;
+                    ctx.fillStyle = 'rgba(192, 57, 43, 0.95)';
+                    drawRoundRect(ctx, stampX, stampY, stampW, stampH, 4);
+                    ctx.fill();
+                    ctx.strokeStyle = '#FFD700';
+                    ctx.lineWidth = 1.2;
+                    ctx.stroke();
+                    ctx.textAlign = 'center';
+                    ctx.font = `bold ${Math.round(10.5 * uiScale)}px sans-serif`;
+                    ctx.fillStyle = '#FFF8E7';
+                    ctx.fillText(String(vSlip.tier || '【上上大吉】'), stampX + stampW / 2, stampY + Math.round(16 * uiScale));
+
+                    // 2. 四句签诗
+                    ctx.textAlign = 'center';
+                    ctx.font = `bold ${Math.round(14.5 * uiScale)}px Kaiti, STKaiti, KaiTi, serif, sans-serif`;
+                    ctx.fillStyle = '#FFF2B2';
+                    const poemStartY = scrollY + Math.round(62 * uiScale);
+                    const poemGap = Math.round(23 * uiScale);
+                    const poemList = (vSlip && Array.isArray(vSlip.poem) && vSlip.poem.length) ? vSlip.poem : ['心诚则灵福自来', '一念清净化尘埃', '诸般顺遂皆如意', '福慧圆满照灵台'];
+                    poemList.forEach((line, pIdx) => {
+                        ctx.fillText(String(line), W / 2, poemStartY + pIdx * poemGap);
+                    });
+
+                    // 3. 璀璨星芒金线
+                    const divY = poemStartY + (poemList.length - 1) * poemGap + Math.round(26 * uiScale);
+                    ctx.strokeStyle = 'rgba(245, 196, 75, 0.35)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(scrollX + 18, divY);
+                    ctx.lineTo(W / 2 - Math.round(16 * uiScale), divY);
+                    ctx.moveTo(W / 2 + Math.round(16 * uiScale), divY);
+                    ctx.lineTo(scrollX + scrollW - 18, divY);
+                    ctx.stroke();
+                    drawVectorSparkle(ctx, W / 2, divY, 4.5 * uiScale, '#FFE072');
+
+                    // 4. 宜忌
+                    const yiY = divY + Math.round(19 * uiScale);
+                    const jiY = divY + Math.round(39 * uiScale);
+                    ctx.textAlign = 'left';
+                    drawVectorDot(ctx, scrollX + 18, yiY, 3.2, '#95DE64');
+                    ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
+                    ctx.fillStyle = '#95DE64';
+                    ctx.fillText(`【宜】${vSlip.yi || '静心笃行 · 广结善缘'}`, scrollX + 28, yiY + Math.round(3.5 * uiScale));
+
+                    drawVectorDot(ctx, scrollX + 18, jiY, 3.2, '#FF7875');
+                    ctx.fillStyle = '#FF7875';
+                    ctx.fillText(`【忌】${vSlip.ji || '急躁内耗 · 执念过重'}`, scrollX + 28, jiY + Math.round(3.5 * uiScale));
+
+                    // 5. 禅师解惑卡片
+                    const descCardX = scrollX + Math.round(10 * uiScale);
+                    const descCardY = jiY + Math.round(14 * uiScale);
+                    const descCardW = scrollW - Math.round(20 * uiScale);
+                    const btnH = Math.round(34 * uiScale);
+                    const btnY = scrollY + scrollH - btnH - Math.round(20 * uiScale);
+                    const descCardH = Math.max(Math.round(44 * uiScale), btnY - descCardY - Math.round(10 * uiScale));
+
+                    ctx.fillStyle = 'rgba(20, 8, 5, 0.45)';
+                    drawRoundRect(ctx, descCardX, descCardY, descCardW, descCardH, 6);
+                    ctx.fill();
+                    ctx.strokeStyle = 'rgba(245, 196, 75, 0.3)';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+
+                    drawVectorSparkle(ctx, descCardX + Math.round(12 * uiScale), descCardY + Math.round(14 * uiScale), 3.5 * uiScale, '#FFE072');
+                    ctx.fillStyle = '#FFE072';
+                    ctx.font = `bold ${Math.round(10 * uiScale)}px sans-serif`;
+                    ctx.textAlign = 'left';
+                    ctx.fillText('【禅师解惑】', descCardX + Math.round(20 * uiScale), descCardY + Math.round(17 * uiScale));
+
+                    const descText = vSlip.desc || '心若安定，万事亨通。一念清净，福泽自生。';
+                    ctx.fillStyle = '#EDE7DF';
+                    ctx.font = `${Math.round(9.5 * uiScale)}px sans-serif`;
+                    const maxTextW = descCardW - Math.round(24 * uiScale);
+                    let line1 = '', line2 = '';
+                    for (let c of descText) {
+                        if (ctx.measureText(line1 + c).width <= maxTextW && !line2) line1 += c;
+                        else line2 += c;
+                    }
+                    if (line2) {
+                        ctx.fillText(line1, descCardX + Math.round(12 * uiScale), descCardY + Math.round(31 * uiScale));
+                        ctx.fillText(line2, descCardX + Math.round(12 * uiScale), descCardY + Math.round(44 * uiScale));
+                    } else {
+                        ctx.fillText(line1, descCardX + Math.round(12 * uiScale), descCardY + Math.round(33 * uiScale));
+                    }
+
+                    // 6. 底部操作按钮：返回灵签谱
+                    const returnBtnW = scrollW - Math.round(24 * uiScale);
+                    const returnBtnX = scrollX + Math.round(12 * uiScale);
+                    const retGrad = ctx.createLinearGradient(returnBtnX, btnY, returnBtnX, btnY + btnH);
+                    retGrad.addColorStop(0, '#5B4028');
+                    retGrad.addColorStop(1, '#3D2817');
+                    ctx.fillStyle = retGrad;
+                    drawRoundRect(ctx, returnBtnX, btnY, returnBtnW, btnH, 6);
+                    ctx.fill();
+                    ctx.strokeStyle = '#FFE072';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#FFF8E7';
+                    ctx.font = `bold ${Math.round(11.5 * uiScale)}px sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText('‹ 返回灵签谱', returnBtnX + returnBtnW / 2, btnY + Math.round(22 * uiScale));
+
+                } else {
+                    // ----------------------------------------------------
+                    // B. 灵签谱主图鉴列表与进度视图
+                    // ----------------------------------------------------
+                    // 1. 顶部标题与关闭
+                    ctx.font = `bold ${Math.round(15 * uiScale)}px sans-serif`;
+                    ctx.fillStyle = '#FFE072';
+                    ctx.textAlign = 'center';
+                    drawVectorScroll(ctx, W / 2 - Math.round(80 * uiScale), cardY + 22, Math.round(6.5 * uiScale));
+                    ctx.fillText('灵签谱 · 诸法善缘', W / 2 + Math.round(8 * uiScale), cardY + 26);
+
+                    ctx.fillStyle = '#F5C44B';
+                    ctx.font = `bold ${Math.round(18 * uiScale)}px sans-serif`;
+                    ctx.fillText('×', cardX + cardW - 22, cardY + 26);
+
+                    // 2. 收集进度条卡片
+                    const progY = cardY + 38;
+                    const progH = Math.round(38 * uiScale);
+                    ctx.fillStyle = 'rgba(42, 30, 20, 0.95)';
+                    drawRoundRect(ctx, cardX + 10, progY, cardW - 20, progH, 8);
+                    ctx.fill();
+                    ctx.strokeStyle = 'rgba(245, 196, 75, 0.35)';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+
+                    ctx.textAlign = 'left';
+                    drawVectorLotus(ctx, cardX + 22, progY + Math.round(18 * uiScale), Math.round(5.5 * uiScale));
+                    ctx.font = `bold ${Math.round(10.5 * uiScale)}px sans-serif`;
+                    ctx.fillStyle = '#FFE072';
+                    ctx.fillText(`已收录 ${collCount} / ${totalSlips} 支灵签`, cardX + 32, progY + Math.round(15 * uiScale));
+
+                    ctx.textAlign = 'right';
+                    ctx.font = `bold ${Math.round(10 * uiScale)}px sans-serif`;
+                    ctx.fillStyle = '#95DE64';
+                    ctx.fillText(`收集度 ${progressPct}%`, cardX + cardW - 20, progY + Math.round(15 * uiScale));
+
+                    // 进度条槽
+                    const barX = cardX + 20;
+                    const barW = cardW - 40;
+                    const barH = Math.round(6 * uiScale);
+                    const barY = progY + Math.round(24 * uiScale);
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                    drawRoundRect(ctx, barX, barY, barW, barH, barH / 2);
+                    ctx.fill();
+                    if (progressPct > 0) {
+                        const fillW = Math.max(barH, barW * (progressPct / 100));
+                        const pGrad = ctx.createLinearGradient(barX, barY, barX + fillW, barY);
+                        pGrad.addColorStop(0, '#FFE072');
+                        pGrad.addColorStop(1, '#95DE64');
+                        ctx.fillStyle = pGrad;
+                        drawRoundRect(ctx, barX, barY, fillW, barH, barH / 2);
+                        ctx.fill();
+                    }
+
+                    // 3. 分类切换 Tabs
+                    const tabY = progY + progH + Math.round(8 * uiScale);
+                    const tabH = Math.round(26 * uiScale);
+                    const gTabs = [
+                        { key: 'all',     label: `全部 (${allSlips.length})` },
+                        { key: 'general', label: '通用 (20)' },
+                        { key: 'temple',  label: '法殿 (15)' },
+                        { key: 'solar',   label: '节气 (24)' }
+                    ];
+                    const tabW = (cardW - 20) / gTabs.length;
+                    gTabs.forEach((t, idx) => {
+                        const tx = cardX + 10 + idx * tabW;
+                        const isCur = (state.galleryTab || 'all') === t.key;
+                        ctx.fillStyle = isCur ? '#5B4028' : 'rgba(0,0,0,0.3)';
+                        drawRoundRect(ctx, tx + 2, tabY, tabW - 4, tabH, 5);
+                        ctx.fill();
+                        ctx.strokeStyle = isCur ? '#F5C44B' : 'rgba(255,255,255,0.1)';
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+
+                        ctx.fillStyle = isCur ? '#FFE072' : '#B8A99B';
+                        ctx.font = `bold ${Math.round(9.5 * uiScale)}px sans-serif`;
+                        ctx.textAlign = 'center';
+                        ctx.fillText(t.label, tx + tabW / 2, tabY + Math.round(17 * uiScale));
+                    });
+
+                    // 4. 签文网格 (2 列 x 3 行 = 6 支 / 页)
+                    const filtered = getGalleryFilteredSlips(state.galleryTab || 'all');
+                    const pageSize = 6;
+                    const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+                    const curPage = Math.min(totalPages - 1, Math.max(0, state.galleryPage || 0));
+                    const pageItems = filtered.slice(curPage * pageSize, (curPage + 1) * pageSize);
+
+                    const gridY = tabY + tabH + Math.round(8 * uiScale);
+                    const colGap = Math.round(8 * uiScale);
+                    const rowGap = Math.round(6 * uiScale);
+                    const colW = (cardW - 20 - colGap) / 2;
+                    const rowH = Math.round(46 * uiScale);
+
+                    pageItems.forEach((slip, idx) => {
+                        const col = idx % 2;
+                        const row = Math.floor(idx / 2);
+                        const itemX = cardX + 10 + col * (colW + colGap);
+                        const itemY = gridY + row * (rowH + rowGap);
+
+                        const isUnlocked = Array.isArray(state.collectedSlips) && state.collectedSlips.includes(slip.name);
+
+                        if (isUnlocked) {
+                            // 已解锁签文卡片
+                            const cGrad = ctx.createLinearGradient(itemX, itemY, itemX, itemY + rowH);
+                            cGrad.addColorStop(0, 'rgba(68, 26, 20, 0.85)');
+                            cGrad.addColorStop(1, 'rgba(42, 16, 12, 0.85)');
+                            ctx.fillStyle = cGrad;
+                            drawRoundRect(ctx, itemX, itemY, colW, rowH, 6);
+                            ctx.fill();
+                            ctx.strokeStyle = '#F5C44B';
+                            ctx.lineWidth = 1;
+                            ctx.stroke();
+
+                            // 图标与签题
+                            drawVectorScroll(ctx, itemX + Math.round(12 * uiScale), itemY + Math.round(15 * uiScale), Math.round(4.5 * uiScale));
+                            ctx.textAlign = 'left';
+                            ctx.font = `bold ${Math.round(10 * uiScale)}px sans-serif`;
+                            ctx.fillStyle = '#FFE072';
+                            const cleanName = String(slip.name || '').replace(/《|》/g, '');
+                            ctx.fillText(cleanName, itemX + Math.round(20 * uiScale), itemY + Math.round(16 * uiScale));
+
+                            // 状态与品阶
+                            ctx.fillStyle = '#95DE64';
+                            ctx.font = `${Math.round(8.5 * uiScale)}px sans-serif`;
+                            ctx.fillText('● 已点亮', itemX + Math.round(10 * uiScale), itemY + Math.round(34 * uiScale));
+
+                            ctx.textAlign = 'right';
+                            ctx.fillStyle = '#FFA39E';
+                            ctx.font = `bold ${Math.round(8.5 * uiScale)}px sans-serif`;
+                            ctx.fillText(slip.tier || '【吉】', itemX + colW - Math.round(8 * uiScale), itemY + Math.round(34 * uiScale));
+                        } else {
+                            // 未解锁签文卡片
+                            ctx.fillStyle = 'rgba(25, 18, 14, 0.7)';
+                            drawRoundRect(ctx, itemX, itemY, colW, rowH, 6);
+                            ctx.fill();
+                            ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+                            ctx.lineWidth = 0.8;
+                            ctx.stroke();
+
+                            // 锁头图标
+                            drawVectorLock(ctx, itemX + Math.round(14 * uiScale), itemY + Math.round(23 * uiScale), Math.round(6 * uiScale), '#8C7B6E');
+
+                            ctx.textAlign = 'left';
+                            ctx.font = `bold ${Math.round(9.5 * uiScale)}px sans-serif`;
+                            ctx.fillStyle = '#8C7B6E';
+                            ctx.fillText('待缘启封 · 灵签', itemX + Math.round(26 * uiScale), itemY + Math.round(18 * uiScale));
+
+                            ctx.font = `${Math.round(8 * uiScale)}px sans-serif`;
+                            ctx.fillStyle = '#6B5E54';
+                            ctx.fillText('每日诚心抽签点亮', itemX + Math.round(26 * uiScale), itemY + Math.round(34 * uiScale));
+                        }
+                    });
+
+                    // 5. 底部翻页栏与操作
+                    const footY = cardY + cardH - Math.round(38 * uiScale);
+                    const pageBtnW = Math.round(64 * uiScale);
+                    const pageBtnH = Math.round(24 * uiScale);
+
+                    // 上一页
+                    const prevX = cardX + 16;
+                    const canPrev = curPage > 0;
+                    ctx.fillStyle = canPrev ? '#5B4028' : 'rgba(0,0,0,0.2)';
+                    drawRoundRect(ctx, prevX, footY, pageBtnW, pageBtnH, 4);
+                    ctx.fill();
+                    ctx.strokeStyle = canPrev ? '#F5C44B' : 'rgba(255,255,255,0.08)';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                    ctx.fillStyle = canPrev ? '#FFE072' : '#6B5E54';
+                    ctx.font = `bold ${Math.round(9.5 * uiScale)}px sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText('‹ 上一页', prevX + pageBtnW / 2, footY + Math.round(16 * uiScale));
+
+                    // 页码指示
+                    ctx.font = `bold ${Math.round(10 * uiScale)}px sans-serif`;
+                    ctx.fillStyle = '#FFE072';
+                    ctx.fillText(`第 ${curPage + 1} / ${totalPages} 页`, W / 2, footY + Math.round(16 * uiScale));
+
+                    // 下一页
+                    const nextX = cardX + cardW - 16 - pageBtnW;
+                    const canNext = curPage < totalPages - 1;
+                    ctx.fillStyle = canNext ? '#5B4028' : 'rgba(0,0,0,0.2)';
+                    drawRoundRect(ctx, nextX, footY, pageBtnW, pageBtnH, 4);
+                    ctx.fill();
+                    ctx.strokeStyle = canNext ? '#F5C44B' : 'rgba(255,255,255,0.08)';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                    ctx.fillStyle = canNext ? '#FFE072' : '#6B5E54';
+                    ctx.fillText('下一页 ›', nextX + pageBtnW / 2, footY + Math.round(16 * uiScale));
+
+                    // 底注提示
+                    ctx.font = `${Math.round(8.5 * uiScale)}px sans-serif`;
+                    ctx.fillStyle = '#A8988B';
+                    ctx.fillText('✦ 每日诚心摇签，广结十方善缘 · 灵签谱随缘点亮 ✦', W / 2, cardY + cardH - 10);
                 }
 
             } else if (state.currentModal === 'quick_ambient') {
