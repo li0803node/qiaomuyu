@@ -768,6 +768,156 @@ function stopFortuneShakeListener() {
 // ------------------------------------------------------------------
 // 每日灵签：微信好友/群分享与高清壁纸海报生成系统
 // ------------------------------------------------------------------
+function generateFortuneShareCard(slip, callback) {
+    const sw = 500;
+    const sh = 400;
+    let sCanvas = null;
+    if (typeof wx !== 'undefined' && wx.createOffscreenCanvas) {
+        try { sCanvas = wx.createOffscreenCanvas({ type: '2d', width: sw, height: sh }); } catch(e) {}
+    }
+    if (!sCanvas && typeof wx !== 'undefined' && wx.createCanvas) {
+        try {
+            sCanvas = wx.createCanvas();
+            sCanvas.width = sw;
+            sCanvas.height = sh;
+        } catch(e) {}
+    }
+    if (!sCanvas) {
+        callback(null);
+        return;
+    }
+    const sctx = sCanvas.getContext('2d');
+    if (!sctx) {
+        callback(null);
+        return;
+    }
+
+    // 1. 底色与边框
+    const bgGrad = sctx.createLinearGradient(0, 0, 0, sh);
+    bgGrad.addColorStop(0, '#1E110A');
+    bgGrad.addColorStop(0.5, '#2D180F');
+    bgGrad.addColorStop(1, '#150A05');
+    sctx.fillStyle = bgGrad;
+    sctx.fillRect(0, 0, sw, sh);
+
+    sctx.strokeStyle = '#8C6D1F';
+    sctx.lineWidth = 3;
+    drawRoundRect(sctx, 10, 10, sw - 20, sh - 20, 12);
+    sctx.stroke();
+
+    sctx.strokeStyle = '#F5C44B';
+    sctx.lineWidth = 1.2;
+    drawRoundRect(sctx, 14, 14, sw - 28, sh - 28, 10);
+    sctx.stroke();
+
+    // 2. 顶部标题
+    const temple = getCurrentTemple();
+    sctx.textAlign = 'center';
+    sctx.fillStyle = '#FFE072';
+    sctx.font = 'bold 20px sans-serif';
+    sctx.fillText(`🎋 ${temple.name} · 每日祈愿灵签 🎋`, sw / 2, 40);
+
+    // 3. 红笺古卷
+    const scrollX = 24;
+    const scrollY = 54;
+    const scrollW = sw - 48;
+    const scrollH = 296;
+
+    const scGrad = sctx.createLinearGradient(scrollX, scrollY, scrollX, scrollY + scrollH);
+    scGrad.addColorStop(0, '#5C1E14');
+    scGrad.addColorStop(0.5, '#6E2519');
+    scGrad.addColorStop(1, '#3E120B');
+    sctx.fillStyle = scGrad;
+    drawRoundRect(sctx, scrollX, scrollY, scrollW, scrollH, 12);
+    sctx.fill();
+
+    sctx.strokeStyle = '#F5C44B';
+    sctx.lineWidth = 2;
+    sctx.stroke();
+
+    // 4. 签题与朱砂印章
+    sctx.textAlign = 'left';
+    sctx.fillStyle = '#FFE072';
+    sctx.font = 'bold 18px sans-serif';
+    sctx.fillText(slip.name || '《祈愿灵签》', scrollX + 16, scrollY + 30);
+
+    const stampW = 92;
+    const stampH = 28;
+    const stampX = scrollX + scrollW - stampW - 16;
+    const stampY = scrollY + 12;
+    sctx.fillStyle = '#C0392B';
+    drawRoundRect(sctx, stampX, stampY, stampW, stampH, 4);
+    sctx.fill();
+    sctx.strokeStyle = '#FFD700';
+    sctx.lineWidth = 1.2;
+    sctx.stroke();
+
+    sctx.textAlign = 'center';
+    sctx.fillStyle = '#FFF8E7';
+    sctx.font = 'bold 14px sans-serif';
+    sctx.fillText(slip.tier || '【上上大吉】', stampX + stampW / 2, stampY + 19);
+
+    // 5. 核心签诗四句 (清晰大字)
+    sctx.textAlign = 'center';
+    sctx.fillStyle = '#FFF2B2';
+    sctx.font = 'bold 19px Kaiti, serif, sans-serif';
+    const poemList = (Array.isArray(slip.poem) && slip.poem.length) 
+        ? slip.poem 
+        : ['心诚则灵福自来', '一念清净化尘埃', '诸般顺遂皆如意', '福慧圆满照灵台'];
+    poemList.forEach((line, pIdx) => {
+        sctx.fillText(String(line), sw / 2, scrollY + 76 + pIdx * 28);
+    });
+
+    // 6. 分割线与所宜所忌
+    const divY = scrollY + 194;
+    sctx.strokeStyle = 'rgba(245, 196, 75, 0.4)';
+    sctx.lineWidth = 1.2;
+    sctx.beginPath();
+    sctx.moveTo(scrollX + 20, divY);
+    sctx.lineTo(scrollX + scrollW - 20, divY);
+    sctx.stroke();
+
+    sctx.textAlign = 'left';
+    sctx.font = 'bold 13px sans-serif';
+    sctx.fillStyle = '#95DE64';
+    sctx.fillText(`【宜】 ${slip.yi || '静心笃行 · 开启新程'}`, scrollX + 20, divY + 22);
+
+    sctx.fillStyle = '#FF7875';
+    sctx.fillText(`【忌】 ${slip.ji || '急躁内耗 · 瞻前顾后'}`, scrollX + 20, divY + 44);
+
+    sctx.fillStyle = '#FFE072';
+    sctx.font = '12px sans-serif';
+    sctx.fillText(`解曰：${slip.desc || '心若安定，万事亨通。'}`, scrollX + 20, divY + 68);
+
+    // 7. 底部导引文案
+    sctx.textAlign = 'center';
+    sctx.font = 'bold 14px sans-serif';
+    sctx.fillStyle = '#FFE072';
+    sctx.fillText('✨ 点击测测你的今日运势 · 开启每日灵签 ✨', sw / 2, sh - 18);
+
+    try {
+        if (sCanvas.toTempFilePath) {
+            sCanvas.toTempFilePath({
+                x: 0,
+                y: 0,
+                width: sw,
+                height: sh,
+                destWidth: sw,
+                destHeight: sh,
+                fileType: 'png',
+                success: (res) => {
+                    callback(res.tempFilePath);
+                },
+                fail: () => {
+                    callback(null);
+                }
+            });
+            return;
+        }
+    } catch(e) {}
+    callback(null);
+}
+
 function shareFortuneSlip(slip) {
     if (!slip) slip = state.todayFortuneSlip;
     if (!slip) return;
@@ -775,20 +925,25 @@ function shareFortuneSlip(slip) {
     const poemFirstLine = (slip.poem && slip.poem[0]) ? slip.poem[0] : '诸般顺遂皆如意';
     const tierText = slip.tier ? slip.tier.replace(/【|】/g, '') : '大吉';
     const shareTitle = `🎋 喜提【${tierText}】！我在${temple.name}抽到${slip.name}：“${poemFirstLine}”～快来测测今日运势！`;
+    const shareQuery = `modal=fortune_slip&temple=${temple.id}`;
     
-    if (typeof wx !== 'undefined' && wx.shareAppMessage) {
-        try {
-            wx.shareAppMessage({
-                title: shareTitle,
-                imageUrl: 'share_500x400.jpg'
-            });
-            showToast('🧧 已发起灵签分享，快送给好友吧！');
-        } catch(e) {
+    generateFortuneShareCard(slip, (tempImgPath) => {
+        const shareImg = tempImgPath || 'share_500x400.jpg';
+        if (typeof wx !== 'undefined' && wx.shareAppMessage) {
+            try {
+                wx.shareAppMessage({
+                    title: shareTitle,
+                    imageUrl: shareImg,
+                    query: shareQuery
+                });
+                showToast('🧧 已发起灵签分享，快送给好友吧！');
+            } catch(e) {
+                showToast('🧧 灵签福运已备好，请点击右上角分享！');
+            }
+        } else {
             showToast('🧧 灵签福运已备好，请点击右上角分享！');
         }
-    } else {
-        showToast('🧧 灵签福运已备好，请点击右上角分享！');
-    }
+    });
 }
 
 function saveFortunePoster(slip) {
@@ -5964,14 +6119,53 @@ function render() {
     }
 }
 
+// ------------------------------------------------------------------
+// 处理启动参数与落地直达（如通过好友灵签分享直达抽签页、群排行榜等）
+// ------------------------------------------------------------------
+function handleLaunchQuery(query) {
+    if (!query) return;
+    try {
+        if (query.modal === 'fortune_slip') {
+            if (query.temple && TEMPLE_MODES.some(t => t.id === query.temple)) {
+                state.currentTempleId = query.temple;
+                if (typeof wx !== 'undefined' && wx.setStorageSync) {
+                    try { wx.setStorageSync('qmy_temple_id', state.currentTempleId); } catch(e) {}
+                }
+            }
+            state.currentModal = 'fortune_slip';
+            state.fortuneState = 'idle';
+            startFortuneShakeListener();
+        } else if (query.modal === 'gemhunt') {
+            state.currentModal = 'gemhunt';
+        } else if (query.modal === 'rank') {
+            state.currentModal = 'rank';
+            reportScoreToFriendCloud();
+            requestFriendRankData();
+        }
+    } catch(e) {}
+}
+
+// 启动时检查首次启动参数
+if (typeof wx !== 'undefined' && wx.getLaunchOptionsSync) {
+    try {
+        const launchOpts = wx.getLaunchOptionsSync();
+        if (launchOpts && launchOpts.query) {
+            handleLaunchQuery(launchOpts.query);
+        }
+    } catch(e) {}
+}
+
 // 启动时自动启播静心 BGM
 setTimeout(() => {
     soundManager.updateBgmState();
 }, 500);
 
 if (typeof wx !== 'undefined' && wx.onShow) {
-    wx.onShow(() => {
+    wx.onShow((res) => {
         soundManager.updateBgmState();
+        if (res && res.query) {
+            handleLaunchQuery(res.query);
+        }
     });
 }
 if (typeof wx !== 'undefined' && wx.onHide) {
@@ -5991,9 +6185,24 @@ if (typeof wx !== 'undefined') {
         } catch (e) {}
     }
     if (wx.onShareAppMessage) {
-        wx.onShareAppMessage(() => ({
-            title: '敲电子木鱼，修静心功德！快来和我一起沉浸解压修行吧～'
-        }));
+        wx.onShareAppMessage(() => {
+            const temple = getCurrentTemple();
+            if (state.currentModal === 'fortune_slip' && state.todayFortuneSlip) {
+                const slip = state.todayFortuneSlip;
+                const tierText = slip.tier ? slip.tier.replace(/【|】/g, '') : '大吉';
+                const poemFirstLine = (slip.poem && slip.poem[0]) ? slip.poem[0] : '诸般顺遂皆如意';
+                return {
+                    title: `🎋 喜提【${tierText}】！我在${temple.name}抽到${slip.name}：“${poemFirstLine}”～快来测测今日运势！`,
+                    imageUrl: 'share_500x400.jpg',
+                    query: `modal=fortune_slip&temple=${temple.id}`
+                };
+            }
+            return {
+                title: '敲电子木鱼，修静心功德！快来和我一起沉浸解压修行吧～',
+                imageUrl: 'share_500x400.jpg',
+                query: 'modal=woodfish'
+            };
+        });
     }
     if (wx.onShareTimeline) {
         wx.onShareTimeline(() => ({
