@@ -35,6 +35,19 @@ try {
     }
 } catch (e) {}
 
+// 微信官方隐私协议监听与统一合规分发
+let privacyResolveCallback = null;
+if (typeof wx !== 'undefined' && typeof wx.onNeedPrivacyAuthorization === 'function') {
+    try {
+        wx.onNeedPrivacyAuthorization((resolve, eventInfo) => {
+            privacyResolveCallback = resolve;
+            if (typeof state !== 'undefined') {
+                state.currentModal = 'privacy_policy';
+            }
+        });
+    } catch (e) {}
+}
+
 // 圆角矩形通用绘制函数
 function drawRoundRect(c, x, y, width, height, radius) {
     if (!c) return;
@@ -3926,16 +3939,28 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
             if (state.currentModal === 'age_advisory' || state.currentModal === 'privacy_policy') {
                 if (tx > cardX + cardW - 45 && ty > cardY && ty < cardY + 45) {
                     try { soundManager.playTap(); } catch(e) {}
+                    if (state.currentModal === 'privacy_policy' && privacyResolveCallback) {
+                        try { privacyResolveCallback({ event: 'disagree' }); } catch(e) {}
+                        privacyResolveCallback = null;
+                    }
                     state.currentModal = 'settings';
                     return;
                 }
                 const okBtnY = cardY + cardH - 52;
                 if (ty >= okBtnY && ty <= okBtnY + 36 && tx >= cardX + 30 && tx <= cardX + cardW - 30) {
                     try { soundManager.playTap(); } catch(e) {}
+                    if (state.currentModal === 'privacy_policy' && privacyResolveCallback) {
+                        try { privacyResolveCallback({ event: 'agree', buttonId: 'agree-btn' }); } catch(e) {}
+                        privacyResolveCallback = null;
+                    }
                     state.currentModal = 'settings';
                     return;
                 }
                 if (ty < cardY || ty > cardY + cardH || tx < cardX || tx > cardX + cardW) {
+                    if (state.currentModal === 'privacy_policy' && privacyResolveCallback) {
+                        try { privacyResolveCallback({ event: 'disagree' }); } catch(e) {}
+                        privacyResolveCallback = null;
+                    }
                     state.currentModal = 'settings';
                     return;
                 }

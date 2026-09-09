@@ -2,6 +2,7 @@
   "deviceOrientation": "portrait",
   "showStatusBar": false,
   "openDataContext": "openDataContext",
+  "__usePrivacyCheck__": true,
   "networkTimeout": {
     "request": 10000,
     "connectSocket": 10000,
