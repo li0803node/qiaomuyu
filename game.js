@@ -956,16 +956,17 @@ function saveFortunePoster(slip) {
     const ph = 1280;
     
     let posterCanvas = null;
-    if (typeof wx !== 'undefined' && wx.createOffscreenCanvas) {
-        try {
-            posterCanvas = wx.createOffscreenCanvas({ type: '2d', width: pw, height: ph });
-        } catch(e) {}
-    }
-    if (!posterCanvas && typeof wx !== 'undefined' && wx.createCanvas) {
+    // 优先使用标准 wx.createCanvas (微信小游戏全平台 100% 兼容 toTempFilePath 与预览)
+    if (typeof wx !== 'undefined' && wx.createCanvas) {
         try {
             posterCanvas = wx.createCanvas();
             posterCanvas.width = pw;
             posterCanvas.height = ph;
+        } catch(e) {}
+    }
+    if (!posterCanvas && typeof wx !== 'undefined' && wx.createOffscreenCanvas) {
+        try {
+            posterCanvas = wx.createOffscreenCanvas({ type: '2d', width: pw, height: ph });
         } catch(e) {}
     }
     if (!posterCanvas) {
@@ -1136,65 +1137,93 @@ function saveFortunePoster(slip) {
     pctx.font = '18px sans-serif';
     pctx.fillStyle = '#A8988B';
     pctx.fillText('《叩叩解压 · 静心敲木鱼》· 每日一签 · 福运常伴', pw / 2, footerBoxY + 34);
-    pctx.fillText('长按保存壁纸 · 愿您心静自安，福慧双增', pw / 2, footerBoxY + 64);
+    pctx.fillText('长按图片可直接保存至手机相册 · 愿您心静自安', pw / 2, footerBoxY + 64);
     
-    // 导出临时文件并保存至手机相册
-    try {
-        if (posterCanvas.toTempFilePath) {
-            posterCanvas.toTempFilePath({
-                x: 0,
-                y: 0,
-                width: pw,
-                height: ph,
-                destWidth: pw,
-                destHeight: ph,
-                fileType: 'png',
-                quality: 1.0,
-                success: (res) => {
-                    const tempFilePath = res.tempFilePath;
-                    if (typeof wx !== 'undefined' && wx.saveImageToPhotosAlbum) {
-                        wx.saveImageToPhotosAlbum({
-                            filePath: tempFilePath,
-                            success: () => {
-                                showToast('🖼️ 灵签壁纸海报已成功保存至手机相册！');
-                                if (typeof wx.vibrateShort === 'function') {
-                                    try { wx.vibrateShort({ type: 'medium', fail: () => {} }); } catch(e) {}
-                                }
-                            },
-                            fail: (err) => {
-                                if (err && err.errMsg && (err.errMsg.includes('auth') || err.errMsg.includes('deny') || err.errMsg.includes('fail auth'))) {
-                                    if (wx.showModal) {
-                                        wx.showModal({
-                                            title: '保存海报提示',
-                                            content: '需要您的相册权限才能将灵签壁纸保存到手机相册中哦～',
-                                            confirmText: '去授权',
-                                            cancelText: '取消',
-                                            success: (mRes) => {
-                                                if (mRes.confirm && wx.openSetting) {
-                                                    wx.openSetting({});
-                                                }
-                                            }
-                                        });
-                                    } else {
-                                        showToast('⚠️ 未获得相册权限，无法保存');
-                                    }
-                                } else {
-                                    showToast('🖼️ 已生成海报');
-                                }
-                            }
-                        });
-                    } else {
-                        showToast('🖼️ 壁纸已生成');
-                    }
-                },
-                fail: () => {
-                    showToast('⚠️ 壁纸生成导出失败，请重试');
+    // 导出高清图片文件并展示全屏壁纸预览 & 保存相册
+    const doExport = () => {
+        try {
+            const exportFunc = posterCanvas.toTempFilePath || (posterCanvas.toTempFilePathSync ? (opts) => {
+                try {
+                    const p = posterCanvas.toTempFilePathSync(opts);
+                    if (opts.success) opts.success({ tempFilePath: p });
+                } catch(err) {
+                    if (opts.fail) opts.fail(err);
                 }
-            });
+            } : null);
+
+            if (exportFunc) {
+                exportFunc.call(posterCanvas, {
+                    x: 0,
+                    y: 0,
+                    width: pw,
+                    height: ph,
+                    destWidth: pw,
+                    destHeight: ph,
+                    fileType: 'png',
+                    success: (res) => {
+                        const tempFilePath = res.tempFilePath;
+                        
+                        // 1. 立即弹出全屏高清大图预览 (用户立即可见震撼高清壁纸，长按可直接保存相册或分享)
+                        if (typeof wx !== 'undefined' && wx.previewImage) {
+                            try {
+                                wx.previewImage({
+                                    urls: [tempFilePath],
+                                    current: tempFilePath,
+                                    fail: () => {}
+                                });
+                            } catch(e) {}
+                        }
+
+                        // 2. 同时自动将高清海报保存至手机本地相册
+                        if (typeof wx !== 'undefined' && wx.saveImageToPhotosAlbum) {
+                            wx.saveImageToPhotosAlbum({
+                                filePath: tempFilePath,
+                                success: () => {
+                                    showToast('🖼️ 灵签壁纸海报已自动保存至相册！');
+                                    if (typeof wx.vibrateShort === 'function') {
+                                        try { wx.vibrateShort({ type: 'medium', fail: () => {} }); } catch(e) {}
+                                    }
+                                },
+                                fail: (err) => {
+                                    if (err && err.errMsg && (err.errMsg.includes('auth') || err.errMsg.includes('deny') || err.errMsg.includes('fail auth'))) {
+                                        if (wx.showModal) {
+                                            wx.showModal({
+                                                title: '保存壁纸海报',
+                                                content: '长按预览大图可直接保存，或点击“去授权”开启手机相册权限～',
+                                                confirmText: '去授权',
+                                                cancelText: '取消',
+                                                success: (mRes) => {
+                                                    if (mRes.confirm && wx.openSetting) {
+                                                        wx.openSetting({});
+                                                    }
+                                                }
+                                            });
+                                        }
+                                    } else {
+                                        showToast('🖼️ 灵签壁纸已生成，长按图片即可保存！');
+                                    }
+                                }
+                            });
+                        } else {
+                            showToast('🖼️ 灵签壁纸已生成，长按图片即可保存！');
+                        }
+                    },
+                    fail: (err) => {
+                        console.error('壁纸导出失败:', err);
+                        showToast('⚠️ 壁纸生成失败，请重试');
+                    }
+                });
+            } else {
+                showToast('⚠️ 当前设备环境暂不支持导出图片');
+            }
+        } catch(e) {
+            console.error('生成壁纸捕获异常:', e);
+            showToast('⚠️ 保存壁纸遇到问题');
         }
-    } catch(e) {
-        showToast('⚠️ 保存相册遇到问题');
-    }
+    };
+
+    // 稍微延迟 20ms 确保 Canvas 绘制管线完全 commit
+    setTimeout(doExport, 20);
 }
 
 function loadUnlockedTiers() {
@@ -2773,22 +2802,28 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                     const scrollY = cardY + 44;
                     const scrollW = cardW - 24;
                     const scrollH = cardH - 56;
-                    const btnH = Math.round(34 * uiScale);
-                    const btnY = scrollY + scrollH - btnH - Math.round(24 * uiScale);
+                    const btnH = Math.round(32 * uiScale);
+                    const btnY = scrollY + scrollH - btnH - Math.round(22 * uiScale);
                     const btnW = (scrollW - Math.round(24 * uiScale)) / 2;
                     const btn1X = scrollX + Math.round(8 * uiScale);
                     const btn2X = btn1X + btnW + Math.round(8 * uiScale);
 
-                    // 1. 赠好友灵签按钮
-                    if (tx >= btn1X && tx <= btn1X + btnW && ty >= btnY && ty <= btnY + btnH) {
+                    // 1. 赠好友灵签按钮 (热区扩展 ±6px)
+                    if (tx >= btn1X - 6 && tx <= btn1X + btnW + 4 && ty >= btnY - 8 && ty <= btnY + btnH + 12) {
                         try { soundManager.playWoodHit(); } catch(e) {}
+                        if (typeof wx !== 'undefined' && wx.vibrateShort) {
+                            try { wx.vibrateShort({ type: 'light', fail: () => {} }); } catch(e) {}
+                        }
                         shareFortuneSlip(slip);
                         return;
                     }
 
-                    // 2. 保存壁纸海报按钮
-                    if (tx >= btn2X && tx <= btn2X + btnW && ty >= btnY && ty <= btnY + btnH) {
+                    // 2. 保存壁纸海报按钮 (热区扩展 ±6px)
+                    if (tx >= btn2X - 4 && tx <= btn2X + btnW + 6 && ty >= btnY - 8 && ty <= btnY + btnH + 12) {
                         try { soundManager.playWoodHit(); } catch(e) {}
+                        if (typeof wx !== 'undefined' && wx.vibrateShort) {
+                            try { wx.vibrateShort({ type: 'light', fail: () => {} }); } catch(e) {}
+                        }
                         saveFortunePoster(slip);
                         return;
                     }
