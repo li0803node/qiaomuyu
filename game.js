@@ -2067,6 +2067,409 @@ function drawVectorBell(ctx, cx, cy, s, color = '#FFE072') {
     ctx.restore();
 }
 
+function drawVectorRedPacket(ctx, cx, cy, s) {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.fillStyle = '#E74C3C';
+    drawRoundRect(ctx, -s * 0.55, -s * 0.75, s * 1.1, s * 1.5, s * 0.2);
+    ctx.fill();
+    ctx.strokeStyle = '#F39C12';
+    ctx.lineWidth = Math.max(1, s * 0.1);
+    ctx.stroke();
+    ctx.fillStyle = '#C0392B';
+    ctx.beginPath();
+    ctx.moveTo(-s * 0.55, -s * 0.75);
+    ctx.quadraticCurveTo(0, s * 0.05, s * 0.55, -s * 0.75);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#FFD700';
+    ctx.beginPath();
+    ctx.arc(0, -s * 0.05, s * 0.22, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#7A1400';
+    ctx.font = `bold ${Math.round(s * 0.28)}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('福', 0, -s * 0.03);
+    ctx.restore();
+}
+
+function drawVectorPhotoFrame(ctx, cx, cy, s) {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.fillStyle = '#3E2714';
+    drawRoundRect(ctx, -s * 0.8, -s * 0.65, s * 1.6, s * 1.3, s * 0.18);
+    ctx.fill();
+    ctx.strokeStyle = '#FFD700';
+    ctx.lineWidth = Math.max(1.2, s * 0.12);
+    ctx.stroke();
+    ctx.save();
+    ctx.beginPath();
+    drawRoundRect(ctx, -s * 0.65, -s * 0.5, s * 1.3, s * 1.0, s * 0.1);
+    ctx.clip();
+    ctx.fillStyle = '#1B3B5F';
+    ctx.fillRect(-s * 0.65, -s * 0.5, s * 1.3, s * 1.0);
+    ctx.fillStyle = '#FFD700';
+    ctx.beginPath();
+    ctx.arc(s * 0.25, -s * 0.18, s * 0.18, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#4A8C5B';
+    ctx.beginPath();
+    ctx.moveTo(-s * 0.65, s * 0.5);
+    ctx.lineTo(-s * 0.2, -s * 0.05);
+    ctx.lineTo(s * 0.2, s * 0.5);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#2D663E';
+    ctx.beginPath();
+    ctx.moveTo(-s * 0.1, s * 0.5);
+    ctx.lineTo(s * 0.35, s * 0.08);
+    ctx.lineTo(s * 0.65, s * 0.5);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+    ctx.restore();
+}
+
+function drawVectorFortuneStick(ctx, cx, cy, s) {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.fillStyle = '#6E3A18';
+    drawRoundRect(ctx, -s * 0.45, -s * 0.25, s * 0.9, s * 0.9, s * 0.15);
+    ctx.fill();
+    ctx.strokeStyle = '#FFD700';
+    ctx.lineWidth = Math.max(1, s * 0.1);
+    ctx.stroke();
+    ctx.fillStyle = '#FFD700';
+    ctx.fillRect(-s * 0.45, s * 0.1, s * 0.9, s * 0.15);
+    ctx.fillStyle = '#D4AF37';
+    ctx.fillRect(-s * 0.3, -s * 0.75, s * 0.16, s * 0.55);
+    ctx.fillRect(-s * 0.08, -s * 0.85, s * 0.16, s * 0.65);
+    ctx.fillRect(s * 0.14, -s * 0.7, s * 0.16, s * 0.5);
+    ctx.fillStyle = '#C0392B';
+    ctx.fillRect(-s * 0.3, -s * 0.75, s * 0.16, s * 0.15);
+    ctx.fillRect(-s * 0.08, -s * 0.85, s * 0.16, s * 0.15);
+    ctx.fillRect(s * 0.14, -s * 0.7, s * 0.16, s * 0.15);
+    ctx.restore();
+}
+
+function drawVectorCalendar(ctx, cx, cy, s) {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.fillStyle = '#FFF8E7';
+    drawRoundRect(ctx, -s * 0.7, -s * 0.6, s * 1.4, s * 1.3, s * 0.18);
+    ctx.fill();
+    ctx.strokeStyle = '#FFD700';
+    ctx.lineWidth = Math.max(1, s * 0.1);
+    ctx.stroke();
+    ctx.fillStyle = '#C0392B';
+    drawRoundRect(ctx, -s * 0.7, -s * 0.6, s * 1.4, s * 0.4, [s * 0.18, s * 0.18, 0, 0]);
+    ctx.fill();
+    ctx.fillStyle = '#FFD700';
+    ctx.fillRect(-s * 0.45, -s * 0.78, s * 0.15, s * 0.25);
+    ctx.fillRect(s * 0.3, -s * 0.78, s * 0.15, s * 0.25);
+    ctx.fillStyle = '#6E3A18';
+    for (let r = 0; r < 2; r++) {
+        for (let c = 0; c < 3; c++) {
+            ctx.fillRect(-s * 0.4 + c * s * 0.32, -s * 0.05 + r * s * 0.32, s * 0.16, s * 0.16);
+        }
+    }
+    ctx.restore();
+}
+
+function drawVectorTemple(ctx, cx, cy, s, color = '#FFE072') {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(0, -s * 0.85);
+    ctx.lineTo(s * 0.9, -s * 0.3);
+    ctx.quadraticCurveTo(s * 0.6, -s * 0.45, 0, -s * 0.45);
+    ctx.quadraticCurveTo(-s * 0.6, -s * 0.45, -s * 0.9, -s * 0.3);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillRect(-s * 0.55, -s * 0.3, s * 1.1, s * 0.65);
+    ctx.fillStyle = '#221811';
+    drawRoundRect(ctx, -s * 0.2, 0, s * 0.4, s * 0.35, [s * 0.15, s * 0.15, 0, 0]);
+    ctx.fill();
+    ctx.fillStyle = color;
+    ctx.fillRect(-s * 0.75, s * 0.35, s * 1.5, s * 0.18);
+    ctx.restore();
+}
+
+function drawVectorCrown(ctx, cx, cy, s, color = '#FFD700') {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(-s * 0.85, s * 0.5);
+    ctx.lineTo(-s * 0.9, -s * 0.25);
+    ctx.lineTo(-s * 0.4, s * 0.05);
+    ctx.lineTo(0, -s * 0.7);
+    ctx.lineTo(s * 0.4, s * 0.05);
+    ctx.lineTo(s * 0.9, -s * 0.25);
+    ctx.lineTo(s * 0.85, s * 0.5);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#C0392B';
+    ctx.fillRect(-s * 0.75, s * 0.3, s * 1.5, s * 0.15);
+    ctx.fillStyle = '#FFF8E7';
+    ctx.beginPath();
+    ctx.arc(0, -s * 0.7, s * 0.14, 0, Math.PI * 2);
+    ctx.arc(-s * 0.9, -s * 0.25, s * 0.12, 0, Math.PI * 2);
+    ctx.arc(s * 0.9, -s * 0.25, s * 0.12, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+}
+
+function drawVectorIngot(ctx, cx, cy, s, color = '#FFA940') {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(-s * 0.85, -s * 0.2);
+    ctx.quadraticCurveTo(-s * 0.45, s * 0.65, 0, s * 0.65);
+    ctx.quadraticCurveTo(s * 0.45, s * 0.65, s * 0.85, -s * 0.2);
+    ctx.quadraticCurveTo(s * 0.45, 0, 0, 0);
+    ctx.quadraticCurveTo(-s * 0.45, 0, -s * 0.85, -s * 0.2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#FFD700';
+    ctx.beginPath();
+    ctx.ellipse(0, -s * 0.1, s * 0.45, s * 0.3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+}
+
+function drawVectorLeaf(ctx, cx, cy, s, color = '#73D13D') {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(0, -s * 0.8);
+    ctx.quadraticCurveTo(s * 0.85, -s * 0.2, 0, s * 0.8);
+    ctx.quadraticCurveTo(-s * 0.85, -s * 0.2, 0, -s * 0.8);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#237804';
+    ctx.lineWidth = Math.max(1, s * 0.1);
+    ctx.beginPath();
+    ctx.moveTo(0, -s * 0.7);
+    ctx.lineTo(0, s * 0.7);
+    ctx.stroke();
+    ctx.restore();
+}
+
+function drawVectorDove(ctx, cx, cy, s, color = '#FFE072') {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(0, s * 0.6);
+    ctx.quadraticCurveTo(-s * 0.85, 0, -s * 0.6, -s * 0.6);
+    ctx.quadraticCurveTo(-s * 0.2, -s * 0.2, 0, s * 0.6);
+    ctx.quadraticCurveTo(s * 0.2, -s * 0.2, s * 0.6, -s * 0.6);
+    ctx.quadraticCurveTo(s * 0.85, 0, 0, s * 0.6);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#FFF8E7';
+    ctx.beginPath();
+    ctx.moveTo(0, s * 0.6);
+    ctx.quadraticCurveTo(-s * 0.35, -s * 0.1, 0, -s * 0.85);
+    ctx.quadraticCurveTo(s * 0.35, -s * 0.1, 0, s * 0.6);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+}
+
+function drawVectorBrush(ctx, cx, cy, s, color = '#40A9FF') {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(-s * 0.12, s * 0.7);
+    ctx.lineTo(-s * 0.15, -s * 0.3);
+    ctx.lineTo(s * 0.15, -s * 0.3);
+    ctx.lineTo(s * 0.12, s * 0.7);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#FFF8E7';
+    ctx.beginPath();
+    ctx.moveTo(-s * 0.2, -s * 0.3);
+    ctx.lineTo(0, -s * 0.9);
+    ctx.lineTo(s * 0.2, -s * 0.3);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#096DD9';
+    ctx.fillRect(-s * 0.2, -s * 0.32, s * 0.4, s * 0.08);
+    ctx.restore();
+}
+
+function drawVectorVideoClapper(ctx, cx, cy, s, color = '#FFE072') {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.fillStyle = '#241810';
+    drawRoundRect(ctx, -s * 0.75, -s * 0.55, s * 1.5, s * 1.1, s * 0.16);
+    ctx.fill();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = Math.max(1, s * 0.1);
+    ctx.stroke();
+    ctx.fillStyle = color;
+    ctx.fillRect(-s * 0.75, -s * 0.55, s * 1.5, s * 0.35);
+    ctx.fillStyle = '#241810';
+    ctx.fillRect(-s * 0.4, -s * 0.55, s * 0.2, s * 0.35);
+    ctx.fillRect(s * 0.15, -s * 0.55, s * 0.2, s * 0.35);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(-s * 0.12, -s * 0.05);
+    ctx.lineTo(s * 0.25, s * 0.16);
+    ctx.lineTo(-s * 0.12, s * 0.37);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+}
+
+function drawVectorShield(ctx, cx, cy, s, color = '#52C41A') {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(0, -s * 0.85);
+    ctx.lineTo(s * 0.75, -s * 0.55);
+    ctx.lineTo(s * 0.75, s * 0.15);
+    ctx.quadraticCurveTo(s * 0.6, s * 0.75, 0, s * 0.95);
+    ctx.quadraticCurveTo(-s * 0.6, s * 0.75, -s * 0.75, s * 0.15);
+    ctx.lineTo(-s * 0.75, -s * 0.55);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.arc(0, 0, s * 0.28, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+}
+
+function drawVectorLock(ctx, cx, cy, s, color = '#8C7B6E') {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.fillStyle = color;
+    drawRoundRect(ctx, -s * 0.55, -s * 0.1, s * 1.1, s * 0.85, s * 0.15);
+    ctx.fill();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = Math.max(1.2, s * 0.18);
+    ctx.beginPath();
+    ctx.arc(0, -s * 0.1, s * 0.35, Math.PI, 0);
+    ctx.stroke();
+    ctx.fillStyle = '#1A120B';
+    ctx.beginPath();
+    ctx.arc(0, s * 0.22, s * 0.12, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillRect(-s * 0.05, s * 0.22, s * 0.1, s * 0.22);
+    ctx.restore();
+}
+
+function drawVectorFlame(ctx, cx, cy, s, color = '#F5C44B') {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(0, -s * 0.9);
+    ctx.quadraticCurveTo(s * 0.65, -s * 0.3, s * 0.65, s * 0.35);
+    ctx.quadraticCurveTo(s * 0.65, s * 0.85, 0, s * 0.85);
+    ctx.quadraticCurveTo(-s * 0.65, s * 0.85, -s * 0.65, s * 0.35);
+    ctx.quadraticCurveTo(-s * 0.65, -s * 0.3, 0, -s * 0.9);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#FF4D4F';
+    ctx.beginPath();
+    ctx.moveTo(0, -s * 0.4);
+    ctx.quadraticCurveTo(s * 0.35, 0, s * 0.35, s * 0.45);
+    ctx.quadraticCurveTo(s * 0.35, s * 0.75, 0, s * 0.75);
+    ctx.quadraticCurveTo(-s * 0.35, s * 0.75, -s * 0.35, s * 0.45);
+    ctx.quadraticCurveTo(-s * 0.35, 0, 0, -s * 0.4);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+}
+
+function drawVectorUsers(ctx, cx, cy, s, color = '#FFE072') {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(s * 0.3, -s * 0.35, s * 0.22, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(s * 0.3, s * 0.5, s * 0.45, Math.PI, 0);
+    ctx.fill();
+    ctx.fillStyle = '#FFF8E7';
+    ctx.beginPath();
+    ctx.arc(-s * 0.2, -s * 0.25, s * 0.26, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(-s * 0.2, s * 0.6, s * 0.52, Math.PI, 0);
+    ctx.fill();
+    ctx.restore();
+}
+
+function drawVectorEnvelope(ctx, cx, cy, s, color = '#FFE072') {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.fillStyle = color;
+    drawRoundRect(ctx, -s * 0.8, -s * 0.55, s * 1.6, s * 1.1, s * 0.16);
+    ctx.fill();
+    ctx.strokeStyle = '#221811';
+    ctx.lineWidth = Math.max(1, s * 0.1);
+    ctx.beginPath();
+    ctx.moveTo(-s * 0.8, -s * 0.55);
+    ctx.lineTo(0, s * 0.08);
+    ctx.lineTo(s * 0.8, -s * 0.55);
+    ctx.stroke();
+    ctx.restore();
+}
+
+function drawVectorBowl(ctx, cx, cy, s, color = '#FFD700') {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(0, 0, s * 0.75, 0, Math.PI);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#FFF8E7';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, s * 0.75, s * 0.22, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#6E3A18';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, s * 0.6, s * 0.14, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+}
+
+function drawVectorMusicNote(ctx, cx, cy, s, color = '#FFE072') {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.fillStyle = color;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = Math.max(1.2, s * 0.14);
+    ctx.beginPath();
+    ctx.ellipse(-s * 0.35, s * 0.35, s * 0.25, s * 0.18, -Math.PI / 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(s * 0.35, s * 0.15, s * 0.25, s * 0.18, -Math.PI / 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(-s * 0.2, s * 0.3);
+    ctx.lineTo(-s * 0.2, -s * 0.55);
+    ctx.lineTo(s * 0.5, -s * 0.75);
+    ctx.lineTo(s * 0.5, 0.1);
+    ctx.stroke();
+    ctx.fillRect(-s * 0.2, -s * 0.65, s * 0.7, s * 0.2);
+    ctx.restore();
+}
+
 // =====================================================================
 // 离屏位图静态烘焙系统 (Offscreen Bitmap Cache: 消除 90% 每帧重复渐变计算)
 // =====================================================================
@@ -4313,10 +4716,18 @@ function render() {
                         ctx.lineWidth = 1;
                         ctx.stroke();
 
+                        if (idx === 0) {
+                            drawVectorDove(ctx, cardX + 28, cy + 16, Math.round(6.5 * uiScale), '#52C41A');
+                        } else if (idx === 1) {
+                            drawVectorFlame(ctx, cardX + 28, cy + 16, Math.round(6.5 * uiScale), '#F5C44B');
+                        } else {
+                            drawVectorCrown(ctx, cardX + 28, cy + 16, Math.round(6.5 * uiScale), '#FF4D4F');
+                        }
+
                         ctx.textAlign = 'left';
                         ctx.fillStyle = '#FFE072';
                         ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
-                        ctx.fillText(item.tag, cardX + 24, cy + 20);
+                        ctx.fillText(item.tag, cardX + 40, cy + 20);
 
                         ctx.fillStyle = '#FFE072';
                         ctx.font = `bold ${Math.round(9.5 * uiScale)}px sans-serif`;
@@ -4408,10 +4819,19 @@ function render() {
                     ctx.strokeStyle = isCur ? '#F5C44B' : 'rgba(255,255,255,0.1)';
                     ctx.lineWidth = 1;
                     ctx.stroke();
+
+                    const tabIconX = tabX + 20;
+                    const tabIconY = cardY + 56;
+                    if (t.key === 'friends') {
+                        drawVectorUsers(ctx, tabIconX, tabIconY, Math.round(6.5 * uiScale), isCur ? '#FFE072' : '#D48806');
+                    } else {
+                        drawVectorTrophy(ctx, tabIconX, tabIconY, Math.round(6.5 * uiScale));
+                    }
+
                     ctx.fillStyle = isCur ? '#FFE072' : '#D48806';
                     ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
                     ctx.textAlign = 'center';
-                    ctx.fillText(t.label, tabX + (rankTabW - 6) / 2, cardY + 60);
+                    ctx.fillText(t.label, tabX + (rankTabW - 6) / 2 + 8, cardY + 60);
                 });
 
                 if (state.rankTab === 'friends') {
@@ -4456,7 +4876,7 @@ function render() {
                     ctx.fillStyle = '#FFF8E7';
                     ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
                     ctx.textAlign = 'center';
-                    ctx.fillText('邀请好友 · 转发至微信群查看群排行', inviteBtnX + inviteBtnW / 2, inviteBtnY + Math.round(18 * uiScale));
+                    drawVectorEnvelope(ctx, inviteBtnX + Math.round(20 * uiScale), inviteBtnY + inviteBtnH / 2, Math.round(6.5 * uiScale)); ctx.fillText('邀请好友 · 转发至微信群查看群排行', inviteBtnX + inviteBtnW / 2 + Math.round(7 * uiScale), inviteBtnY + Math.round(18 * uiScale));
 
                 } else {
                     // ----------------------------------------------------
@@ -4559,11 +4979,24 @@ function render() {
                     ctx.lineWidth = isSelected ? 2 : 1;
                     ctx.stroke();
 
-                    // 图标与标题
+                    // 矢量专属法殿图标与标题
+                    const tIconX = tx + 18;
+                    const tIconY = ty + 20;
+                    const tIconS = Math.round(8.5 * uiScale);
+                    if (temple.id === 'wenchang') {
+                        drawVectorBrush(ctx, tIconX, tIconY, tIconS, temple.accentColor);
+                    } else if (temple.id === 'wealth') {
+                        drawVectorIngot(ctx, tIconX, tIconY, tIconS, temple.accentColor);
+                    } else if (temple.id === 'jieyou') {
+                        drawVectorLeaf(ctx, tIconX, tIconY, tIconS, temple.accentColor);
+                    } else {
+                        drawVectorDove(ctx, tIconX, tIconY, tIconS, temple.accentColor);
+                    }
+
                     ctx.textAlign = 'left';
-                    ctx.font = `bold ${Math.round(13 * uiScale)}px sans-serif`;
+                    ctx.font = `bold ${Math.round(12.5 * uiScale)}px sans-serif`;
                     ctx.fillStyle = isSelected ? temple.accentColor : '#FFE072';
-                    ctx.fillText(`${temple.name}`, tx + 10, ty + 24);
+                    ctx.fillText(temple.name, tx + 32, ty + 24);
 
                     if (isSelected) {
                         ctx.textAlign = 'right';
@@ -4894,7 +5327,8 @@ function render() {
                     } else if (state.fortuneState === 'rising') {
                         ctx.fillText('灵签高照 · 解签中...', W / 2, shakeBtnY + Math.round(23 * uiScale));
                     } else {
-                        ctx.fillText('诚心摇签 · 抽取今日运势 (+88功德)', W / 2, shakeBtnY + Math.round(23 * uiScale));
+                        drawVectorFortuneStick(ctx, shakeBtnX + Math.round(22 * uiScale), shakeBtnY + shakeBtnH / 2, Math.round(8.5 * uiScale));
+                        ctx.fillText('诚心摇签 · 抽取今日运势 (+88功德)', W / 2 + Math.round(8 * uiScale), shakeBtnY + Math.round(23 * uiScale));
                     }
 
                 } else if (slip) {
@@ -4982,7 +5416,7 @@ function render() {
                     const btn1X = scrollX + Math.round(8 * uiScale);
                     const btn2X = btn1X + btnW + Math.round(8 * uiScale);
 
-                    // 按钮1：赠好友灵签 (金红渐变)
+                    // 按钮1：赠送好友 (金红渐变 + 纯矢量红包图标)
                     const b1Grad = ctx.createLinearGradient(btn1X, btnY, btn1X, btnY + btnH);
                     b1Grad.addColorStop(0, '#E67E22');
                     b1Grad.addColorStop(1, '#D35400');
@@ -4992,12 +5426,14 @@ function render() {
                     ctx.strokeStyle = '#FFE072';
                     ctx.lineWidth = 1;
                     ctx.stroke();
-                    ctx.fillStyle = '#FFF8E7';
-                    ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
-                    ctx.textAlign = 'center';
-                    ctx.fillText('赠送好友', btn1X + btnW / 2, btnY + Math.round(20 * uiScale));
 
-                    // 按钮2：保存壁纸海报 (琥珀金渐变)
+                    drawVectorRedPacket(ctx, btn1X + Math.round(16 * uiScale), btnY + btnH / 2, Math.round(7.5 * uiScale));
+                    ctx.fillStyle = '#FFF8E7';
+                    ctx.font = `bold ${Math.round(10.5 * uiScale)}px sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText('赠送好友', btn1X + btnW / 2 + Math.round(7 * uiScale), btnY + Math.round(20 * uiScale));
+
+                    // 按钮2：保存壁纸海报 (琥珀金渐变 + 纯矢量画框图标)
                     const b2Grad = ctx.createLinearGradient(btn2X, btnY, btn2X, btnY + btnH);
                     b2Grad.addColorStop(0, '#F39C12');
                     b2Grad.addColorStop(1, '#C0392B');
@@ -5007,10 +5443,12 @@ function render() {
                     ctx.strokeStyle = '#FFD700';
                     ctx.lineWidth = 1;
                     ctx.stroke();
+
+                    drawVectorPhotoFrame(ctx, btn2X + Math.round(16 * uiScale), btnY + btnH / 2, Math.round(7.5 * uiScale));
                     ctx.fillStyle = '#FFF8E7';
-                    ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
+                    ctx.font = `bold ${Math.round(10.5 * uiScale)}px sans-serif`;
                     ctx.textAlign = 'center';
-                    ctx.fillText('保存壁纸海报', btn2X + btnW / 2, btnY + Math.round(20 * uiScale));
+                    ctx.fillText('保存壁纸海报', btn2X + btnW / 2 + Math.round(7 * uiScale), btnY + Math.round(20 * uiScale));
 
                     // 底部归档日历提示
                     ctx.textAlign = 'center';
@@ -5736,7 +6174,7 @@ function render() {
 
                     ctx.fillStyle = '#FFE072';
                     ctx.font = `bold ${Math.round(13 * uiScale)}px sans-serif`;
-                    ctx.fillText(`观看视频化缘 (+2,000) · 剩余 ${leftAlms} 次`, W / 2, adBtnY + 26);
+                    drawVectorVideoClapper(ctx, cardX + 38, adBtnY + 21, Math.round(7.5 * uiScale)); ctx.fillText(`观看视频化缘 (+2,000) · 剩余 ${leftAlms} 次`, W / 2 + 10, adBtnY + 26);
                 }
 
                 const closeBtnY = cardY + 212;
@@ -5830,7 +6268,7 @@ function render() {
                     ctx.stroke();
                     ctx.fillStyle = '#FFE072';
                     ctx.font = `bold ${Math.round(13.5 * uiScale)}px sans-serif`;
-                    ctx.fillText('观看视频开启暴击', W / 2, adBtnY + 26);
+                    drawVectorVideoClapper(ctx, cardX + 44, adBtnY + 21, Math.round(7.5 * uiScale)); ctx.fillText('观看视频开启暴击', W / 2 + 10, adBtnY + 26);
                 }
 
                 const closeBtnY = cardY + 212;
@@ -5910,7 +6348,7 @@ function render() {
                     ctx.stroke();
                     ctx.fillStyle = '#FFE072';
                     ctx.font = `bold ${Math.round(13.5 * uiScale)}px sans-serif`;
-                    ctx.fillText('观看视频开启挂机', W / 2, adBtnY + 26);
+                    drawVectorVideoClapper(ctx, cardX + 44, adBtnY + 21, Math.round(7.5 * uiScale)); ctx.fillText('观看视频开启挂机', W / 2 + 10, adBtnY + 26);
                 }
 
                 const closeBtnY = cardY + 212;
@@ -5973,7 +6411,7 @@ function render() {
 
                 ctx.fillStyle = '#FFE072';
                 ctx.font = `bold ${Math.round(13.5 * uiScale)}px sans-serif`;
-                ctx.fillText('观看视频解锁 24 小时', W / 2, adBtnY + 26);
+                drawVectorVideoClapper(ctx, cardX + 40, adBtnY + 21, Math.round(7.5 * uiScale)); ctx.fillText('观看视频解锁 24 小时', W / 2 + 10, adBtnY + 26);
 
                 const closeBtnY = cardY + 212;
                 const closeGrad = ctx.createLinearGradient(cardX + 24, closeBtnY, cardX + 24, closeBtnY + 38);
