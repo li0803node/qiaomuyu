@@ -3931,6 +3931,9 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                 const okBtnY = cardY + cardH - 52;
                 if (ty >= okBtnY && ty <= okBtnY + 36 && tx >= cardX + 30 && tx <= cardX + cardW - 30) {
                     try { soundManager.playTap(); } catch(e) {}
+                    if (state.currentModal === 'privacy_policy' && typeof wx !== 'undefined' && wx.openPrivacyContract) {
+                        try { wx.openPrivacyContract(); } catch(e) {}
+                    }
                     state.currentModal = 'settings';
                     return;
                 }
@@ -6836,7 +6839,7 @@ function render() {
                 ctx.textAlign = 'center';
                 ctx.fillText('CADPA 8+ 适龄提示', cardX + 12 + compBtnW / 2 + Math.round(6 * uiScale), compY + 17);
 
-                // 隐私保护与健康忠告按钮
+                // 微信官方隐私协议入口
                 ctx.fillStyle = 'rgba(50, 38, 26, 0.9)';
                 drawRoundRect(ctx, cardX + 12 + compBtnW + 8, compY, compBtnW, compBtnH, 6);
                 ctx.fill();
@@ -6847,7 +6850,7 @@ function render() {
                 ctx.fillStyle = '#FFE072';
                 ctx.font = `bold ${Math.round(9.5 * uiScale)}px sans-serif`;
                 ctx.textAlign = 'center';
-                ctx.fillText('隐私指引 & 健康忠告', cardX + 12 + compBtnW + 8 + compBtnW / 2 + Math.round(6 * uiScale), compY + 17);
+                ctx.fillText('微信官方隐私协议', cardX + 12 + compBtnW + 8 + compBtnW / 2 + Math.round(6 * uiScale), compY + 17);
 
                 // 底部合规备案小字
                 ctx.textAlign = 'center';
@@ -6975,9 +6978,9 @@ function render() {
                 ctx.fillText('我知道了', W / 2, okBtnY + 23);
 
             } else if (state.currentModal === 'privacy_policy') {
-                // 用户隐私指引与健康游戏忠告弹窗
+                // 用户隐私指引与健康游戏忠告弹窗 (与微信公众平台后台隐私保护指引严格一一对应)
                 ctx.font = `bold ${Math.round(15 * uiScale)}px sans-serif`;
-                const privTitleText = '隐私指引 & 健康游戏忠告';
+                const privTitleText = '《用户隐私保护指引》';
                 const privTitleW = ctx.measureText(privTitleText).width;
                 const privScrollS = Math.round(7 * uiScale);
                 const privGap = Math.round(6 * uiScale);
@@ -7009,75 +7012,76 @@ function render() {
                 ctx.textAlign = 'left';
                 const textPadX = cardX + 22;
                 const textMaxW = cardW - 44;
-                let curY = textCardY + Math.round(18 * uiScale);
+                let curY = textCardY + Math.round(16 * uiScale);
 
-                // 1. 健康游戏忠告 (国家新闻出版署标准)
+                // 1. 处理的信息与用途 (四项已向微信官方申报的权限)
                 ctx.fillStyle = '#FFD700';
                 ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
-                ctx.fillText('【健康游戏忠告】', textPadX, curY);
-                curY += Math.round(18 * uiScale);
+                ctx.fillText('【处理的信息及用途说明】', textPadX, curY);
+                curY += Math.round(16 * uiScale);
 
                 ctx.fillStyle = '#EDE7DF';
                 ctx.font = `${Math.round(9.5 * uiScale)}px sans-serif`;
-                const healthTips = [
-                    '抵制不良游戏，拒绝盗版游戏。注意自我保护，谨防受骗上当。',
-                    '适度游戏益脑，沉迷游戏伤身。合理安排时间，享受健康生活。'
+                const privacyItems = [
+                    '1. 昵称与头像：在游戏名牌及微信好友榜展示本人头像与修行功德。',
+                    '2. 相册（仅写入）：用于将每日抽取的灵签壁纸海报保存至手机本地。',
+                    '3. 微信朋友关系：用于微信好友功德排行榜互动与好友修行比拼。',
+                    '4. 加速传感器：支持玩家通过摇一摇手机晃动签筒抽取每日灵签。'
                 ];
-                healthTips.forEach(tip => {
+                privacyItems.forEach(item => {
                     let curLine = '';
-                    for (let i = 0; i < tip.length; i++) {
-                        const char = tip[i];
+                    for (let i = 0; i < item.length; i++) {
+                        const char = item[i];
                         const testLine = curLine + char;
                         if (ctx.measureText(testLine).width > textMaxW && curLine.length > 0) {
                             ctx.fillText(curLine, textPadX, curY);
                             curLine = char;
-                            curY += Math.round(16 * uiScale);
+                            curY += Math.round(15 * uiScale);
                         } else {
                             curLine = testLine;
                         }
                     }
                     if (curLine) {
                         ctx.fillText(curLine, textPadX, curY);
-                        curY += Math.round(16 * uiScale);
+                        curY += Math.round(15 * uiScale);
                     }
+                    curY += Math.round(2 * uiScale);
                 });
 
-                curY += Math.round(8 * uiScale);
+                curY += Math.round(4 * uiScale);
 
-                // 2. 隐私保护声明
+                // 2. 信息存储期限与保护承诺
                 ctx.fillStyle = '#FFD700';
                 ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
-                ctx.fillText('【用户隐私保护声明】', textPadX, curY);
-                curY += Math.round(18 * uiScale);
+                ctx.fillText('【数据存储与保护承诺】', textPadX, curY);
+                curY += Math.round(16 * uiScale);
 
                 ctx.fillStyle = '#EDE7DF';
                 ctx.font = `${Math.round(9.5 * uiScale)}px sans-serif`;
-                const privacyParas = [
-                    '· 本游戏为纯本地安全运行，不收集用户手机号、通讯录或个人敏感隐私信息。',
-                    '· 玩家功德数据、法号与设置仅保存在本地设备及微信官方好友云中。',
-                    '· 游戏严格遵守《微信小程序平台服务条款》及国家相关网络安全法律法规。'
+                const storageItems = [
+                    '· 遵循最小必要原则，仅在实现功能所需最短时间内安全存储。',
+                    '· 绝不收集手机号或通讯录，用户可随时在微信设置中撤回授权。'
                 ];
-                privacyParas.forEach(para => {
+                storageItems.forEach(item => {
                     let curLine = '';
-                    for (let i = 0; i < para.length; i++) {
-                        const char = para[i];
+                    for (let i = 0; i < item.length; i++) {
+                        const char = item[i];
                         const testLine = curLine + char;
                         if (ctx.measureText(testLine).width > textMaxW && curLine.length > 0) {
                             ctx.fillText(curLine, textPadX, curY);
                             curLine = char;
-                            curY += Math.round(16 * uiScale);
+                            curY += Math.round(15 * uiScale);
                         } else {
                             curLine = testLine;
                         }
                     }
                     if (curLine) {
                         ctx.fillText(curLine, textPadX, curY);
-                        curY += Math.round(16 * uiScale);
+                        curY += Math.round(15 * uiScale);
                     }
-                    curY += Math.round(4 * uiScale);
                 });
 
-                // [我知道了] 确认按钮
+                // [查看官方完整协议 / 我知道了] 按钮
                 const okBtnY = cardY + cardH - 50;
                 ctx.fillStyle = '#D48806';
                 drawRoundRect(ctx, cardX + 30, okBtnY, cardW - 60, 36, 18);
@@ -7088,7 +7092,7 @@ function render() {
                 ctx.fillStyle = '#FFE072';
                 ctx.font = `bold ${Math.round(13 * uiScale)}px sans-serif`;
                 ctx.textAlign = 'center';
-                ctx.fillText('我知道了', W / 2, okBtnY + 23);
+                ctx.fillText('查看微信官方完整协议', W / 2, okBtnY + 23);
 
             } else if (state.currentModal === 'titles') {
                 ctx.font = `bold ${Math.round(15 * uiScale)}px sans-serif`;
