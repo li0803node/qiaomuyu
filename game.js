@@ -525,7 +525,7 @@ const state = {
     currentModal: null, // 'minigames', 'rank', 'titles', 'settings', 'gemhunt', 'rules', 'betpicker', 'ad_insufficient', 'ad_crit', 'ad_auto', 'ad_tier_unlock', 'bigwin', 'dharma_editor'
     rulesTab: 'icons',
     rulesPage: 0,            // 25 条连线规则分页索引 (0: 1-10, 1: 11-20, 2: 21-25)
-    rankTab: 'today',
+    rankTab: 'friends',
     floatingTexts: [],
     hitRipples: [],
     malletAngle: 28,
@@ -878,13 +878,26 @@ function getOpenDataContext() {
 
 function reportScoreToFriendCloud() {
     try {
+        const { current: curTitle } = getCurrentTitle(state.totalHit);
+        const dName = curTitle ? curTitle.name : '初结善缘';
+        
+        // 1. 直接主线程写入微信官方好友云存储
+        if (typeof wx !== 'undefined' && wx.setUserCloudStorage) {
+            wx.setUserCloudStorage({
+                KVDataList: [
+                    { key: 'qmy_total_hit', value: String(state.totalHit || 0) },
+                    { key: 'qmy_dharma_name', value: dName }
+                ],
+                fail: () => {}
+            });
+        }
+        // 2. 发送给开放数据域
         const ctx2d = getOpenDataContext();
         if (ctx2d) {
-            const { current: curTitle } = getCurrentTitle(state.totalHit);
             ctx2d.postMessage({
                 type: 'UPDATE_SCORE',
-                score: state.totalHit,
-                dharmaName: curTitle ? curTitle.name : '初结善缘'
+                score: state.totalHit || 0,
+                dharmaName: dName
             });
         }
     } catch(e) {}
@@ -894,7 +907,7 @@ function reportScoreToFriendCloud() {
 let lastRankReqTime = 0;
 function requestFriendRankData() {
     const now = Date.now();
-    if (now - lastRankReqTime < 1200) return; // 1.2 秒内不重复请求
+    if (now - lastRankReqTime < 500) return;
     lastRankReqTime = now;
 
     try {
@@ -903,7 +916,7 @@ function requestFriendRankData() {
             const cardW = W * 0.86;
             const cardH = Math.min(H * 0.65, 420);
             const sharedAreaW = cardW - 20;
-            const sharedAreaH = cardH - 92;
+            const sharedAreaH = cardH - 124;
             const realW = Math.round(sharedAreaW * dpr);
             const realH = Math.round(sharedAreaH * dpr);
             
@@ -2210,15 +2223,31 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                     state.currentModal = null;
                     return;
                 }
-                // Tab 切换触摸（🔥 今日修心榜 / 🏆 功德总圣榜）
+                // Tab 切换触摸（👥 微信好友榜 / 🏆 功德修心榜）
                 const rankTabW2 = (cardW - 32) / 2;
                 if (ty >= cardY + 38 && ty <= cardY + 72) {
                     if (tx >= cardX + 16 && tx < cardX + 16 + rankTabW2) {
-                        state.rankTab = 'today';
+                        state.rankTab = 'friends';
+                        reportScoreToFriendCloud();
+                        requestFriendRankData();
                         return;
                     }
                     if (tx >= cardX + 16 + rankTabW2 && tx <= cardX + cardW - 16) {
                         state.rankTab = 'world';
+                        return;
+                    }
+                }
+                // 好友榜底部「邀请好友/微信群同玩」按钮
+                if (state.rankTab === 'friends') {
+                    const inviteBtnY = cardY + cardH - Math.round(38 * uiScale);
+                    const inviteBtnH = Math.round(28 * uiScale);
+                    if (ty >= inviteBtnY && ty <= inviteBtnY + inviteBtnH && tx >= cardX + 16 && tx <= cardX + cardW - 16) {
+                        if (typeof wx !== 'undefined' && wx.shareAppMessage) {
+                            wx.shareAppMessage({
+                                title: `我在《静心敲木鱼》积攒了 ${state.totalHit || 0} 功德，快来好友榜比一比！`,
+                                imageUrl: 'share_500x400.jpg'
+                            });
+                        }
                         return;
                     }
                 }
@@ -2501,7 +2530,8 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
             }
             if (tx >= btns.rank.x && tx < btns.titles.x) {
                 state.currentModal = 'rank';
-                state.rankTab = 'today';
+                state.rankTab = 'friends';
+                reportScoreToFriendCloud();
                 requestFriendRankData();
                 return;
             }
@@ -3741,11 +3771,11 @@ function render() {
                 ctx.font = `bold ${Math.round(18 * uiScale)}px sans-serif`;
                 ctx.fillText('×', cardX + cardW - 22, cardY + 28);
 
-                // Tab 切换：🔥 今日修心榜 / 🏆 功德总圣榜
+                // Tab 切换：👥 微信好友榜 / 🏆 功德修行榜
                 const rankTabW = (cardW - 32) / 2;
                 const rankTabs = [
-                    { key: 'today', label: '🔥 今日修心榜' },
-                    { key: 'world', label: '🏆 功德总圣榜' }
+                    { key: 'friends', label: '👥 微信好友榜' },
+                    { key: 'world',   label: '🏆 功德修行榜' }
                 ];
                 rankTabs.forEach((t, i) => {
                     const tabX = cardX + 16 + i * rankTabW;
@@ -3762,85 +3792,117 @@ function render() {
                     ctx.fillText(t.label, tabX + (rankTabW - 6) / 2, cardY + 60);
                 });
 
-                // 获取玩家当前修行境界称号
-                const { current: myCurTitle } = getCurrentTitle(state.totalHit);
-                const myName = myCurTitle ? myCurTitle.name : '初结善缘';
+                if (state.rankTab === 'friends') {
+                    // ----------------------------------------------------
+                    // 1. 微信开放数据域（真实微信好友/群排行榜 SharedCanvas 贴图渲染）
+                    // ----------------------------------------------------
+                    const odc = getOpenDataContext();
+                    const sharedAreaX = cardX + 10;
+                    const sharedAreaY = cardY + 76;
+                    const sharedAreaW = cardW - 20;
+                    const sharedAreaH = cardH - 124;
 
-                let baseList = [];
-                let myScore = 0;
-                let scoreTag = '';
-                if (state.rankTab === 'today') {
-                    baseList = [
-                        { name: '妙悟行者', loc: '今日精进', score: 88880 },
-                        { name: '虚空禅客', loc: '今日精进', score: 42600 },
-                        { name: '清凉居士', loc: '今日精进', score: 28500 },
-                        { name: '静心散客', loc: '今日精进', score: 15200 },
-                        { name: '普陀修者', loc: '今日精进', score: 8800 },
-                    ];
-                    myScore = state.dailyHit || 0;
-                    scoreTag = '今日修行';
+                    if (odc && odc.canvas) {
+                        try {
+                            ctx.drawImage(odc.canvas, sharedAreaX, sharedAreaY, sharedAreaW, sharedAreaH);
+                        } catch(e) {}
+                    } else {
+                        ctx.fillStyle = 'rgba(26, 18, 10, 0.98)';
+                        drawRoundRect(ctx, sharedAreaX, sharedAreaY, sharedAreaW, sharedAreaH, 8);
+                        ctx.fill();
+                        ctx.fillStyle = '#FFE072';
+                        ctx.font = `bold ${Math.round(13 * uiScale)}px sans-serif`;
+                        ctx.textAlign = 'center';
+                        ctx.fillText('正在同步微信好友修行榜...', W / 2, cardY + cardH / 2);
+                    }
+
+                    // 底部「邀请好友 / 微信群排行榜」操作栏
+                    const inviteBtnX = cardX + 16;
+                    const inviteBtnY = cardY + cardH - Math.round(38 * uiScale);
+                    const inviteBtnW = cardW - 32;
+                    const inviteBtnH = Math.round(28 * uiScale);
+                    const btnGrad = ctx.createLinearGradient(inviteBtnX, inviteBtnY, inviteBtnX, inviteBtnY + inviteBtnH);
+                    btnGrad.addColorStop(0, '#D4AF37');
+                    btnGrad.addColorStop(1, '#8C6828');
+                    ctx.fillStyle = btnGrad;
+                    drawRoundRect(ctx, inviteBtnX, inviteBtnY, inviteBtnW, inviteBtnH, 14);
+                    ctx.fill();
+                    ctx.strokeStyle = '#FFE072';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#FFF8E7';
+                    ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText('💌 邀请好友 · 转发至微信群查看群排行', inviteBtnX + inviteBtnW / 2, inviteBtnY + Math.round(18 * uiScale));
+
                 } else {
-                    baseList = [
+                    // ----------------------------------------------------
+                    // 2. 功德修行总榜（大德同修与法号境界）
+                    // ----------------------------------------------------
+                    const { current: myCurTitle } = getCurrentTitle(state.totalHit);
+                    const myName = myCurTitle ? myCurTitle.name : '初结善缘';
+
+                    const baseList = [
                         { name: '弘法宗师', loc: '总榜大德', score: 9999999 },
                         { name: '妙觉行者', loc: '总榜大德', score: 8866432 },
                         { name: '慈航渡世', loc: '总榜大德', score: 7654321 },
                         { name: '静心禅境', loc: '总榜大德', score: 6543210 },
                         { name: '普度众生', loc: '总榜大德', score: 5432109 },
+                        { name: '妙悟行者', loc: '精进行者', score: 3280000 },
+                        { name: '虚空禅客', loc: '精进行者', score: 1860000 }
                     ];
-                    myScore = state.totalHit || 0;
-                    scoreTag = '累计功德';
-                }
+                    const myScore = state.totalHit || 0;
+                    const myEntry = { name: myName, loc: '我的功德', score: myScore, isMe: true };
+                    const displayList = [...baseList, myEntry].sort((a, b) => b.score - a.score);
 
-                const myEntry = { name: myName, loc: scoreTag, score: myScore, isMe: true };
-                const displayList = [...baseList, myEntry].sort((a, b) => b.score - a.score);
+                    // 绘制榜单条目列表
+                    displayList.forEach((item, idx) => {
+                        if (idx >= 7) return;
+                        const ry = cardY + 78 + idx * 37;
+                        ctx.fillStyle = item.isMe ? 'rgba(91, 64, 40, 0.88)' : 'rgba(42, 33, 26, 0.7)';
+                        drawRoundRect(ctx, cardX + 12, ry, cardW - 24, 32, 7);
+                        ctx.fill();
+                        if (item.isMe) {
+                            ctx.strokeStyle = '#F5C44B';
+                            ctx.lineWidth = 1.2;
+                            ctx.stroke();
+                        }
 
-                // 绘制榜单条目列表
-                displayList.forEach((item, idx) => {
-                    if (idx >= 7) return;
-                    const ry = cardY + 78 + idx * 37;
-                    ctx.fillStyle = item.isMe ? 'rgba(91, 64, 40, 0.88)' : 'rgba(42, 33, 26, 0.7)';
-                    drawRoundRect(ctx, cardX + 12, ry, cardW - 24, 32, 7);
+                        ctx.font = `bold ${Math.round(12 * uiScale)}px sans-serif`;
+                        ctx.textAlign = 'center';
+                        const medal = idx === 0 ? '👑' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `${idx + 1}`));
+                        ctx.fillStyle = idx < 3 ? '#FFE072' : '#A8988B';
+                        ctx.fillText(medal, cardX + 28, ry + 20);
+
+                        ctx.textAlign = 'left';
+                        ctx.fillStyle = item.isMe ? '#FFE072' : '#EDE7DF';
+                        ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
+                        ctx.fillText(item.name + (item.isMe ? ' (我)' : ''), cardX + 46, ry + 15);
+                        ctx.fillStyle = '#A8988B';
+                        ctx.font = `${Math.round(8.5 * uiScale)}px sans-serif`;
+                        ctx.fillText(item.loc, cardX + 46, ry + 26);
+
+                        ctx.fillStyle = '#FFE072';
+                        ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
+                        ctx.textAlign = 'right';
+                        ctx.fillText(item.score.toLocaleString(), cardX + cardW - 16, ry + 20);
+                    });
+
+                    // 底部固定我的排名状态条
+                    const myBarY = cardY + cardH - 32;
+                    ctx.fillStyle = 'rgba(91, 64, 40, 0.95)';
+                    drawRoundRect(ctx, cardX + 10, myBarY, cardW - 20, 26, 8);
                     ctx.fill();
-                    if (item.isMe) {
-                        ctx.strokeStyle = '#F5C44B';
-                        ctx.lineWidth = 1.2;
-                        ctx.stroke();
-                    }
-
-                    ctx.font = `bold ${Math.round(12 * uiScale)}px sans-serif`;
-                    ctx.textAlign = 'center';
-                    const medal = idx === 0 ? '👑' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `${idx + 1}`));
-                    ctx.fillStyle = idx < 3 ? '#FFE072' : '#A8988B';
-                    ctx.fillText(medal, cardX + 28, ry + 20);
-
-                    ctx.textAlign = 'left';
-                    ctx.fillStyle = item.isMe ? '#FFE072' : '#EDE7DF';
-                    ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
-                    ctx.fillText(item.name + (item.isMe ? ' (我)' : ''), cardX + 46, ry + 15);
-                    ctx.fillStyle = '#A8988B';
-                    ctx.font = `${Math.round(8.5 * uiScale)}px sans-serif`;
-                    ctx.fillText(item.loc, cardX + 46, ry + 26);
-
+                    ctx.strokeStyle = '#F5C44B';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
                     ctx.fillStyle = '#FFE072';
-                    ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
-                    ctx.textAlign = 'right';
-                    ctx.fillText(item.score.toLocaleString(), cardX + cardW - 16, ry + 20);
-                });
-
-                // 底部固定我的排名状态条
-                const myBarY = cardY + cardH - 32;
-                ctx.fillStyle = 'rgba(91, 64, 40, 0.95)';
-                drawRoundRect(ctx, cardX + 10, myBarY, cardW - 20, 26, 8);
-                ctx.fill();
-                ctx.strokeStyle = '#F5C44B';
-                ctx.lineWidth = 1;
-                ctx.stroke();
-                ctx.fillStyle = '#FFE072';
-                ctx.font = `bold ${Math.round(10.5 * uiScale)}px sans-serif`;
-                ctx.textAlign = 'center';
-                const myRank = displayList.findIndex(x => x.isMe) + 1;
-                const rankLabel = state.rankTab === 'today' ? '今日' : '总榜';
-                ctx.fillText(`我「${myName}」· 功德：${myScore.toLocaleString()} · ${rankLabel}第 ${myRank} 名`, W / 2, myBarY + 17);
+                    ctx.font = `bold ${Math.round(10.5 * uiScale)}px sans-serif`;
+                    ctx.textAlign = 'center';
+                    const myRank = displayList.findIndex(x => x.isMe) + 1;
+                    ctx.fillText(`我「${myName}」· 功德：${myScore.toLocaleString()} · 修行总榜第 ${myRank} 名`, W / 2, myBarY + 17);
+                }
             } else if (state.currentModal === 'temple_picker') {
                 // 四大法殿切换弹窗
                 ctx.font = `bold ${Math.round(15 * uiScale)}px sans-serif`;

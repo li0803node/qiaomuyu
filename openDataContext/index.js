@@ -13,11 +13,13 @@ let CH = sharedCanvas.height || 600;
 // 消息监听入口
 // ----------------------------------------------------------------
 wx.onMessage((data) => {
+    if (!data) return;
     switch (data.type) {
         case 'UPDATE_SCORE':
             updateUserScore(data.score, data.dharmaName);
             break;
         case 'RENDER_FRIEND_RANK':
+        case 'RENDER_GROUP_RANK':
             if (data.width && data.height) {
                 if (sharedCanvas.width !== data.width || sharedCanvas.height !== data.height) {
                     sharedCanvas.width = data.width;
@@ -29,7 +31,11 @@ wx.onMessage((data) => {
                 CW = sharedCanvas.width;
                 CH = sharedCanvas.height;
             }
-            renderFriendRankList(data.dpr || 2);
+            if (data.type === 'RENDER_GROUP_RANK' && data.shareTicket) {
+                renderGroupRankList(data.shareTicket, data.dpr || 2);
+            } else {
+                renderFriendRankList(data.dpr || 2);
+            }
             break;
         default:
             break;
@@ -46,12 +52,8 @@ function updateUserScore(score, dharmaName) {
     ];
     wx.setUserCloudStorage({
         KVDataList: kvList,
-        success: () => {
-            console.log('[OpenData] Score & dharmaName reported:', score, dharmaName);
-        },
-        fail: (err) => {
-            console.warn('[OpenData] setUserCloudStorage failed:', err);
-        }
+        success: () => {},
+        fail: () => {}
     });
 }
 
@@ -71,12 +73,43 @@ function renderFriendRankList(dpr) {
                     avatarUrl: item.avatarUrl || '',
                     score:     hitKV ? parseInt(hitKV.value, 10) : 0,
                 };
-            }).filter(item => item.score > 0).sort((a, b) => b.score - a.score);
+            }).filter(item => typeof item.score === 'number' && item.score >= 0).sort((a, b) => b.score - a.score);
 
             drawRankCanvas(dataList, scale);
         },
         fail: (err) => {
             console.warn('[OpenData] getFriendCloudStorage error:', err);
+            drawEmptyState(scale);
+        }
+    });
+}
+
+// ----------------------------------------------------------------
+// 拉取群排行数据并渲染
+// ----------------------------------------------------------------
+function renderGroupRankList(shareTicket, dpr) {
+    const scale = dpr || 2;
+    if (!wx.getGroupCloudStorage || !shareTicket) {
+        renderFriendRankList(dpr);
+        return;
+    }
+    wx.getGroupCloudStorage({
+        shareTicket: shareTicket,
+        keyList: ['qmy_total_hit', 'qmy_dharma_name'],
+        success: (res) => {
+            const dataList = (res.data || []).map(item => {
+                const hitKV    = (item.KVDataList || []).find(k => k.key === 'qmy_total_hit');
+                const nameKV   = (item.KVDataList || []).find(k => k.key === 'qmy_dharma_name');
+                return {
+                    nickname:  item.nickname || (nameKV ? nameKV.value : '虔诚居士'),
+                    avatarUrl: item.avatarUrl || '',
+                    score:     hitKV ? parseInt(hitKV.value, 10) : 0,
+                };
+            }).filter(item => typeof item.score === 'number' && item.score >= 0).sort((a, b) => b.score - a.score);
+
+            drawRankCanvas(dataList, scale);
+        },
+        fail: () => {
             drawEmptyState(scale);
         }
     });
