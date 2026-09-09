@@ -45,6 +45,30 @@
       {
         "type": "glob",
         "value": "*.tmp"
+      },
+      {
+        "type": "glob",
+        "value": "promo_*"
+      },
+      {
+        "type": "glob",
+        "value": "cover_*"
+      },
+      {
+        "type": "glob",
+        "value": "share_1_*"
+      },
+      {
+        "type": "glob",
+        "value": "share_2_*"
+      },
+      {
+        "type": "glob",
+        "value": "share_3_*"
+      },
+      {
+        "type": "glob",
+        "value": "assets/audio/bgm_track*"
       }
     ],
     "include": []
