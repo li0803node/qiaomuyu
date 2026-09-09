@@ -3908,14 +3908,15 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                         state.currentModal = 'age_advisory';
                         return;
                     } else if (tx >= cardX + 12 + compBtnW + 8 && tx <= cardX + cardW - 12) {
-                        if (typeof wx !== 'undefined' && wx.openPrivacyContract) {
-                            wx.openPrivacyContract({
-                                fail: () => {
-                                    state.currentModal = 'privacy_policy';
-                                }
-                            });
-                        } else {
-                            state.currentModal = 'privacy_policy';
+                        state.currentModal = 'privacy_policy';
+                        if (typeof wx !== 'undefined' && typeof wx.openPrivacyContract === 'function') {
+                            try {
+                                wx.openPrivacyContract({
+                                    success: function() {},
+                                    fail: function() {},
+                                    complete: function() {}
+                                });
+                            } catch(e) {}
                         }
                         return;
                     }
@@ -3931,9 +3932,6 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                 const okBtnY = cardY + cardH - 52;
                 if (ty >= okBtnY && ty <= okBtnY + 36 && tx >= cardX + 30 && tx <= cardX + cardW - 30) {
                     try { soundManager.playTap(); } catch(e) {}
-                    if (state.currentModal === 'privacy_policy' && typeof wx !== 'undefined' && wx.openPrivacyContract) {
-                        try { wx.openPrivacyContract(); } catch(e) {}
-                    }
                     state.currentModal = 'settings';
                     return;
                 }
@@ -6850,7 +6848,7 @@ function render() {
                 ctx.fillStyle = '#FFE072';
                 ctx.font = `bold ${Math.round(9.5 * uiScale)}px sans-serif`;
                 ctx.textAlign = 'center';
-                ctx.fillText('微信官方隐私协议', cardX + 12 + compBtnW + 8 + compBtnW / 2 + Math.round(6 * uiScale), compY + 17);
+                ctx.fillText('用户隐私指引', cardX + 12 + compBtnW + 8 + compBtnW / 2 + Math.round(6 * uiScale), compY + 17);
 
                 // 底部合规备案小字
                 ctx.textAlign = 'center';
@@ -7092,7 +7090,7 @@ function render() {
                 ctx.fillStyle = '#FFE072';
                 ctx.font = `bold ${Math.round(13 * uiScale)}px sans-serif`;
                 ctx.textAlign = 'center';
-                ctx.fillText('查看微信官方完整协议', W / 2, okBtnY + 23);
+                ctx.fillText('我知道了', W / 2, okBtnY + 23);
 
             } else if (state.currentModal === 'titles') {
                 ctx.font = `bold ${Math.round(15 * uiScale)}px sans-serif`;
