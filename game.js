@@ -926,11 +926,14 @@ function requestFriendRankData() {
                 sharedCanvas.height = realH;
             }
 
+            const { current: curTitle } = getCurrentTitle(state.totalHit);
             odc.postMessage({
                 type: 'RENDER_FRIEND_RANK',
                 width: realW,
                 height: realH,
-                dpr: dpr
+                dpr: dpr,
+                myScore: state.totalHit || 0,
+                dharmaName: curTitle ? curTitle.name : '初结善缘'
             });
         }
     } catch(e) {}

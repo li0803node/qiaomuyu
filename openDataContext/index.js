@@ -9,6 +9,8 @@ const ctx = sharedCanvas.getContext('2d');
 let CW = sharedCanvas.width || 600;
 let CH = sharedCanvas.height || 600;
 
+let mySelfInfo = { nickname: '我', score: 0, dharmaName: '初结善缘' };
+
 // ----------------------------------------------------------------
 // 消息监听入口
 // ----------------------------------------------------------------
@@ -16,10 +18,14 @@ wx.onMessage((data) => {
     if (!data) return;
     switch (data.type) {
         case 'UPDATE_SCORE':
+            mySelfInfo.score = typeof data.score === 'number' ? data.score : mySelfInfo.score;
+            mySelfInfo.dharmaName = data.dharmaName || mySelfInfo.dharmaName;
             updateUserScore(data.score, data.dharmaName);
             break;
         case 'RENDER_FRIEND_RANK':
         case 'RENDER_GROUP_RANK':
+            if (typeof data.myScore === 'number') mySelfInfo.score = data.myScore;
+            if (data.dharmaName) mySelfInfo.dharmaName = data.dharmaName;
             if (data.width && data.height) {
                 if (sharedCanvas.width !== data.width || sharedCanvas.height !== data.height) {
                     sharedCanvas.width = data.width;
@@ -75,11 +81,14 @@ function renderFriendRankList(dpr) {
                 };
             }).filter(item => typeof item.score === 'number' && item.score >= 0).sort((a, b) => b.score - a.score);
 
-            drawRankCanvas(dataList, scale);
+            if (dataList && dataList.length > 0) {
+                drawRankCanvas(dataList, scale);
+            } else {
+                drawEmptyState(scale, mySelfInfo);
+            }
         },
-        fail: (err) => {
-            console.warn('[OpenData] getFriendCloudStorage error:', err);
-            drawEmptyState(scale);
+        fail: () => {
+            drawEmptyState(scale, mySelfInfo);
         }
     });
 }
@@ -107,10 +116,14 @@ function renderGroupRankList(shareTicket, dpr) {
                 };
             }).filter(item => typeof item.score === 'number' && item.score >= 0).sort((a, b) => b.score - a.score);
 
-            drawRankCanvas(dataList, scale);
+            if (dataList && dataList.length > 0) {
+                drawRankCanvas(dataList, scale);
+            } else {
+                drawEmptyState(scale, mySelfInfo);
+            }
         },
         fail: () => {
-            drawEmptyState(scale);
+            drawEmptyState(scale, mySelfInfo);
         }
     });
 }
@@ -258,32 +271,46 @@ function drawRankItem(ctx, item, idx, startY, itemH, avatarR, avatarImg, s) {
 }
 
 // ----------------------------------------------------------------
-// 空状态提示 (完美比例自适应，绝不拉伸挤压)
+// 空状态提示 (展示自己的排名卡片 + 好友邀请引导)
 // ----------------------------------------------------------------
-function drawEmptyState(scale) {
+function drawEmptyState(scale, selfInfo) {
     const s = scale || 2;
     ctx.clearRect(0, 0, CW, CH);
     ctx.fillStyle = 'rgba(26, 18, 10, 0.98)';
     ctx.fillRect(0, 0, CW, CH);
 
+    const info = selfInfo || mySelfInfo || { score: 0, dharmaName: '初结善缘', nickname: '我' };
+    const myItem = {
+        nickname: info.dharmaName || info.nickname || '我',
+        score: info.score || 0,
+        avatarUrl: ''
+    };
+
+    // 绘制自己的第 1 名卡片
+    const ITEM_H = Math.round(48 * s);
+    const AVATAR_R = Math.round(16 * s);
+    const START_Y = Math.round(10 * s);
+    drawRankItem(ctx, myItem, 0, START_Y, ITEM_H, AVATAR_R, null, s);
+
+    // 下方绘制邀请好友引导区
     const midX = CW / 2;
-    const midY = CH / 2;
+    const midY = START_Y + ITEM_H + Math.round(85 * s);
 
     // 🏮 灯笼
-    ctx.font = `${Math.round(32 * s)}px sans-serif`;
+    ctx.font = `${Math.round(26 * s)}px sans-serif`;
     ctx.textAlign = 'center';
-    ctx.fillText('🏮', midX, midY - 26 * s);
+    ctx.fillText('🏮', midX, midY - 24 * s);
 
     // 主提示语
     ctx.fillStyle = '#FFE072';
-    ctx.font = `bold ${Math.round(13.5 * s)}px sans-serif`;
-    ctx.fillText('暂无好友同玩记录', midX, midY + 12 * s);
+    ctx.font = `bold ${Math.round(12.5 * s)}px sans-serif`;
+    ctx.fillText('暂无其他好友同修记录', midX, midY + 8 * s);
 
     // 副提示语
     ctx.fillStyle = '#A8988B';
-    ctx.font = `${Math.round(10.5 * s)}px sans-serif`;
-    ctx.fillText('快邀请好友一同静心敲击木鱼', midX, midY + 32 * s);
-    ctx.fillText('共登功德圣榜 · 增添无量福慧', midX, midY + 48 * s);
+    ctx.font = `${Math.round(9.5 * s)}px sans-serif`;
+    ctx.fillText('点击下方按钮分享到微信群或好友', midX, midY + 26 * s);
+    ctx.fillText('一同静心持咒 · 共登功德圣榜', midX, midY + 40 * s);
 }
 
 // ----------------------------------------------------------------
