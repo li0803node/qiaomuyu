@@ -1,0 +1,9 @@
+{
+  "name": "drawCritBuff",
+  "version": "1.0.0",
+  "description": "暴击倍率抽奖与每日限制校验云函数",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

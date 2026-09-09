@@ -1,0 +1,27 @@
+# WeChat MiniGame private developer config
+project.private.config.json
+
+# Logs & Temporary test outputs
+log/
+*.log
+*.xlsx
+
+# System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Node modules & dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

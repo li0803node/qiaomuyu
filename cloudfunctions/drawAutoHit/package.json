@@ -1,0 +1,9 @@
+{
+  "name": "drawAutoHit",
+  "version": "1.0.0",
+  "description": "自动敲击激励视频每日限制云函数",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

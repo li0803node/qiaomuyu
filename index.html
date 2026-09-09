@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>静心敲木鱼 - 微信小游戏全功能体验版</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app" class="game-container">
+        <!-- 顶部数据状态栏 -->
+        <header class="header-bar">
+            <!-- 个人档案/微信账号入口 -->
+            <div class="user-top-row">
+                <div class="user-profile-badge" id="btn-open-user-modal" title="个人中心 · 修改头像与昵称">
+                    <div class="user-avatar-wrap" id="header-avatar-box">🪷</div>
+                    <span id="header-user-nickname" class="user-nickname-text">静心居士</span>
+                    <span class="user-level-tag" id="header-user-tag">LV.1</span>
+                </div>
+
+                <!-- 禅音背景音乐快捷切换按钮 -->
+                <button id="bgm-indicator-btn" class="bgm-indicator-btn playing" title="静心禅音背景音乐">
+                    <span class="music-icon">🎵</span>
+                    <span class="music-waves">
+                        <span class="wave w1"></span>
+                        <span class="wave w2"></span>
+                        <span class="wave w3"></span>
+                    </span>
+                </button>
+            </div>
+
+            <div class="user-stats">
+                <div class="stat-pill score-pill">
+                    <span class="label">敲击值</span>
+                    <span id="total-hit" class="value number-font">0</span>
+                </div>
+                <div class="stat-pill title-pill" id="btn-open-titles-header">
+                    <span class="label">当前称号</span>
+                    <span id="current-title" class="value title-badge">初闻叩响</span>
+                </div>
+            </div>
+
+            <!-- 暴击倍率动态状态条 -->
+            <div id="crit-status-card" class="crit-status-card buff-inactive">
+                <div class="crit-icon">⚡</div>
+                <div class="crit-info">
+                    <div class="crit-title" id="crit-title">无倍率</div>
+                    <div class="crit-timer" id="crit-timer">敲击获取基础 1x 敲击值</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- 核心木鱼交互区域 (3D 寺庙大殿沉浸场景) -->
+        <main class="woodfish-stage">
+            <!-- 3D 寺庙大殿殿堂背景与氛围层 (纯净光影，无杂乱灯具) -->
+            <div class="temple-3d-scene">
+                <div class="temple-ambient-glow"></div>
+                <div class="temple-roof-beams"></div>
+                <div class="temple-pillar pillar-left"></div>
+                <div class="temple-pillar pillar-right"></div>
+            </div>
+
+            <!-- 暴击微光粒子层与光晕 -->
+            <div id="aura-halo" class="aura-halo rate-1"></div>
+            <div id="particle-container" class="particle-container"></div>
+            <div id="floating-text-container" class="floating-text-container"></div>
+
+            <!-- 敲击木槌/木棍 -->
+            <div id="wood-mallet" class="wood-mallet">
+                <svg viewBox="0 0 100 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="malletStick" x1="0" y1="0" x2="100" y2="180" gradientUnits="userSpaceOnUse">
+                            <stop offset="0%" stop-color="#8C532B" />
+                            <stop offset="50%" stop-color="#4E2B15" />
+                            <stop offset="100%" stop-color="#241409" />
+                        </linearGradient>
+                        <linearGradient id="malletHead" x1="0" y1="0" x2="60" y2="60" gradientUnits="userSpaceOnUse">
+                            <stop offset="0%" stop-color="#F5C44B" />
+                            <stop offset="35%" stop-color="#B45309" />
+                            <stop offset="100%" stop-color="#2D1A10" />
+                        </linearGradient>
+                        <filter id="malletShadow" x="-30%" y="-30%" width="160%" height="160%">
+                            <feDropShadow dx="4" dy="12" stdDeviation="8" flood-color="#000000" flood-opacity="0.8"/>
+                        </filter>
+                    </defs>
+                    <!-- 木柄长杆 -->
+                    <rect x="42" y="30" width="12" height="140" rx="6" fill="url(#malletStick)" filter="url(#malletShadow)" />
+                    <!-- 缠绳防滑柄纹 -->
+                    <line x1="42" y1="130" x2="54" y2="135" stroke="#F5C44B" stroke-width="2" opacity="0.6"/>
+                    <line x1="42" y1="140" x2="54" y2="145" stroke="#F5C44B" stroke-width="2" opacity="0.6"/>
+                    <line x1="42" y1="150" x2="54" y2="155" stroke="#F5C44B" stroke-width="2" opacity="0.6"/>
+                    <!-- 槌头圆木 -->
+                    <circle cx="48" cy="32" r="22" fill="url(#malletHead)" filter="url(#malletShadow)" stroke="#FFE072" stroke-width="2" />
+                    <ellipse cx="44" cy="24" rx="14" ry="7" fill="#FFF" opacity="0.4" />
+                </svg>
+            </div>
+
+            <!-- 3D 汉白玉/黄金莲花木鱼底座 -->
+            <div class="woodfish-3d-wrapper">
+                <!-- 木鱼可点击主体 -->
+                <div id="woodfish-btn" class="woodfish-btn" role="button" tabindex="0" aria-label="敲击木鱼">
+                    <svg class="woodfish-svg" viewBox="0 0 240 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="wood3DGradient" cx="40%" cy="30%" r="70%">
+                                <stop offset="0%" stop-color="#7C4A2D" />
+                                <stop offset="45%" stop-color="#422515" />
+                                <stop offset="85%" stop-color="#24130A" />
+                                <stop offset="100%" stop-color="#120905" />
+                            </radialGradient>
+                            <linearGradient id="gold3DRim" x1="0" y1="0" x2="240" y2="200" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#FFE58F" stop-opacity="0.9" />
+                                <stop offset="50%" stop-color="#F5C44B" stop-opacity="0.6" />
+                                <stop offset="100%" stop-color="#874D00" stop-opacity="0.3" />
+                            </linearGradient>
+                            <filter id="woodShadow3D" x="-30%" y="-30%" width="160%" height="160%">
+                                <feDropShadow dx="0" dy="22" stdDeviation="20" flood-color="#000000" flood-opacity="0.85"/>
+                            </filter>
+                        </defs>
+
+                        <!-- 木鱼底托投影 -->
+                        <ellipse cx="120" cy="180" rx="96" ry="16" fill="#000000" opacity="0.6" />
+
+                        <!-- 木鱼主体轮廓 (3D 丰满质感) -->
+                        <path d="M120 18 C175 18 215 55 215 105 C215 152 175 178 120 178 C65 178 25 152 25 105 C25 55 65 18 120 18 Z" 
+                              fill="url(#wood3DGradient)" filter="url(#woodShadow3D)" stroke="url(#gold3DRim)" stroke-width="3" />
+
+                        <!-- 3D 顶部高光弧 -->
+                        <ellipse cx="115" cy="45" rx="55" ry="20" fill="#FFF" opacity="0.08" />
+
+                        <!-- 木鱼头部鱼嘴镂空造型 (禅意立体线条) -->
+                        <path d="M45 105 Q120 142 195 105" stroke="#FFE072" stroke-width="3.5" stroke-linecap="round" opacity="0.85" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.8))" />
+
+                        <!-- 木鱼左眼 (支持敲击眨眼闭目) -->
+                        <g class="woodfish-eye eye-left" id="eye-left">
+                            <!-- 睁眼状态 -->
+                            <g class="eye-open-group">
+                                <circle cx="65" cy="85" r="7.5" fill="#FFE072" opacity="0.95" />
+                                <circle cx="66" cy="84" r="3.5" fill="#1E0E05" />
+                                <circle cx="67.5" cy="82.5" r="1.6" fill="#FFF" />
+                            </g>
+                            <!-- 闭眼状态 (微笑/静心弯月弧线) -->
+                            <path class="eye-closed-arc" d="M 56 85 Q 65 92 74 85" stroke="#FFE072" stroke-width="4" stroke-linecap="round" fill="none" />
+                        </g>
+
+                        <!-- 木鱼右眼 (支持敲击眨眼闭目) -->
+                        <g class="woodfish-eye eye-right" id="eye-right">
+                            <!-- 睁眼状态 -->
+                            <g class="eye-open-group">
+                                <circle cx="175" cy="85" r="7.5" fill="#FFE072" opacity="0.95" />
+                                <circle cx="176" cy="84" r="3.5" fill="#1E0E05" />
+                                <circle cx="177.5" cy="82.5" r="1.6" fill="#FFF" />
+                            </g>
+                            <!-- 闭眼状态 (微笑/静心弯月弧线) -->
+                            <path class="eye-closed-arc" d="M 166 85 Q 175 92 184 85" stroke="#FFE072" stroke-width="4" stroke-linecap="round" fill="none" />
+                        </g>
+                        
+                        <!-- 雅致金丝祥云暗纹 -->
+                        <path d="M100 80 Q120 68 140 80 Q120 92 100 80 Z" fill="#FFE072" opacity="0.25" />
+                    </svg>
+
+                    <!-- 敲击涟漪圈 -->
+                    <div class="hit-ripple" id="hit-ripple"></div>
+                </div>
+            </div>
+
+            <!-- 静心指引文字 -->
+            <div class="zen-caption">
+                <span id="hit-sub-text">点击木鱼 · 心神澄明</span>
+            </div>
+        </main>
+
+        <!-- 底部核心操作栏 -->
+        <footer class="bottom-actions">
+            <div class="ad-action-row">
+                <!-- 暴击增益按钮 -->
+                <button id="btn-crit-ad" class="btn-action btn-crit">
+                    <div class="btn-icon">⚡</div>
+                    <div class="btn-text-wrap">
+                        <span class="btn-main-title">暴击增益 (1-5倍)</span>
+                        <span id="crit-ad-count-label" class="btn-sub-title">今日剩余 6/6 次</span>
+                    </div>
+                </button>
+
+                <!-- 自动敲击挂机按钮 -->
+                <button id="btn-auto-ad" class="btn-action btn-auto">
+                    <div class="btn-icon">🔔</div>
+                    <div class="btn-text-wrap">
+                        <span id="auto-btn-main-title" class="btn-main-title">自动敲击 (10分钟)</span>
+                        <span id="auto-ad-count-label" class="btn-sub-title">今日剩余 5/5 次</span>
+                    </div>
+                </button>
+            </div>
+
+            <div class="menu-action-row">
+                <button id="btn-open-minigames" class="btn-icon-text">
+                    <span class="icon">🎮</span>
+                    <span>游艺坊</span>
+                </button>
+                <button id="btn-open-rank" class="btn-icon-text">
+                    <span class="icon">🏆</span>
+                    <span>排行榜</span>
+                </button>
+                <button id="btn-open-titles" class="btn-icon-text">
+                    <span class="icon">📜</span>
+                    <span>我的称号</span>
+                </button>
+                <button id="btn-open-settings" class="btn-icon-text">
+                    <span class="icon">⚙️</span>
+                    <span>设置</span>
+                </button>
+            </div>
+        </footer>
+
+        <!-- 弹窗：排行榜 -->
+        <div id="modal-rank" class="modal-backdrop hidden">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h3>🏆 静心排行榜</h3>
+                    <button class="modal-close" id="btn-close-rank">×</button>
+                </div>
+                <div class="rank-tabs">
+                    <button class="rank-tab-btn active" data-tab="friend">好友榜</button>
+                    <button class="rank-tab-btn" data-tab="national">全国榜</button>
+                    <button class="rank-tab-btn" data-tab="province" id="tab-province-btn">省份榜</button>
+                </div>
+                <div class="rank-body">
+                    <!-- 省份授权提示 (非强制) -->
+                    <div id="province-auth-box" class="auth-prompt hidden">
+                        <p>授权获取地理位置，即可查看同省好友静心排名</p>
+                        <button id="btn-auth-location" class="btn-auth">开启本省排行榜</button>
+                    </div>
+
+                    <!-- 排行榜滚动列表 -->
+                    <div class="rank-list" id="rank-list-container">
+                        <!-- 动态填充 -->
+                    </div>
+                </div>
+                <div class="modal-footer rank-footer">
+                    <span id="my-rank-status">我的当前排名：第 42 名</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 弹窗：我的称号 (14档位) -->
+        <div id="modal-title" class="modal-backdrop hidden">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h3>📜 静心称号</h3>
+                    <button class="modal-close" id="btn-close-title">×</button>
+                </div>
+                <div class="title-summary-bar">
+                    <span id="title-summary-text">当前称号：【初闻叩响】（累计敲击：0）</span>
+                </div>
+                <div class="title-list" id="title-list-container">
+                    <!-- 14档位动态生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 弹窗：设置与隐私 -->
+        <div id="modal-settings" class="modal-backdrop hidden">
+            <div class="modal-card settings-card">
+                <div class="modal-header">
+                    <h3>⚙️ 游戏设置</h3>
+                    <button class="modal-close" id="btn-close-settings">×</button>
+                </div>
+                <div class="settings-body">
+                    <div class="setting-item">
+                        <span>木鱼敲击音效</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-sfx" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <span>静心背景音乐</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-bgm" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <!-- 静心曲目选择 -->
+                    <div class="setting-track-section">
+                        <div class="setting-item-header">
+                            <span>🎵 选择静心曲目</span>
+                            <span id="current-track-name" class="current-track-tag">《大悲梵呗》</span>
+                        </div>
+                        <div class="bgm-track-list" id="bgm-track-list">
+                            <button class="track-item-btn active" data-track="1">
+                                <span class="track-icon">📿</span>
+                                <div class="track-info-wrap">
+                                    <span class="track-name">1. 《大悲梵呗》</span>
+                                    <span class="track-desc">梵音诵经 · 僧众梵唱 · 极具静心</span>
+                                </div>
+                                <span class="track-status-dot"></span>
+                            </button>
+                            <button class="track-item-btn" data-track="2">
+                                <span class="track-icon">🪷</span>
+                                <div class="track-info-wrap">
+                                    <span class="track-name">2. 《空谷清磬》</span>
+                                    <span class="track-desc">432Hz 水晶钵 · 纯净空灵</span>
+                                </div>
+                                <span class="track-status-dot"></span>
+                            </button>
+                            <button class="track-item-btn" data-track="3">
+                                <span class="track-icon">🌙</span>
+                                <div class="track-info-wrap">
+                                    <span class="track-name">3. 《平湖秋月》</span>
+                                    <span class="track-desc">古琴清音 · 温润和声</span>
+                                </div>
+                                <span class="track-status-dot"></span>
+                            </button>
+                            <button class="track-item-btn" data-track="4">
+                                <span class="track-icon">🎐</span>
+                                <div class="track-info-wrap">
+                                    <span class="track-name">4. 《云端风铃》</span>
+                                    <span class="track-desc">水晶风铃 · 清透无瑕</span>
+                                </div>
+                                <span class="track-status-dot"></span>
+                            </button>
+                            <button class="track-item-btn" data-track="5">
+                                <span class="track-icon">💧</span>
+                                <div class="track-info-wrap">
+                                    <span class="track-name">5. 《滴水落玉》</span>
+                                    <span class="track-desc">水滴如磬 · 纯正弦波</span>
+                                </div>
+                                <span class="track-status-dot"></span>
+                            </button>
+                            <button class="track-item-btn" data-track="6">
+                                <span class="track-icon">✨</span>
+                                <div class="track-info-wrap">
+                                    <span class="track-name">6. 《虚境无尘》</span>
+                                    <span class="track-desc">Alpha 冥想 · 安神助眠</span>
+                                </div>
+                                <span class="track-status-dot"></span>
+                            </button>
+
+                            <!-- 自定义本地音乐选项 -->
+                            <button class="track-item-btn custom-track-btn" id="custom-track-btn" data-track="0">
+                                <span class="track-icon">🎧</span>
+                                <div class="track-info-wrap">
+                                    <span class="track-name" id="custom-track-title">6. 自定义专属音频</span>
+                                    <span class="track-desc" id="custom-track-desc">未上传 · 支持 MP3/WAV/M4A</span>
+                                </div>
+                                <span class="track-status-dot"></span>
+                            </button>
+                        </div>
+
+                        <!-- 自定义音频上传/管理操作栏 -->
+                        <div class="custom-audio-bar" id="custom-audio-bar">
+                            <input type="file" id="input-custom-audio" accept="audio/mp3,audio/wav,audio/m4a,audio/ogg,audio/aac,audio/*" class="hidden">
+                            <button class="btn-custom-upload" id="btn-trigger-upload">
+                                <span>📁 导入本地音乐</span>
+                            </button>
+                            <button class="btn-custom-clear hidden" id="btn-clear-custom" title="清除已上传的自定义音乐">
+                                <span>✕ 清除</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="setting-divider"></div>
+                    <div class="setting-item privacy-row" id="btn-open-privacy">
+                        <span>小游戏隐私政策</span>
+                        <span class="arrow">›</span>
+                    </div>
+                </div>
+                <div class="version-info">
+                    <p>微信小游戏 · 《静心敲木鱼》v2.0</p>
+                    <p>纯广告变现 · 休闲解压 · 无宗教元素</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 弹窗：个人档案与账号管理 -->
+        <div id="modal-user" class="modal-backdrop hidden">
+            <div class="modal-card user-modal-card">
+                <div class="modal-header">
+                    <h3>👤 个人中心与账号</h3>
+                    <button class="modal-close" id="btn-close-user">×</button>
+                </div>
+                <div class="user-modal-body">
+                    <!-- 头像与昵称展示区 -->
+                    <div class="user-edit-section">
+                        <div class="avatar-picker-wrap">
+                            <div class="avatar-large-preview" id="user-large-avatar-box">🪷</div>
+                            <button class="btn-upload-avatar" id="btn-trigger-avatar-upload">
+                                <span>📷 更换自定义头像</span>
+                            </button>
+                            <input type="file" id="input-custom-avatar" accept="image/png,image/jpeg,image/webp,image/*" class="hidden">
+                        </div>
+
+                        <!-- 6款国风禅意预设头像 -->
+                        <div class="preset-avatars-section">
+                            <span class="preset-label">唯美国风预设头像：</span>
+                            <div class="preset-avatars-grid">
+                                <button class="preset-avatar-btn active" data-icon="🪷" title="莲华居士">🪷</button>
+                                <button class="preset-avatar-btn" data-icon="🎋" title="竹林闲隐">🎋</button>
+                                <button class="preset-avatar-btn" data-icon="🌊" title="云水行者">🌊</button>
+                                <button class="preset-avatar-btn" data-icon="🕊️" title="白羽静客">🕊️</button>
+                                <button class="preset-avatar-btn" data-icon="🧘" title="禅定行者">🧘</button>
+                                <button class="preset-avatar-btn" data-icon="🍵" title="清茶闲人">🍵</button>
+                            </div>
+                        </div>
+
+                        <!-- 昵称编辑框 -->
+                        <div class="user-input-group">
+                            <label for="input-nickname">静心昵称/道号</label>
+                            <div class="input-with-btn">
+                                <input type="text" id="input-nickname" maxlength="12" placeholder="请输入你的昵称 (最多12字)">
+                                <button class="btn-save-profile" id="btn-save-nickname">保存资料</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="setting-divider"></div>
+
+                    <!-- 账号与云存档绑定 -->
+                    <div class="account-auth-section">
+                        <div class="auth-section-header">
+                            <span class="auth-title">🔐 账号与云存档绑定</span>
+                            <span class="auth-status-badge" id="account-status-badge">微信免密已授权</span>
+                        </div>
+                        <div class="account-info-box">
+                            <div class="account-row">
+                                <span class="acc-label">微信 OpenID：</span>
+                                <span class="acc-val" id="acc-openid-val">wx_zen_8892147</span>
+                            </div>
+                            <div class="account-row">
+                                <span class="acc-label">当前存档位：</span>
+                                <span class="acc-val" id="acc-uid-val">UID: 2026081042</span>
+                            </div>
+                        </div>
+
+                        <!-- 账号密码快速注册/登录表单 (支持多账号切换) -->
+                        <div class="account-form">
+                            <div class="acc-input-wrap">
+                                <input type="text" id="input-account-name" placeholder="账号 / 手机号 / 邮箱">
+                                <input type="password" id="input-account-pwd" placeholder="登录密码">
+                            </div>
+                            <div class="acc-btn-row">
+                                <button class="btn-acc-action btn-acc-login" id="btn-acc-login">账号登录/切换</button>
+                                <button class="btn-acc-action btn-acc-reg" id="btn-acc-bind">绑定当前进度</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 弹窗：隐私政策条款 -->
+        <div id="modal-privacy" class="modal-backdrop hidden">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h3>隐私政策</h3>
+                    <button class="modal-close" id="btn-close-privacy">×</button>
+                </div>
+                <div class="privacy-content">
+                    <p><strong>1. 数据收集说明：</strong></p>
+                    <p>本小游戏为个人开发者作品，不包含任何付费内购内容。我们仅在必要时收集您的公开微信基础信息（头像、昵称、OpenID）用于排行榜总敲击值展示。</p>
+                    <p><strong>2. 地理位置权限：</strong></p>
+                    <p>区域排行榜功能属于可选权限，用于将您归类至所属省份排行榜。若您拒绝授权，区域榜将自动隐藏，完全不影响核心敲击与广告增益功能。</p>
+                    <p><strong>3. 防作弊与云端计算：</strong></p>
+                    <p>为保障全体玩家公平性，敲击值防刷校验与暴击倍率结算由微信云开发无服务器云函数执行，杜绝本地外挂刷分。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 广告模拟体验弹窗 (开发预览环境) -->
+        <div id="modal-ad-player" class="modal-backdrop hidden">
+            <div class="ad-player-card">
+                <button class="ad-top-close-btn" id="btn-ad-top-close" title="放弃并关闭广告">×</button>
+                <div class="ad-player-header">
+                    <span class="ad-tag">微信流量主激励视频广告</span>
+                    <span id="ad-countdown" class="ad-timer">5 秒后可获得奖励</span>
+                </div>
+                <div class="ad-media-simulation">
+                    <div class="ad-sponsor-badge">AD SPONSOR</div>
+                    <h4>静心解压 · 纯粹生活</h4>
+                    <p>看完视频解锁专属暴击倍率 / 10分钟挂机</p>
+                    <div class="ad-progress-bar">
+                        <div id="ad-progress-fill" class="ad-progress-fill"></div>
+                    </div>
+                </div>
+                <div class="ad-player-footer">
+                    <button id="btn-ad-close" class="btn-ad-close">提前关闭 (无奖励)</button>
+                    <button id="btn-ad-reward" class="btn-ad-reward hidden">完成观看领取奖励</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 插屏广告模拟弹窗 -->
+        <div id="modal-interstitial" class="modal-backdrop hidden">
+            <div class="interstitial-card">
+                <button class="interstitial-close" id="btn-close-interstitial">×</button>
+                <div class="interstitial-tag">微信插屏广告</div>
+                <div class="interstitial-content">
+                    <h3>闲暇片刻 · 静享安宁</h3>
+                    <p>每日静心敲击，远离生活喧嚣</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 弹窗：游艺坊小游戏中心 (卡片排列) -->
+        <div id="modal-minigames" class="modal-backdrop hidden">
+            <div class="modal-card minigames-card">
+                <div class="modal-header">
+                    <h3>🎮 游艺坊 · 休闲阁</h3>
+                    <button class="modal-close" id="btn-close-minigames">×</button>
+                </div>
+                <div class="minigames-body">
+                    <div class="minigames-grid">
+                        <!-- 卡片 1: 功德寻宝 (5x3 经典连线) -->
+                        <div class="game-card featured" id="btn-enter-gem-hunt">
+                            <div class="game-card-badge">🔥 热门祈福</div>
+                            <div class="game-card-cover">
+                                <div class="game-card-icon-wrap">🪷</div>
+                                <div class="game-card-shine"></div>
+                            </div>
+                            <div class="game-card-info">
+                                <h4 class="game-title">《功德寻宝》</h4>
+                                <p class="game-desc">5×3 滚轴连线 · 功德万能 · 方丈化缘</p>
+                                <div class="game-card-bottom">
+                                    <span class="game-tag">消耗敲击值</span>
+                                    <button class="btn-play-card">立即开启 ›</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 卡片 2: 禅意对弈 (敬请期待) -->
+                        <div class="game-card coming-soon">
+                            <div class="game-card-cover locked-cover">
+                                <div class="game-card-icon-wrap">♟️</div>
+                            </div>
+                            <div class="game-card-info">
+                                <h4 class="game-title">《禅意对弈》</h4>
+                                <p class="game-desc">五子禅棋 · 清心悟道 · 启发智慧</p>
+                                <div class="game-card-bottom">
+                                    <span class="game-tag lock-tag">敬请期待</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 卡片 3: 观心翻牌 (敬请期待) -->
+                        <div class="game-card coming-soon">
+                            <div class="game-card-cover locked-cover">
+                                <div class="game-card-icon-wrap">🎴</div>
+                            </div>
+                            <div class="game-card-info">
+                                <h4 class="game-title">《观心翻牌》</h4>
+                                <p class="game-desc">佛珠记忆 · 寻觅同形 · 锻炼定力</p>
+                                <div class="game-card-bottom">
+                                    <span class="game-tag lock-tag">敬请期待</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 弹窗：功德寻宝 5x3 完整游戏机全屏界面 -->
+        <div id="modal-gem-hunt" class="gem-hunt-fullscreen hidden">
+            <!-- 3D 矢量图标通用渐变定义池 -->
+            <svg class="hidden-svg-defs" width="0" height="0" style="position:absolute;visibility:hidden;">
+                <defs>
+                    <radialGradient id="goldNuggetGrad" cx="35%" cy="30%" r="70%">
+                        <stop offset="0%" stop-color="#FFFDE0" />
+                        <stop offset="35%" stop-color="#FFD700" />
+                        <stop offset="70%" stop-color="#DAA520" />
+                        <stop offset="100%" stop-color="#8B6508" />
+                    </radialGradient>
+                    <linearGradient id="goldBannerGrad" x1="0" y1="0" x2="0" y2="100%">
+                        <stop offset="0%" stop-color="#FFE58F" />
+                        <stop offset="60%" stop-color="#D48806" />
+                        <stop offset="100%" stop-color="#613400" />
+                    </linearGradient>
+                </defs>
+            </svg>
+
+            <!-- 顶部状态栏 -->
+            <div class="gh-top-bar">
+                <button class="gh-btn-back" id="btn-exit-gem-hunt" onclick="exitGemHunt()" title="返回游艺坊">‹</button>
+                <div class="gh-score-pill">
+                    <span class="gh-score-label">敲击值:</span>
+                    <span id="gh-total-hit" class="gh-score-val number-font">0</span>
+                </div>
+                <div class="gh-top-right-group">
+                    <button class="gh-btn-rank" id="btn-gh-open-rank">🏆 排行榜</button>
+                </div>
+            </div>
+
+            <!-- 核心舞台区 (游戏上方为参考图 1:1 金色寺庙大殿与坐禅萌大佛，下方为纯净游戏机) -->
+            <div class="gh-stage">
+                <!-- 游戏上方专属 3D 宏伟寺庙大殿与大佛场景 (直接加载用户专属 背景.png 素材图片) -->
+                <div class="gh-top-temple-stage" id="gh-top-temple-stage">
+                    <div class="gh-temple-banner-img"></div>
+                </div>
+
+                <!-- 滚轴柜台顶架 -->
+                <div class="gh-cabinet-top">
+                    <div class="gh-lantern gh-lantern-left" id="btn-gh-rules" title="查看法宝与连线规则">
+                        <span class="lantern-text">规则</span>
+                    </div>
+                    <div class="gh-temple-title-plaque">
+                        <span class="plaque-text">🪷 佛光普照 · 功德寻宝 🪷</span>
+                    </div>
+                    <button class="gh-skip-toggle-btn" id="btn-toggle-skip-win" title="点击切换是否跳过结算画面">
+                        <span id="skip-toggle-icon">⚡</span>
+                        <span class="skip-toggle-text" id="skip-toggle-text">跳过结算</span>
+                    </button>
+                </div>
+                
+                <div class="gh-reels-cabinet">
+                    <div class="gh-reels-container" id="gh-reels-container">
+                        <!-- 5 列滚轴 -->
+                        <div class="gh-reel" data-col="0">
+                            <div class="gh-cell" data-row="0"></div>
+                            <div class="gh-cell" data-row="1"></div>
+                            <div class="gh-cell" data-row="2"></div>
+                        </div>
+                        <div class="gh-reel" data-col="1">
+                            <div class="gh-cell" data-row="0"></div>
+                            <div class="gh-cell" data-row="1"></div>
+                            <div class="gh-cell" data-row="2"></div>
+                        </div>
+                        <div class="gh-reel" data-col="2">
+                            <div class="gh-cell" data-row="0"></div>
+                            <div class="gh-cell" data-row="1"></div>
+                            <div class="gh-cell" data-row="2"></div>
+                        </div>
+                        <div class="gh-reel" data-col="3">
+                            <div class="gh-cell" data-row="0"></div>
+                            <div class="gh-cell" data-row="1"></div>
+                            <div class="gh-cell" data-row="2"></div>
+                        </div>
+                        <div class="gh-reel" data-col="4">
+                            <div class="gh-cell" data-row="0"></div>
+                            <div class="gh-cell" data-row="1"></div>
+                            <div class="gh-cell" data-row="2"></div>
+                        </div>
+                    </div>
+
+                    <!-- 连线高亮 SVG 图层 -->
+                    <svg class="gh-lines-overlay" id="gh-lines-overlay" viewBox="0 0 500 300"></svg>
+                </div>
+
+                <!-- 免费旋转状态指示条 -->
+                <div class="gh-free-spins-bar hidden" id="gh-free-spins-bar">
+                    <span>✨ 方丈化缘 · 免费祈福中！剩余：<strong id="gh-free-spins-count">10</strong> 次</span>
+                </div>
+            </div>
+
+            <!-- 底部操作控制台 -->
+            <div class="gh-bottom-console">
+                <div class="gh-bet-control">
+                    <button class="gh-btn-bet-step" id="btn-bet-minus">−</button>
+                    <div class="gh-bet-display" id="btn-open-bet-modal" onclick="renderBetPickerModal()" title="点击选择或解锁战力档位">
+                        <div class="gh-bet-val-wrap" onclick="renderBetPickerModal()">
+                            <span id="gh-current-bet" class="gh-bet-num number-font">200</span>
+                            <span id="gh-bet-lock-icon" class="gh-bet-lock hidden">🔒</span>
+                        </div>
+                    </div>
+                    <button class="gh-btn-bet-step" id="btn-bet-plus">+</button>
+                </div>
+
+                <!-- 开始祈福旋转大按钮 -->
+                <div class="gh-spin-btn-wrap">
+                    <button class="gh-btn-spin" id="btn-gh-spin">
+                        <span class="spin-main-text" id="gh-spin-text">开始</span>
+                    </button>
+                    <span class="gh-spin-sub-hint">长按自动祈福</span>
+                </div>
+
+                <!-- 固定 25 线标识 -->
+                <div class="gh-lines-badge">
+                    <span class="lines-num number-font">25</span>
+                    <span class="lines-label">固定线</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 弹窗：规则与战力说明 -->
+        <div id="modal-gem-rules" class="modal-backdrop hidden">
+            <div class="modal-card gem-rules-card">
+                <div class="modal-header">
+                    <h3>📜 功德寻宝 · 规则说明</h3>
+                    <button class="modal-close" id="btn-close-gem-rules">×</button>
+                </div>
+                <div class="gem-rules-tabs">
+                    <button class="gem-tab-btn active" data-tab="icons">图标</button>
+                    <button class="gem-tab-btn" data-tab="lines">规则 (25线)</button>
+                    <button class="gem-tab-btn" data-tab="bets">战力</button>
+                    <button class="gem-tab-btn" data-tab="info">说明</button>
+                </div>
+                <div class="gem-rules-body">
+                    <!-- Tab 1: 图标与赔率 -->
+                    <div class="gem-rule-pane" id="pane-rules-icons">
+                        <div class="rule-specials-grid">
+                            <div class="spec-card">
+                                <div class="spec-icon"><img src="assets/images/%E5%8A%9F%E5%BE%B7.png" class="spec-sym-img" alt="功德" /></div>
+                                <div class="spec-info">
+                                    <strong>【功德】(万能 Wild · 金莲宝座)</strong>
+                                    <p>可替代除“方丈”外的任意寺庙法宝连线</p>
+                                </div>
+                            </div>
+                            <div class="spec-card">
+                                <div class="spec-icon"><img src="assets/images/%E6%96%B9%E4%B8%88.png" class="spec-sym-img" alt="方丈" /></div>
+                                <div class="spec-info">
+                                    <strong>【方丈】(免费 Scatter · 慈悲方丈)</strong>
+                                    <p>出现 3 个及以上，触发 10 次免费祈福</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="rule-paytable-list" id="rule-paytable-list">
+                            <!-- 动态生成 10 种物品赔率 -->
+                        </div>
+                    </div>
+
+                    <!-- Tab 2: 25 条标准连线图解 -->
+                    <div class="gem-rule-pane hidden" id="pane-rules-lines">
+                        <p class="paylines-desc">从最左侧第 1 列起，连续 3 个及以上相同图标在连线上即可获胜：</p>
+                        <div class="paylines-grid" id="paylines-grid">
+                            <!-- 动态生成 25 个连线条目小图 -->
+                        </div>
+                    </div>
+
+                    <!-- Tab 3: 战力与 24 小时解锁状态 -->
+                    <div class="gem-rule-pane hidden" id="pane-rules-bets">
+                        <p class="bets-rule-desc">更高战力单次消耗更多敲击值，连线赢取超大额奖励：</p>
+                        <div class="bet-tier-list" id="bet-tier-list">
+                            <!-- 动态生成战力档位与解锁倒计时 -->
+                        </div>
+                    </div>
+
+                    <!-- Tab 4: 说明 -->
+                    <div class="gem-rule-pane hidden" id="pane-rules-info">
+                        <div class="game-info-text">
+                            <h4>🪷 功德寻宝说明：</h4>
+                            <p>1. 每次祈福旋转消耗对应战力档位的<strong>【敲击值】</strong>。</p>
+                            <p>2. 赢取的敲击值将<strong>实时累加至总敲击值</strong>，助您迅速解锁 14 档静心称号并在排行榜中名列前茅！</p>
+                            <p>3. 连续转出 3 个【方丈】图标，将开启 10 次免费祈福，期间无需消耗任何敲击值！</p>
+                            <p>4. 游戏中严禁任何外挂作弊，所有结算严格由本地与云端实时核对。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 弹窗：中奖结算与大奖庆祝 (支持点击任意处或勾选跳过) -->
+        <div id="modal-gem-win" class="modal-backdrop hidden">
+            <div class="gem-win-card" id="gem-win-card">
+                <div class="win-light-rays"></div>
+                <div class="win-banner">
+                    <span class="win-tag" id="win-level-tag">功德圆满 · 大获丰收</span>
+                    <h2 class="win-title" id="win-title">🎉 福德降临</h2>
+                </div>
+                <div class="win-amount-wrap">
+                    <span class="win-plus">+</span>
+                    <span id="win-score-num" class="win-score-num number-font">0</span>
+                    <span class="win-unit">敲击值</span>
+                </div>
+                <p class="win-click-hint">点击屏幕任意处快速收下</p>
+            </div>
+        </div>
+
+        <!-- 弹窗：战力快捷选择面板 (3D 卡片网格，带 🎬 广告图标) -->
+        <div id="modal-bet-picker" class="modal-backdrop hidden">
+            <div class="modal-card bet-picker-modal-card">
+                <div class="modal-header">
+                    <h3>⚡ 选择祈福战力</h3>
+                    <button class="modal-close" id="btn-close-bet-picker">×</button>
+                </div>
+                <div class="bet-picker-body">
+                    <p class="bet-picker-hint">战力越高单次消耗越多敲击值，连线大奖越丰厚：</p>
+                    <div class="bet-picker-grid" id="bet-picker-grid">
+                        <!-- 动态生成 9 档 3D 战力卡片 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 弹窗：看广告解锁高阶战力确认 -->
+        <div id="modal-unlock-bet" class="modal-backdrop hidden">
+            <div class="modal-card unlock-bet-card">
+                <div class="modal-header">
+                    <h3>⚡ 解锁高阶战力</h3>
+                    <button class="modal-close" id="btn-close-unlock-bet">×</button>
+                </div>
+                <div class="unlock-bet-body">
+                    <div class="unlock-icon">🔓</div>
+                    <h4 id="unlock-bet-title">解锁【2000 战力档位】</h4>
+                    <p class="unlock-desc">观看 1 次激励视频广告，即可立即解锁该战力档位 <strong>24 小时</strong>，助您单次赢取百万敲击值！</p>
+                    <button class="btn-confirm-unlock" id="btn-confirm-watch-ad-bet">
+                        <span>🎬 观看广告解锁 (持续24小时)</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 弹窗：敲击值不足提示 (看广告领敲击值) -->
+        <div id="modal-not-enough-score" class="modal-backdrop hidden">
+            <div class="modal-card not-enough-score-card">
+                <div class="modal-header">
+                    <h3>🪷 敲击值不足</h3>
+                    <button class="modal-close" id="btn-close-not-enough-score">×</button>
+                </div>
+                <div class="not-enough-body">
+                    <div class="not-enough-icon">🪷</div>
+                    <h4 id="not-enough-title">当前祈福需要 500 敲击值</h4>
+                    <p class="not-enough-desc">您当前拥有的敲击值不足，是否立即观看激励视频广告获取 <strong>+2,000 敲击值</strong> 继续寻宝？</p>
+                    <div class="not-enough-hint-row">
+                        <span id="not-enough-ad-left-hint">今日看广告领取剩余: 5/5次</span>
+                    </div>
+                    <div class="not-enough-btn-group">
+                        <button class="btn-watch-ad-score" id="btn-confirm-watch-ad-for-score">
+                            <span>🎬 立即看广告领 2,000 敲击值</span>
+                        </button>
+                        <button class="btn-cancel-not-enough" id="btn-cancel-not-enough">
+                            <span>去敲木鱼修行</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 全屏遮罩：连续敲击 1 小时健康休息 10 分钟 -->
+        <div id="zen-rest-overlay" class="zen-rest-overlay hidden">
+            <div class="zen-rest-card">
+                <div class="rest-icon-wrap">🧘</div>
+                <h2>静心涵养 · 歇息片刻</h2>
+                <p class="rest-desc">您已潜心敲击修行达 <strong>1 小时</strong>，请静心歇息 <strong>10 分钟</strong> 涵养心神，静观云卷云舒。</p>
+                <div class="rest-timer-box">
+                    <span class="rest-timer-label">歇息倒计时</span>
+                    <span id="rest-timer-val" class="rest-timer-val number-font">10:00</span>
+                </div>
+                <p class="rest-hint">歇息期间木鱼敲击将暂停，您可以闭目养神或前往游艺坊散心</p>
+            </div>
+        </div>
+
+        <!-- 全局消息 Toast -->
+        <div id="toast-box" class="toast-box hidden">
+            <span id="toast-text">✨ 提示消息</span>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

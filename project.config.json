@@ -1,0 +1,101 @@
+{
+  "description": "微信小游戏《静心敲木鱼》官方工程配置",
+  "packOptions": {
+    "ignore": [
+      {
+        "type": "file",
+        "value": "index.html"
+      },
+      {
+        "type": "file",
+        "value": "style.css"
+      },
+      {
+        "type": "file",
+        "value": "app.js"
+      },
+      {
+        "type": "file",
+        "value": "README.md"
+      },
+      {
+        "type": "file",
+        "value": "project.json"
+      },
+      {
+        "type": "file",
+        "value": "tsconfig.json"
+      },
+      {
+        "type": "folder",
+        "value": "log"
+      },
+      {
+        "type": "folder",
+        "value": "scratch"
+      },
+      {
+        "type": "glob",
+        "value": "*.md"
+      },
+      {
+        "type": "glob",
+        "value": "*.bak"
+      },
+      {
+        "type": "glob",
+        "value": "*.tmp"
+      }
+    ],
+    "include": []
+  },
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "preloadBackgroundData": false,
+    "minified": true,
+    "newFeature": true,
+    "coverView": true,
+    "nodeModules": false,
+    "autoAudits": false,
+    "showShadowRootInWxmlPanel": true,
+    "scopeDataCheck": false,
+    "uglifyFileName": false,
+    "checkInvalidKey": true,
+    "checkSiteMap": true,
+    "uploadWithSourceMap": true,
+    "compileHotReLoad": false,
+    "useMultiFrameRuntime": true,
+    "useApiHook": true,
+    "useApiHostProcess": true,
+    "useIsolateContext": true,
+    "compileWorklet": false,
+    "packNpmManually": false,
+    "packNpmRelationList": [],
+    "minifyWXSS": true,
+    "minifyWXML": true,
+    "localPlugins": false,
+    "disableUseStrict": false,
+    "useCompilerPlugins": false,
+    "condition": false,
+    "swc": false,
+    "disableSWC": true,
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    }
+  },
+  "compileType": "game",
+  "libVersion": "3.3.4",
+  "appid": "wx955fa5f9fa72c42a",
+  "projectname": "qiaomuyu",
+  "cloudfunctionRoot": "cloudfunctions/",
+  "openDataContext": "openDataContext",
+  "condition": {},
+  "simulatorPluginLibVersion": {},
+  "isGameTourist": false,
+  "editorSetting": {}
+}

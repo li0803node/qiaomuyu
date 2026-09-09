@@ -1,0 +1,49 @@
+{
+  "collections": [
+    {
+      "name": "users",
+      "description": "用户主数据表，存储总敲击值与暴击倍率状态",
+      "schema": {
+        "_id": "String (文档唯一主键)",
+        "openid": "String (微信用户唯一标识，唯一索引)",
+        "totalHit": "Number (结算后的总敲击值，倒序索引用于排行榜)",
+        "buffRate": "Number (当前生效的暴击倍率 1~5)",
+        "buffEndTime": "Number (暴击过期时间戳毫秒数)",
+        "province": "String (用户所在省份，用于区域排行榜索引)",
+        "nickname": "String (用户微信昵称)",
+        "avatarUrl": "String (用户头像链接)",
+        "createdAt": "ServerDate",
+        "updatedAt": "ServerDate"
+      },
+      "indexes": [
+        { "name": "idx_openid", "fields": { "openid": 1 }, "unique": true },
+        { "name": "idx_totalHit_desc", "fields": { "totalHit": -1 } },
+        { "name": "idx_province_totalHit", "fields": { "province": 1, "totalHit": -1 } }
+      ],
+      "acl": {
+        "read": "auth != null",
+        "write": false
+      }
+    },
+    {
+      "name": "daily_ad_logs",
+      "description": "用户每日观看激励广告记录表（防刷与频次限制）",
+      "schema": {
+        "_id": "String",
+        "openid": "String",
+        "date": "String (格式 YYYY-MM-DD)",
+        "adType": "String (CRIT_BUFF | AUTO_HIT)",
+        "resultRate": "Number (暴击广告抽到的倍率，可选)",
+        "durationSec": "Number (自动敲击广告奖励时长，可选)",
+        "createdAt": "ServerDate"
+      },
+      "indexes": [
+        { "name": "idx_user_date_type", "fields": { "openid": 1, "date": 1, "adType": 1 } }
+      ],
+      "acl": {
+        "read": false,
+        "write": false
+      }
+    }
+  ]
+}
