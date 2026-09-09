@@ -6125,105 +6125,201 @@ function render() {
 
                 let tierTitle = '佛光普照 · 功德大吉';
                 let tierBadge = '✦ 喜乐翻倍 · 欢喜纳福 ✦';
-                let btnText = '领受福报 · 继续修行';
-                let haloColor = 'rgba(255, 215, 0, 0.4)';
+                let btnText = '恭领福报';
+                let haloColor = 'rgba(255, 215, 0, 0.45)';
                 let glowBorder = '#FFD700';
+                let innerDiscGrad1 = '#422412';
+                let innerDiscGrad2 = '#1A0E06';
 
                 if (mult >= 15) {
                     tierTitle = '震古烁今 · 九品至尊';
                     tierBadge = '✦ 至尊无上 · 万佛朝宗 ✦';
-                    btnText = '感怀圣恩 · 功德圆满';
-                    haloColor = 'rgba(255, 77, 79, 0.45)';
+                    btnText = '至尊领受';
+                    haloColor = 'rgba(255, 77, 79, 0.5)';
                     glowBorder = '#FFA39E';
+                    innerDiscGrad1 = '#4E1412';
+                    innerDiscGrad2 = '#1E0605';
                 } else if (mult >= 5) {
                     tierTitle = '鸿运齐天 · 万福齐聚';
                     tierBadge = '✦ 鸿运当头 · 功德无量 ✦';
-                    btnText = '恭谢恩典 · 领受福报';
-                    haloColor = 'rgba(255, 170, 0, 0.45)';
+                    btnText = '恭谢恩典';
+                    haloColor = 'rgba(255, 170, 0, 0.5)';
                     glowBorder = '#FFC53D';
+                    innerDiscGrad1 = '#46230C';
+                    innerDiscGrad2 = '#1C0D05';
                 }
 
-                // 1. 全屏旋转佛光光芒射线
+                // 1. 全屏旋转佛光光芒射线 (柔和向外发散，带渐隐羽化)
                 ctx.save();
-                ctx.translate(W / 2, H / 2);
-                const rayCount = mult >= 15 ? 16 : 12;
-                const angleOffset = (nowTime * 0.001) % (Math.PI * 2);
+                ctx.translate(W / 2, H / 2 - Math.round(15 * uiScale));
+                const rayCount = mult >= 15 ? 18 : 14;
+                const angleOffset = (nowTime * 0.0008) % (Math.PI * 2);
                 for (let i = 0; i < rayCount; i++) {
                     const a = angleOffset + (i * Math.PI * 2) / rayCount;
                     ctx.fillStyle = haloColor;
                     ctx.beginPath();
                     ctx.moveTo(0, 0);
-                    ctx.arc(0, 0, W * 0.85, a - 0.08, a + 0.08);
+                    ctx.arc(0, 0, W * 0.95, a - 0.08, a + 0.08);
                     ctx.closePath();
                     ctx.fill();
                 }
                 ctx.restore();
 
-                // 2. 庆典主卡片
-                const cardW = Math.min(W * 0.88, 340);
-                const cardH = Math.min(H * 0.52, 340);
-                const cardX = (W - cardW) / 2;
-                const cardY = (H - cardH) / 2;
+                // 2. 庆典核心圆形宝鉴 (大德金轮宝镜)
+                const centerCX = W / 2;
+                const centerCY = H / 2 - Math.round(15 * uiScale);
+                const radius = Math.min(W * 0.42, H * 0.24, 162);
 
-                const cardGrad = ctx.createLinearGradient(cardX, cardY, cardX, cardY + cardH);
-                cardGrad.addColorStop(0, 'rgba(50, 32, 18, 0.98)');
-                cardGrad.addColorStop(0.5, 'rgba(28, 18, 10, 0.98)');
-                cardGrad.addColorStop(1, 'rgba(18, 10, 6, 0.98)');
-                ctx.fillStyle = cardGrad;
-                drawRoundRect(ctx, cardX, cardY, cardW, cardH, 18);
+                // 2.1 外圈旋转金光粒子与佛光大光晕
+                const outerBloom = ctx.createRadialGradient(centerCX, centerCY, radius * 0.5, centerCX, centerCY, radius * 1.32);
+                outerBloom.addColorStop(0, haloColor);
+                outerBloom.addColorStop(0.6, 'rgba(255, 215, 0, 0.18)');
+                outerBloom.addColorStop(1, 'rgba(255, 215, 0, 0)');
+                ctx.fillStyle = outerBloom;
+                ctx.beginPath();
+                ctx.arc(centerCX, centerCY, radius * 1.32, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.strokeStyle = glowBorder;
-                ctx.lineWidth = 2.5;
-                ctx.stroke();
 
-                // 3. 顶部大奖徽章
-                ctx.textAlign = 'center';
-                ctx.font = `bold ${Math.round(17 * uiScale)}px sans-serif`;
-                ctx.fillStyle = '#FFE072';
-                ctx.fillText(tierTitle, W / 2, cardY + 36);
-
-                ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
-                ctx.fillStyle = '#F5C44B';
-                ctx.fillText(tierBadge, W / 2, cardY + 62);
-
-                // 4. 中央巨大金光翻倍数值与金莲宝座
-                const centerIconY = cardY + 104;
-                if (mult >= 15) {
-                    drawVectorTrophy(ctx, W / 2, centerIconY, 26);
-                } else if (mult >= 5) {
-                    drawVectorScroll(ctx, W / 2, centerIconY, 24);
-                } else {
-                    drawVectorBell(ctx, W / 2, centerIconY, 24, '#FFE072');
+                // 2.2 外缘 24 瓣金莲花瓣/吉祥圆珠光环
+                const dotCount = 24;
+                const dotRingR = radius + 6;
+                const dotPulse = 0.5 + 0.5 * Math.sin(nowTime * 0.005);
+                for (let i = 0; i < dotCount; i++) {
+                    const da = (i * Math.PI * 2) / dotCount - angleOffset;
+                    const dx = centerCX + Math.cos(da) * dotRingR;
+                    const dy = centerCY + Math.sin(da) * dotRingR;
+                    ctx.fillStyle = (i % 2 === 0) ? '#FFE072' : '#D48806';
+                    ctx.beginPath();
+                    ctx.arc(dx, dy, (i % 2 === 0 ? 3.2 : 2.0) * (1 + 0.18 * dotPulse), 0, Math.PI * 2);
+                    ctx.fill();
                 }
 
-                // 中奖数字 (超大金光高亮大字直接展示)
-                ctx.save();
-                ctx.shadowColor = '#FFD700';
-                ctx.shadowBlur = 18;
-                ctx.font = `bold ${Math.round(34 * uiScale)}px sans-serif`;
-                ctx.fillStyle = '#FFF566';
-                ctx.fillText(`+${bw.winAmount.toLocaleString()}`, W / 2, cardY + 174);
-                ctx.restore();
-
-                // 5. 领受福报大按钮 (需手动点击关闭)
-                const btnY = cardY + cardH - 58;
-                const btnW = cardW - 48;
-                const btnH = 44;
-                const btnX = cardX + 24;
-
-                const btnGrad = ctx.createLinearGradient(btnX, btnY, btnX, btnY + btnH);
-                btnGrad.addColorStop(0, '#FFD700');
-                btnGrad.addColorStop(1, '#D48806');
-                ctx.fillStyle = btnGrad;
-                drawRoundRect(ctx, btnX, btnY, btnW, btnH, 22);
+                // 2.3 外层双重 3D 鎏金圆环
+                const outerGoldGrad = ctx.createLinearGradient(centerCX - radius, centerCY - radius, centerCX + radius, centerCY + radius);
+                outerGoldGrad.addColorStop(0, '#FFF566');
+                outerGoldGrad.addColorStop(0.3, '#FFD700');
+                outerGoldGrad.addColorStop(0.7, '#D48806');
+                outerGoldGrad.addColorStop(1, '#8C5618');
+                ctx.fillStyle = outerGoldGrad;
+                ctx.beginPath();
+                ctx.arc(centerCX, centerCY, radius, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.strokeStyle = '#FFF566';
-                ctx.lineWidth = 1.8;
+
+                ctx.strokeStyle = '#FFE072';
+                ctx.lineWidth = 2.2;
                 ctx.stroke();
 
-                ctx.fillStyle = '#1A130B';
-                ctx.font = `bold ${Math.round(14 * uiScale)}px sans-serif`;
-                ctx.fillText(btnText, W / 2, btnY + 27);
+                // 2.4 内层深邃沉香漆金底盘
+                const innerR = radius - 6.5;
+                const innerDiscGrad = ctx.createRadialGradient(centerCX, centerCY - innerR * 0.2, innerR * 0.1, centerCX, centerCY, innerR);
+                innerDiscGrad.addColorStop(0, innerDiscGrad1);
+                innerDiscGrad.addColorStop(0.75, innerDiscGrad2);
+                innerDiscGrad.addColorStop(1, '#0C0603');
+                ctx.fillStyle = innerDiscGrad;
+                ctx.beginPath();
+                ctx.arc(centerCX, centerCY, innerR, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 2.5 内壁同心金丝花纹
+                ctx.strokeStyle = 'rgba(245, 196, 75, 0.45)';
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.arc(centerCX, centerCY, innerR - 5, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // 八方如意暗纹射线
+                ctx.strokeStyle = 'rgba(245, 196, 75, 0.12)';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < 8; i++) {
+                    const lineA = (i * Math.PI * 2) / 8;
+                    ctx.beginPath();
+                    ctx.moveTo(centerCX + Math.cos(lineA) * (innerR * 0.25), centerCY + Math.sin(lineA) * (innerR * 0.25));
+                    ctx.lineTo(centerCX + Math.cos(lineA) * (innerR - 7), centerCY + Math.sin(lineA) * (innerR - 7));
+                    ctx.stroke();
+                }
+
+                // 3. 圆盘内排版内容
+                // 3.1 顶部华彩主标题
+                ctx.textAlign = 'center';
+                ctx.save();
+                ctx.shadowColor = '#FFD700';
+                ctx.shadowBlur = 10;
+                ctx.font = `bold ${Math.round(15 * uiScale)}px sans-serif`;
+                ctx.fillStyle = '#FFE072';
+                ctx.fillText(tierTitle, centerCX, centerCY - innerR * 0.58);
+                ctx.restore();
+
+                // 3.2 副标题金色飘带徽章
+                const ribbonW = Math.min(innerR * 1.5, 156);
+                const ribbonH = 19;
+                const ribbonX = centerCX - ribbonW / 2;
+                const ribbonY = centerCY - innerR * 0.45;
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+                drawRoundRect(ctx, ribbonX, ribbonY, ribbonW, ribbonH, 9.5);
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(245, 196, 75, 0.4)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                ctx.font = `bold ${Math.round(9 * uiScale)}px sans-serif`;
+                ctx.fillStyle = '#F5C44B';
+                ctx.fillText(tierBadge, centerCX, ribbonY + 13.5);
+
+                // 3.3 中间法宝矢量图腾徽标
+                const iconCenterY = centerCY - innerR * 0.14;
+                if (mult >= 15) {
+                    drawVectorTrophy(ctx, centerCX, iconCenterY, 18);
+                } else if (mult >= 5) {
+                    drawVectorScroll(ctx, centerCX, iconCenterY, 16);
+                } else {
+                    drawVectorBell(ctx, centerCX, iconCenterY, 16, '#FFE072');
+                }
+
+                // 3.4 核心大额功德数字 (超大鎏金高光浮凸字体)
+                const numPulse = 0.5 + 0.5 * Math.sin(nowTime * 0.006);
+                ctx.save();
+                ctx.shadowColor = '#FFD700';
+                ctx.shadowBlur = 16 + 8 * numPulse;
+                ctx.font = `bold ${Math.round(30 * uiScale)}px sans-serif`;
+                ctx.fillStyle = '#FFF8E7';
+                ctx.fillText(`+${bw.winAmount.toLocaleString()}`, centerCX, centerCY + innerR * 0.24);
+                ctx.restore();
+
+                // 倍率小标签
+                ctx.font = `bold ${Math.round(9 * uiScale)}px sans-serif`;
+                ctx.fillStyle = '#FFD591';
+                ctx.fillText(`连线倍率 ×${bw.multiplier}`, centerCX, centerCY + innerR * 0.40);
+
+                // 3.5 底部精致金光胶囊按钮
+                const btnW = Math.min(innerR * 1.3, 136);
+                const btnH = Math.round(28 * uiScale);
+                const btnX = centerCX - btnW / 2;
+                const btnY = centerCY + innerR * 0.54;
+
+                const btnGrad = ctx.createLinearGradient(btnX, btnY, btnX, btnY + btnH);
+                btnGrad.addColorStop(0, '#FFE072');
+                btnGrad.addColorStop(0.5, '#F5C44B');
+                btnGrad.addColorStop(1, '#D48806');
+                ctx.fillStyle = btnGrad;
+                drawRoundRect(ctx, btnX, btnY, btnW, btnH, btnH / 2);
+                ctx.fill();
+                ctx.strokeStyle = '#FFF8E7';
+                ctx.lineWidth = 1.2;
+                ctx.stroke();
+
+                ctx.fillStyle = '#241406';
+                ctx.font = `bold ${Math.round(11.5 * uiScale)}px sans-serif`;
+                ctx.fillText(btnText, centerCX, btnY + btnH * 0.67);
+
+                // 4. 圆盘下方呼吸提示文案：“—— 轻触屏幕任意处关闭 ——”
+                const promptY = centerCY + radius + Math.round(26 * uiScale);
+                const promptAlpha = 0.65 + 0.35 * Math.sin(nowTime * 0.004);
+                ctx.save();
+                ctx.globalAlpha = promptAlpha;
+                ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
+                ctx.fillStyle = '#FFE072';
+                ctx.fillText('—— 轻触屏幕任意处关闭 ——', centerCX, promptY);
+                ctx.restore();
             }
         }
 
