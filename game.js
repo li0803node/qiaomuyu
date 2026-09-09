@@ -582,7 +582,9 @@ const state = {
 
 // 恢复本地存储数据
 try {
-    if (savedDate !== todayStr && wx.setStorageSync) {
+    const todayStr = getTodayDateStr();
+    const savedDate = (typeof wx !== 'undefined' && wx.getStorageSync) ? wx.getStorageSync('qmy_date') : '';
+    if (savedDate !== todayStr && typeof wx !== 'undefined' && wx.setStorageSync) {
         wx.setStorageSync('qmy_date', todayStr);
         wx.setStorageSync('qmy_crit_count', '0');
         wx.setStorageSync('qmy_auto_count', '0');
@@ -592,30 +594,30 @@ try {
         state.dailyAutoCount = 0;
         state.dailyAlmsCount = 0;
         state.dailyHit = 0;
-    } else if (wx.getStorageSync) {
+    } else if (typeof wx !== 'undefined' && wx.getStorageSync) {
         state.dailyCritCount = parseInt(wx.getStorageSync('qmy_crit_count') || '0', 10);
         state.dailyAutoCount = parseInt(wx.getStorageSync('qmy_auto_count') || '0', 10);
         state.dailyAlmsCount = parseInt(wx.getStorageSync('qmy_alms_count') || '0', 10);
         state.dailyHit = parseInt(wx.getStorageSync('qmy_daily_hit') || '0', 10);
     }
 
-    const saved = wx.getStorageSync ? wx.getStorageSync('qmy_total_hit') : '0';
+    const saved = (typeof wx !== 'undefined' && wx.getStorageSync) ? wx.getStorageSync('qmy_total_hit') : '0';
     state.totalHit = parseInt(saved || '0', 10);
-    const savedDaily = wx.getStorageSync ? wx.getStorageSync('qmy_daily_hit') : null;
+    const savedDaily = (typeof wx !== 'undefined' && wx.getStorageSync) ? wx.getStorageSync('qmy_daily_hit') : null;
     if (savedDaily !== null && savedDaily !== '') {
         state.dailyHit = parseInt(savedDaily, 10);
     } else {
         state.dailyHit = state.totalHit;
     }
-    const savedDharma = wx.getStorageSync ? wx.getStorageSync('qmy_dharma_name') : '';
+    const savedDharma = (typeof wx !== 'undefined' && wx.getStorageSync) ? wx.getStorageSync('qmy_dharma_name') : '';
     state.dharmaName = savedDharma || '';
 
-    // 恢复今日抽签状态
-    const savedFortuneDate = (wx.getStorageSync ? wx.getStorageSync('qmy_fortune_date') : '') || '';
+    // 恢复今日抽签/签到状态
+    const savedFortuneDate = (typeof wx !== 'undefined' && wx.getStorageSync ? wx.getStorageSync('qmy_fortune_date') : '') || '';
     if (savedFortuneDate === todayStr) {
         state.hasShakenFortuneToday = true;
         state.fortuneState = 'revealed';
-        const savedSlipJson = wx.getStorageSync ? wx.getStorageSync('qmy_fortune_slip') : '';
+        const savedSlipJson = (typeof wx !== 'undefined' && wx.getStorageSync) ? wx.getStorageSync('qmy_fortune_slip') : '';
         if (savedSlipJson) {
             try { state.todayFortuneSlip = JSON.parse(savedSlipJson); } catch(e) {}
         }
@@ -629,13 +631,13 @@ try {
     }
 
     // 恢复历史修行日历档案
-    const savedRecords = (wx.getStorageSync ? wx.getStorageSync('qmy_calendar_records') : '') || '';
+    const savedRecords = (typeof wx !== 'undefined' && wx.getStorageSync ? wx.getStorageSync('qmy_calendar_records') : '') || '';
     if (savedRecords) {
         try { state.calendarRecords = JSON.parse(savedRecords); } catch(e) {}
     }
     if (!state.calendarRecords) state.calendarRecords = {};
 } catch (e) {
-    state.totalHit = 0;
+    console.error('加载本地存储异常:', e);
 }
 
 // ------------------------------------------------------------------
@@ -936,7 +938,7 @@ function shareFortuneSlip(slip) {
                     imageUrl: shareImg,
                     query: shareQuery
                 });
-                showToast('已发起灵签分享，快送给好友吧！');
+                showToast('已发起灵签分享，快与好友一同祈福吧！');
             } catch(e) {
                 showToast('灵签福运已备好，请点击右上角分享！');
             }
@@ -4513,26 +4515,29 @@ function render() {
         const btn3X = btn2X + actW + actGap;
         const activeTemple = getCurrentTemple();
 
-        // 按钮 1: 每日一签 (带矢量签筒图标与灵动朱砂红点提示)
+        // 按钮 1: 每日一签 (若今日已签到，显示「已签到」与绿色标识；未签到显示「每日一签」与红点)
+        const isFortuneDone = !!(state.hasShakenFortuneToday || state.todayFortuneSlip);
         ctx.fillStyle = 'rgba(42, 33, 26, 0.92)';
         drawRoundRect(ctx, btn1X, actY, actW, actH, 8);
         ctx.fill();
-        ctx.strokeStyle = (!state.hasShakenFortuneToday && !state.todayFortuneSlip) ? '#F5C44B' : 'rgba(245, 196, 75, 0.35)';
-        ctx.lineWidth = (!state.hasShakenFortuneToday && !state.todayFortuneSlip) ? 1.4 : 1;
+        ctx.strokeStyle = isFortuneDone ? 'rgba(82, 196, 26, 0.45)' : '#F5C44B';
+        ctx.lineWidth = isFortuneDone ? 1 : 1.4;
         ctx.stroke();
 
         drawVectorFortuneStick(ctx, btn1X + Math.round(14 * uiScale), actY + actH / 2, Math.round(6.5 * uiScale));
         ctx.font = `bold ${Math.round(10.5 * uiScale)}px sans-serif`;
-        ctx.fillStyle = '#FFE072';
+        ctx.fillStyle = isFortuneDone ? '#95DE64' : '#FFE072';
         ctx.textAlign = 'center';
-        ctx.fillText('每日一签', btn1X + actW / 2 + Math.round(6 * uiScale), actY + actH / 2 + Math.round(4 * uiScale));
+        ctx.fillText(isFortuneDone ? '已签到' : '每日一签', btn1X + actW / 2 + Math.round(6 * uiScale), actY + actH / 2 + Math.round(4 * uiScale));
 
-        // 今日未摇签提示红点
-        if (!state.hasShakenFortuneToday && !state.todayFortuneSlip) {
+        // 今日状态标记：未签到红点，已签到翡翠绿点
+        if (!isFortuneDone) {
             ctx.fillStyle = '#FF4D4F';
             ctx.beginPath();
             ctx.arc(btn1X + actW - 7, actY + 7, 3.5 * uiScale, 0, Math.PI * 2);
             ctx.fill();
+        } else {
+            drawVectorDot(ctx, btn1X + actW - 7, actY + 7, 3 * uiScale, '#52C41A');
         }
 
         // 按钮 2: 切换法殿 (显示专属矢量法殿图标、名称与专属色调)
@@ -5629,7 +5634,7 @@ function render() {
                     ctx.fillText(`解曰：${(slip && slip.desc) ? slip.desc : '心若安定，万事亨通。'}`, scrollX + 26, divY + 56);
 
                     // ==========================================
-                    // 底部功能按钮：【赠送好友】 与 【保存壁纸海报】
+                    // 底部功能按钮：【分享灵签】 与 【保存壁纸海报】
                     // ==========================================
                     const btnH = Math.round(32 * uiScale);
                     const btnY = scrollY + scrollH - btnH - Math.round(22 * uiScale);
@@ -5637,7 +5642,7 @@ function render() {
                     const btn1X = scrollX + Math.round(8 * uiScale);
                     const btn2X = btn1X + btnW + Math.round(8 * uiScale);
 
-                    // 按钮1：赠送好友 (金红渐变 + 纯矢量红包图标)
+                    // 按钮1：分享灵签 (金橙渐变 + 纯矢量信封分享图标)
                     const b1Grad = ctx.createLinearGradient(btn1X, btnY, btn1X, btnY + btnH);
                     b1Grad.addColorStop(0, '#E67E22');
                     b1Grad.addColorStop(1, '#D35400');
@@ -5648,11 +5653,11 @@ function render() {
                     ctx.lineWidth = 1;
                     ctx.stroke();
 
-                    drawVectorRedPacket(ctx, btn1X + Math.round(16 * uiScale), btnY + btnH / 2, Math.round(7.5 * uiScale));
+                    drawVectorEnvelope(ctx, btn1X + Math.round(16 * uiScale), btnY + btnH / 2, Math.round(7.5 * uiScale));
                     ctx.fillStyle = '#FFF8E7';
                     ctx.font = `bold ${Math.round(10.5 * uiScale)}px sans-serif`;
                     ctx.textAlign = 'center';
-                    ctx.fillText('赠送好友', btn1X + btnW / 2 + Math.round(7 * uiScale), btnY + Math.round(20 * uiScale));
+                    ctx.fillText('分享灵签', btn1X + btnW / 2 + Math.round(7 * uiScale), btnY + Math.round(20 * uiScale));
 
                     // 按钮2：保存壁纸海报 (琥珀金渐变 + 纯矢量画框图标)
                     const b2Grad = ctx.createLinearGradient(btn2X, btnY, btn2X, btnY + btnH);
@@ -5675,7 +5680,7 @@ function render() {
                     ctx.textAlign = 'center';
                     ctx.font = `${Math.round(8.5 * uiScale)}px sans-serif`;
                     ctx.fillStyle = '#D4AF37';
-                    ctx.fillText('今日灵签已自动记录于【修行日历】', W / 2, scrollY + scrollH - 6);
+                    ctx.fillText('今日签到已圆满，明日 0 点刷新 · 记录已存入【修行日历】', W / 2, scrollY + scrollH - 6);
                 }
 
             } else if (state.currentModal === 'calendar') {
@@ -5707,7 +5712,7 @@ function render() {
                 ctx.lineWidth = 1.2;
                 ctx.stroke();
 
-                // 1.1 今日灵签状态条 (带矢量灵签图标)
+                // 1.1 今日灵签/签到状态条 (带矢量灵签图标)
                 const hasFortune = !!(state.hasShakenFortuneToday || state.todayFortuneSlip);
                 const fortuneTextY = overviewY + Math.round(18 * uiScale);
                 drawVectorFortuneStick(ctx, cardX + 20, fortuneTextY - 3, 5.5);
@@ -5716,7 +5721,7 @@ function render() {
                     const fTitle = (state.todayFortuneSlip && state.todayFortuneSlip.name) ? String(state.todayFortuneSlip.name).replace(/《|》/g, '') : '灵签';
                     ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
                     ctx.fillStyle = '#FFE072';
-                    ctx.fillText(`今日灵签：${fTitle}`, cardX + 30, fortuneTextY);
+                    ctx.fillText(`今日签到：已完成 · ${fTitle}`, cardX + 30, fortuneTextY);
 
                     ctx.font = `bold ${Math.round(9.5 * uiScale)}px sans-serif`;
                     ctx.fillStyle = '#FF7875';
@@ -5728,11 +5733,11 @@ function render() {
                 } else {
                     ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
                     ctx.fillStyle = '#FFA940';
-                    ctx.fillText('今日尚未求签 · 【点击前往摇签 (+88功德)】', cardX + 30, fortuneTextY);
+                    ctx.fillText('今日签到：未完成 · 【点击前往签到摇签 (+88功德)】', cardX + 30, fortuneTextY);
 
                     ctx.font = `${Math.round(9.5 * uiScale)}px sans-serif`;
                     ctx.fillStyle = '#B8A99B';
-                    ctx.fillText('心诚则灵 · 每日摇一签指引运势吉凶', cardX + 30, fortuneTextY + Math.round(16 * uiScale));
+                    ctx.fillText('心诚则灵 · 每日摇一签签到指引运势吉凶', cardX + 30, fortuneTextY + Math.round(16 * uiScale));
                 }
 
                 // 1.2 今日敲击持咒进度条 (带矢量禅钟图标)
@@ -5836,13 +5841,13 @@ function render() {
                     ctx.fillStyle = isToday ? '#FFE072' : (d < todayDate ? '#D4AF37' : '#736254');
                     ctx.fillText(d.toString(), cx + cellW / 2, cy + 13);
 
-                    // 灵签角标 (右上角金绿竹签)
+                    // 灵签角标 (右上角金星)
                     if (hasDayFortune) {
                         ctx.font = `${Math.round(8 * uiScale)}px sans-serif`;
                         ctx.fillText('★', cx + cellW - 7, cy + 9);
                     }
 
-                    // 朱砂印章【圆满】
+                    // 朱砂印章【圆满】或【已签】
                     if (isDayStamped) {
                         ctx.fillStyle = 'rgba(192, 57, 43, 0.9)';
                         drawRoundRect(ctx, cx + cellW / 2 - 11, cy + 16, 22, 12, 3);
@@ -5851,13 +5856,13 @@ function render() {
                         ctx.fillStyle = '#FFF8E7';
                         ctx.fillText('圆满', cx + cellW / 2, cy + 24);
                     } else if (hasDayFortune && !isDayStamped) {
-                        // 若已抽签但未满108下，盖轻度【得签】印
+                        // 若已抽签签到但未满108下，盖【已签】印
                         ctx.fillStyle = 'rgba(46, 117, 89, 0.85)';
                         drawRoundRect(ctx, cx + cellW / 2 - 11, cy + 16, 22, 12, 3);
                         ctx.fill();
                         ctx.font = `bold ${Math.round(7 * uiScale)}px sans-serif`;
                         ctx.fillStyle = '#E8FFE8';
-                        ctx.fillText('得签', cx + cellW / 2, cy + 24);
+                        ctx.fillText('已签', cx + cellW / 2, cy + 24);
                     }
                 }
 
