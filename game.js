@@ -42,6 +42,9 @@ if (typeof wx !== 'undefined' && typeof wx.onNeedPrivacyAuthorization === 'funct
         wx.onNeedPrivacyAuthorization((resolve, eventInfo) => {
             privacyResolveCallback = resolve;
             if (typeof state !== 'undefined') {
+                if (state.currentModal !== 'privacy_policy') {
+                    state.pendingModalAfterPrivacy = state.currentModal || 'rank';
+                }
                 state.currentModal = 'privacy_policy';
             }
         });
@@ -3921,47 +3924,87 @@ if (typeof wx !== 'undefined' && wx.onTouchStart) {
                         state.currentModal = 'age_advisory';
                         return;
                     } else if (tx >= cardX + 12 + compBtnW + 8 && tx <= cardX + cardW - 12) {
+                        state.pendingModalAfterPrivacy = 'settings';
                         state.currentModal = 'privacy_policy';
-                        if (typeof wx !== 'undefined' && typeof wx.openPrivacyContract === 'function') {
-                            try {
-                                wx.openPrivacyContract({
-                                    success: function() {},
-                                    fail: function() {},
-                                    complete: function() {}
-                                });
-                            } catch(e) {}
-                        }
                         return;
                     }
                 }
             }
 
-            if (state.currentModal === 'age_advisory' || state.currentModal === 'privacy_policy') {
+            if (state.currentModal === 'age_advisory') {
                 if (tx > cardX + cardW - 45 && ty > cardY && ty < cardY + 45) {
                     try { soundManager.playTap(); } catch(e) {}
-                    if (state.currentModal === 'privacy_policy' && privacyResolveCallback) {
-                        try { privacyResolveCallback({ event: 'disagree' }); } catch(e) {}
-                        privacyResolveCallback = null;
-                    }
                     state.currentModal = 'settings';
                     return;
                 }
                 const okBtnY = cardY + cardH - 52;
                 if (ty >= okBtnY && ty <= okBtnY + 36 && tx >= cardX + 30 && tx <= cardX + cardW - 30) {
                     try { soundManager.playTap(); } catch(e) {}
-                    if (state.currentModal === 'privacy_policy' && privacyResolveCallback) {
-                        try { privacyResolveCallback({ event: 'agree', buttonId: 'agree-btn' }); } catch(e) {}
-                        privacyResolveCallback = null;
-                    }
                     state.currentModal = 'settings';
                     return;
                 }
                 if (ty < cardY || ty > cardY + cardH || tx < cardX || tx > cardX + cardW) {
-                    if (state.currentModal === 'privacy_policy' && privacyResolveCallback) {
+                    state.currentModal = 'settings';
+                    return;
+                }
+                return;
+            }
+
+            if (state.currentModal === 'privacy_policy') {
+                // 1. 关闭按钮 ×
+                if (tx > cardX + cardW - 45 && ty > cardY && ty < cardY + 45) {
+                    try { soundManager.playTap(); } catch(e) {}
+                    if (privacyResolveCallback) {
                         try { privacyResolveCallback({ event: 'disagree' }); } catch(e) {}
                         privacyResolveCallback = null;
                     }
-                    state.currentModal = 'settings';
+                    const nextModal = (state.pendingModalAfterPrivacy === 'rank') ? null : (state.pendingModalAfterPrivacy || null);
+                    state.pendingModalAfterPrivacy = null;
+                    state.currentModal = nextModal;
+                    return;
+                }
+                // 2. 独立点击查看官方完整协议详情入口
+                const detailLinkY = cardY + cardH - 85;
+                if (ty >= detailLinkY - 6 && ty <= detailLinkY + 26 && tx >= cardX + 20 && tx <= cardX + cardW - 20) {
+                    try { soundManager.playTap(); } catch(e) {}
+                    if (typeof wx !== 'undefined' && typeof wx.openPrivacyContract === 'function') {
+                        try {
+                            wx.openPrivacyContract({
+                                success: function() {},
+                                fail: function() {},
+                                complete: function() {}
+                            });
+                        } catch(e) {}
+                    }
+                    return;
+                }
+                // 3. 点击【我知道了】主按钮 (同意授权并关闭，不跳外链)
+                const okBtnY = cardY + cardH - 52;
+                if (ty >= okBtnY && ty <= okBtnY + 36 && tx >= cardX + 30 && tx <= cardX + cardW - 30) {
+                    try { soundManager.playTap(); } catch(e) {}
+                    if (privacyResolveCallback) {
+                        try { privacyResolveCallback({ event: 'agree', buttonId: 'agree-btn' }); } catch(e) {}
+                        privacyResolveCallback = null;
+                    }
+                    const nextModal = state.pendingModalAfterPrivacy || null;
+                    state.pendingModalAfterPrivacy = null;
+                    state.currentModal = nextModal;
+                    if (nextModal === 'rank') {
+                        state.rankTab = 'friends';
+                        reportScoreToFriendCloud();
+                        requestFriendRankData();
+                    }
+                    return;
+                }
+                // 4. 点击遮罩外区域
+                if (ty < cardY || ty > cardY + cardH || tx < cardX || tx > cardX + cardW) {
+                    if (privacyResolveCallback) {
+                        try { privacyResolveCallback({ event: 'disagree' }); } catch(e) {}
+                        privacyResolveCallback = null;
+                    }
+                    const nextModal = (state.pendingModalAfterPrivacy === 'rank') ? null : (state.pendingModalAfterPrivacy || null);
+                    state.pendingModalAfterPrivacy = null;
+                    state.currentModal = nextModal;
                     return;
                 }
                 return;
@@ -4116,8 +4159,9 @@ function render() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.scale(dpr, dpr);
 
-        // 1. 功德寻宝小游戏全屏页面
-        if (state.currentModal === 'gemhunt') {
+        // 1. 功德寻宝小游戏全屏页面 (含大奖庆典与寻宝内置子弹窗)
+        const isGemHuntScene = (state.currentModal === 'gemhunt' || state.currentModal === 'bigwin' || state.currentModal === 'rules' || state.currentModal === 'betpicker' || state.currentModal === 'ad_insufficient' || state.currentModal === 'ad_tier_unlock');
+        if (isGemHuntScene) {
             const ghSafeTop = menuButtonRect ? menuButtonRect.top : ((sysInfo.safeArea && sysInfo.safeArea.top) || 44);
             const ghTopBarH = menuButtonRect ? menuButtonRect.height : Math.round(34 * uiScale);
             const ghHeaderH = ghSafeTop + ghTopBarH + 6;
@@ -4710,15 +4754,16 @@ function render() {
             ctx.textAlign = 'left';
 
             drawScreenToast(ctx);
-            ctx.restore();
-            requestAnimationFrame(render);
-            return;
-        }
-
-        // ------------------------------------------------------------------
-        // 2. 首页敲击木鱼主界面
-        // ------------------------------------------------------------------
-        const bgGrad = ctx.createRadialGradient(W / 2, H * 0.3, 10, W / 2, H * 0.5, W);
+            if (state.currentModal === 'gemhunt') {
+                ctx.restore();
+                requestAnimationFrame(render);
+                return;
+            }
+        } else {
+            // ------------------------------------------------------------------
+            // 2. 首页敲击木鱼主界面
+            // ------------------------------------------------------------------
+            const bgGrad = ctx.createRadialGradient(W / 2, H * 0.3, 10, W / 2, H * 0.5, W);
         bgGrad.addColorStop(0, '#241D17');
         bgGrad.addColorStop(1, '#120E0A');
         ctx.fillStyle = bgGrad;
@@ -5011,6 +5056,7 @@ function render() {
             ft.y -= 1.8;
             ft.alpha -= 0.025;
             if (ft.alpha <= 0) state.floatingTexts.splice(i, 1);
+        }
         }
 
         // ------------------------------------------------------------------
@@ -7024,7 +7070,7 @@ function render() {
                 ctx.fillText('×', cardX + cardW - 22, cardY + 26);
 
                 const textCardY = cardY + 44;
-                const textCardH = cardH - 106;
+                const textCardH = cardH - 138;
                 ctx.fillStyle = 'rgba(38, 26, 17, 0.9)';
                 drawRoundRect(ctx, cardX + 14, textCardY, cardW - 28, textCardH, 8);
                 ctx.fill();
@@ -7035,16 +7081,16 @@ function render() {
                 ctx.textAlign = 'left';
                 const textPadX = cardX + 22;
                 const textMaxW = cardW - 44;
-                let curY = textCardY + Math.round(16 * uiScale);
+                let curY = textCardY + Math.round(15 * uiScale);
 
                 // 1. 处理的信息与用途 (四项已向微信官方申报的权限)
                 ctx.fillStyle = '#FFD700';
-                ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
+                ctx.font = `bold ${Math.round(10.5 * uiScale)}px sans-serif`;
                 ctx.fillText('【处理的信息及用途说明】', textPadX, curY);
-                curY += Math.round(16 * uiScale);
+                curY += Math.round(15 * uiScale);
 
                 ctx.fillStyle = '#EDE7DF';
-                ctx.font = `${Math.round(9.5 * uiScale)}px sans-serif`;
+                ctx.font = `${Math.round(9 * uiScale)}px sans-serif`;
                 const privacyItems = [
                     '1. 昵称与头像：在游戏名牌及微信好友榜展示本人头像与修行功德。',
                     '2. 相册（仅写入）：用于将每日抽取的灵签壁纸海报保存至手机本地。',
@@ -7059,28 +7105,28 @@ function render() {
                         if (ctx.measureText(testLine).width > textMaxW && curLine.length > 0) {
                             ctx.fillText(curLine, textPadX, curY);
                             curLine = char;
-                            curY += Math.round(15 * uiScale);
+                            curY += Math.round(14 * uiScale);
                         } else {
                             curLine = testLine;
                         }
                     }
                     if (curLine) {
                         ctx.fillText(curLine, textPadX, curY);
-                        curY += Math.round(15 * uiScale);
+                        curY += Math.round(14 * uiScale);
                     }
                     curY += Math.round(2 * uiScale);
                 });
 
-                curY += Math.round(4 * uiScale);
+                curY += Math.round(2 * uiScale);
 
                 // 2. 信息存储期限与保护承诺
                 ctx.fillStyle = '#FFD700';
-                ctx.font = `bold ${Math.round(11 * uiScale)}px sans-serif`;
+                ctx.font = `bold ${Math.round(10.5 * uiScale)}px sans-serif`;
                 ctx.fillText('【数据存储与保护承诺】', textPadX, curY);
-                curY += Math.round(16 * uiScale);
+                curY += Math.round(15 * uiScale);
 
                 ctx.fillStyle = '#EDE7DF';
-                ctx.font = `${Math.round(9.5 * uiScale)}px sans-serif`;
+                ctx.font = `${Math.round(9 * uiScale)}px sans-serif`;
                 const storageItems = [
                     '· 遵循最小必要原则，仅在实现功能所需最短时间内安全存储。',
                     '· 绝不收集手机号或通讯录，用户可随时在微信设置中撤回授权。'
@@ -7093,18 +7139,32 @@ function render() {
                         if (ctx.measureText(testLine).width > textMaxW && curLine.length > 0) {
                             ctx.fillText(curLine, textPadX, curY);
                             curLine = char;
-                            curY += Math.round(15 * uiScale);
+                            curY += Math.round(14 * uiScale);
                         } else {
                             curLine = testLine;
                         }
                     }
                     if (curLine) {
                         ctx.fillText(curLine, textPadX, curY);
-                        curY += Math.round(15 * uiScale);
+                        curY += Math.round(14 * uiScale);
                     }
                 });
 
-                // [查看官方完整协议 / 我知道了] 按钮
+                // 3. 独立点击查看官方完整协议详情入口 (金黄色独立胶囊按钮)
+                const detailLinkY = cardY + cardH - 85;
+                ctx.fillStyle = 'rgba(60, 46, 32, 0.85)';
+                drawRoundRect(ctx, cardX + 24, detailLinkY, cardW - 48, 26, 6);
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(245, 196, 75, 0.4)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                ctx.fillStyle = '#FFE072';
+                ctx.font = `bold ${Math.round(9.5 * uiScale)}px sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.fillText('📜 点击查看微信官方完整指引详情 ›', W / 2, detailLinkY + 17);
+
+                // 4. [我知道了] 主确认按钮
                 const okBtnY = cardY + cardH - 50;
                 ctx.fillStyle = '#D48806';
                 drawRoundRect(ctx, cardX + 30, okBtnY, cardW - 60, 36, 18);
